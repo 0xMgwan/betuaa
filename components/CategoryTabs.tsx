@@ -1,0 +1,52 @@
+"use client";
+
+import { TrendingUp, Sparkles, Grid3x3, Trophy, Bitcoin, Globe, Briefcase, Zap, Cloud } from "lucide-react";
+
+const categories = [
+  { id: "trending", name: "Trending", icon: TrendingUp },
+  { id: "new", name: "New", icon: Sparkles },
+  { id: "all", name: "All", icon: Grid3x3 },
+  { id: "sports", name: "Sports", icon: Trophy },
+  { id: "crypto", name: "Crypto", icon: Bitcoin },
+  { id: "politics", name: "Politics", icon: Globe },
+  { id: "business", name: "Business", icon: Briefcase },
+  { id: "tech", name: "Tech", icon: Zap },
+  { id: "climate", name: "Climate", icon: Cloud },
+];
+
+interface CategoryTabsProps {
+  activeCategory: string;
+  onCategoryChange: (category: string) => void;
+}
+
+export default function CategoryTabs({ activeCategory, onCategoryChange }: CategoryTabsProps) {
+  return (
+    <div className="border-b border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-950">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="flex items-center gap-1 overflow-x-auto scrollbar-hide py-3">
+          {categories.map((category) => {
+            const Icon = category.icon;
+            const isActive = activeCategory === category.id;
+            return (
+              <button
+                key={category.id}
+                onClick={() => onCategoryChange(category.id)}
+                className={`
+                  flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-semibold whitespace-nowrap transition-all
+                  ${
+                    isActive
+                      ? "bg-blue-500 text-white shadow-md"
+                      : "text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800"
+                  }
+                `}
+              >
+                <Icon className="h-4 w-4" />
+                {category.name}
+              </button>
+            );
+          })}
+        </div>
+      </div>
+    </div>
+  );
+}
