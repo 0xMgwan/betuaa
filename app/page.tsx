@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect, useMemo } from "react";
 import Navbar from "@/components/Navbar";
 import CategoryTabs from "@/components/CategoryTabs";
 import FeaturedMarket from "@/components/FeaturedMarket";
@@ -13,10 +13,24 @@ import { generatePriceHistory } from "@/lib/generatePriceHistory";
 export default function Home() {
   const [activeCategory, setActiveCategory] = useState("all");
   const [selectedMarket, setSelectedMarket] = useState<Market | null>(null);
+  const [renderKey, setRenderKey] = useState(0);
 
-  const displayedMarkets = activeCategory === "all" 
-    ? Object.values(marketsByCategory).flat()
-    : marketsByCategory[activeCategory] || [];
+  const displayedMarkets = useMemo(() => {
+    const markets = activeCategory === "all" 
+      ? Object.values(marketsByCategory).flat()
+      : marketsByCategory[activeCategory] || [];
+    
+    console.log('🔄 Computing displayedMarkets for:', activeCategory);
+    console.log('📊 Markets found:', markets.length);
+    console.log('🎯 First market ID:', markets[0]?.id, 'Title:', markets[0]?.title?.substring(0, 30));
+    
+    return markets;
+  }, [activeCategory]);
+
+  useEffect(() => {
+    console.log('✅ Category changed to:', activeCategory);
+    setRenderKey(prev => prev + 1);
+  }, [activeCategory]);
 
   // Add price history to markets
   const marketsWithHistory = displayedMarkets.map(market => ({
@@ -36,10 +50,10 @@ export default function Home() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
           <FeaturedMarket />
           
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mt-8">
+          <div key={renderKey} className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mt-8">
             {marketsWithHistory.map((market) => (
               <CompactMarketCard
-                key={market.id}
+                key={`${activeCategory}-${market.id}`}
                 id={market.id}
                 question={market.title}
                 category={market.category}

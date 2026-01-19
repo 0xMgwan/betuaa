@@ -52,6 +52,8 @@ export const marketsByCategory: Record<string, Market[]> = {
       trend: "down",
     },
     {
+
+      id: 4,
       title: "Will Tesla stock hit $500 in 2026?",
       category: "Business",
       yesPrice: 45,
@@ -63,6 +65,8 @@ export const marketsByCategory: Record<string, Market[]> = {
       trend: "up",
     },
     {
+
+      id: 5,
       title: "Will AI replace 50% of coding jobs by 2030?",
       category: "Tech",
       yesPrice: 38,
@@ -74,6 +78,8 @@ export const marketsByCategory: Record<string, Market[]> = {
       trend: "up",
     },
     {
+
+      id: 6,
       title: "Will SpaceX land humans on Mars by 2030?",
       category: "Tech",
       yesPrice: 23,
@@ -87,6 +93,8 @@ export const marketsByCategory: Record<string, Market[]> = {
   ],
   new: [
     {
+
+      id: 7,
       title: "Will Apple release AR glasses in 2026?",
       category: "Tech",
       yesPrice: 35,
@@ -97,6 +105,8 @@ export const marketsByCategory: Record<string, Market[]> = {
       icon: "https://api.dicebear.com/7.x/shapes/svg?seed=apple",
     },
     {
+
+      id: 8,
       title: "Will Messi retire from international football in 2026?",
       category: "Sports",
       yesPrice: 62,
@@ -107,6 +117,8 @@ export const marketsByCategory: Record<string, Market[]> = {
       icon: "https://api.dicebear.com/7.x/shapes/svg?seed=messi",
     },
     {
+
+      id: 9,
       title: "Will inflation drop below 2% in the US by Q4 2026?",
       category: "Business",
       yesPrice: 48,
@@ -117,6 +129,8 @@ export const marketsByCategory: Record<string, Market[]> = {
       icon: "https://api.dicebear.com/7.x/shapes/svg?seed=inflation",
     },
     {
+
+      id: 10,
       title: "Will Solana flip Ethereum in market cap by 2027?",
       category: "Crypto",
       yesPrice: 15,
@@ -127,6 +141,8 @@ export const marketsByCategory: Record<string, Market[]> = {
       icon: "https://api.dicebear.com/7.x/shapes/svg?seed=solana",
     },
     {
+
+      id: 11,
       title: "Will renewable energy exceed 50% of US power by 2028?",
       category: "Climate",
       yesPrice: 56,
@@ -137,6 +153,8 @@ export const marketsByCategory: Record<string, Market[]> = {
       icon: "https://api.dicebear.com/7.x/shapes/svg?seed=renewable",
     },
     {
+
+      id: 12,
       title: "Will ChatGPT-5 be released in 2026?",
       category: "Tech",
       yesPrice: 71,
@@ -149,6 +167,8 @@ export const marketsByCategory: Record<string, Market[]> = {
   ],
   sports: [
     {
+
+      id: 13,
       title: "Will Manchester City win the Premier League 2025/26?",
       category: "Sports",
       yesPrice: 72,
@@ -159,6 +179,8 @@ export const marketsByCategory: Record<string, Market[]> = {
       icon: "https://api.dicebear.com/7.x/shapes/svg?seed=football",
     },
     {
+
+      id: 14,
       title: "Will LeBron James retire in 2026?",
       category: "Sports",
       yesPrice: 44,
@@ -169,6 +191,8 @@ export const marketsByCategory: Record<string, Market[]> = {
       icon: "https://api.dicebear.com/7.x/shapes/svg?seed=lebron",
     },
     {
+
+      id: 15,
       title: "Will Messi retire from international football in 2026?",
       category: "Sports",
       yesPrice: 62,
@@ -179,6 +203,8 @@ export const marketsByCategory: Record<string, Market[]> = {
       icon: "https://api.dicebear.com/7.x/shapes/svg?seed=messi",
     },
     {
+
+      id: 16,
       title: "Will USA win the most medals at 2026 Winter Olympics?",
       category: "Sports",
       yesPrice: 39,
@@ -189,6 +215,8 @@ export const marketsByCategory: Record<string, Market[]> = {
       icon: "https://api.dicebear.com/7.x/shapes/svg?seed=olympics",
     },
     {
+
+      id: 17,
       title: "Will Real Madrid win Champions League 2025/26?",
       category: "Sports",
       yesPrice: 55,
@@ -199,6 +227,8 @@ export const marketsByCategory: Record<string, Market[]> = {
       icon: "https://api.dicebear.com/7.x/shapes/svg?seed=realmadrid",
     },
     {
+
+      id: 18,
       title: "Will Novak Djokovic win another Grand Slam in 2026?",
       category: "Sports",
       yesPrice: 68,
@@ -211,6 +241,8 @@ export const marketsByCategory: Record<string, Market[]> = {
   ],
   crypto: [
     {
+
+      id: 19,
       title: "Will Bitcoin reach $150,000 by end of 2026?",
       category: "Crypto",
       yesPrice: 67,
@@ -221,6 +253,8 @@ export const marketsByCategory: Record<string, Market[]> = {
       icon: "https://api.dicebear.com/7.x/shapes/svg?seed=bitcoin",
     },
     {
+
+      id: 20,
       title: "Will Ethereum ETF be approved in Q1 2026?",
       category: "Crypto",
       yesPrice: 45,
@@ -231,6 +265,8 @@ export const marketsByCategory: Record<string, Market[]> = {
       icon: "https://api.dicebear.com/7.x/shapes/svg?seed=ethereum",
     },
     {
+
+      id: 21,
       title: "Will Solana flip Ethereum in market cap by 2027?",
       category: "Crypto",
       yesPrice: 15,
@@ -241,6 +277,8 @@ export const marketsByCategory: Record<string, Market[]> = {
       icon: "https://api.dicebear.com/7.x/shapes/svg?seed=solana",
     },
     {
+
+      id: 22,
       title: "Will a Bitcoin ETF reach $100B AUM in 2026?",
       category: "Crypto",
       yesPrice: 73,
@@ -251,6 +289,8 @@ export const marketsByCategory: Record<string, Market[]> = {
       icon: "https://api.dicebear.com/7.x/shapes/svg?seed=btcetf",
     },
     {
+
+      id: 23,
       title: "Will Cardano reach $5 in 2026?",
       category: "Crypto",
       yesPrice: 22,
@@ -261,6 +301,8 @@ export const marketsByCategory: Record<string, Market[]> = {
       icon: "https://api.dicebear.com/7.x/shapes/svg?seed=cardano",
     },
     {
+
+      id: 24,
       title: "Will a major country adopt Bitcoin as legal tender in 2026?",
       category: "Crypto",
       yesPrice: 31,
@@ -273,6 +315,8 @@ export const marketsByCategory: Record<string, Market[]> = {
   ],
   politics: [
     {
+
+      id: 25,
       title: "Will Trump win the 2026 midterm elections?",
       category: "Politics",
       yesPrice: 58,
@@ -283,6 +327,8 @@ export const marketsByCategory: Record<string, Market[]> = {
       icon: "https://api.dicebear.com/7.x/shapes/svg?seed=politics",
     },
     {
+
+      id: 26,
       title: "Will Biden run for re-election in 2028?",
       category: "Politics",
       yesPrice: 34,
@@ -293,6 +339,8 @@ export const marketsByCategory: Record<string, Market[]> = {
       icon: "https://api.dicebear.com/7.x/shapes/svg?seed=biden",
     },
     {
+
+      id: 27,
       title: "Will UK rejoin the EU by 2030?",
       category: "Politics",
       yesPrice: 18,
@@ -303,6 +351,8 @@ export const marketsByCategory: Record<string, Market[]> = {
       icon: "https://api.dicebear.com/7.x/shapes/svg?seed=brexit",
     },
     {
+
+      id: 28,
       title: "Will there be a new Supreme Court justice in 2026?",
       category: "Politics",
       yesPrice: 42,
@@ -313,6 +363,8 @@ export const marketsByCategory: Record<string, Market[]> = {
       icon: "https://api.dicebear.com/7.x/shapes/svg?seed=scotus",
     },
     {
+
+      id: 29,
       title: "Will California pass universal healthcare in 2026?",
       category: "Politics",
       yesPrice: 29,
@@ -323,6 +375,8 @@ export const marketsByCategory: Record<string, Market[]> = {
       icon: "https://api.dicebear.com/7.x/shapes/svg?seed=healthcare",
     },
     {
+
+      id: 30,
       title: "Will student loan forgiveness be implemented in 2026?",
       category: "Politics",
       yesPrice: 51,
@@ -335,6 +389,8 @@ export const marketsByCategory: Record<string, Market[]> = {
   ],
   business: [
     {
+
+      id: 31,
       title: "Will Tesla stock hit $500 in 2026?",
       category: "Business",
       yesPrice: 45,
@@ -345,6 +401,8 @@ export const marketsByCategory: Record<string, Market[]> = {
       icon: "https://api.dicebear.com/7.x/shapes/svg?seed=tesla",
     },
     {
+
+      id: 32,
       title: "Will the Fed cut rates in Q2 2026?",
       category: "Business",
       yesPrice: 64,
@@ -355,6 +413,8 @@ export const marketsByCategory: Record<string, Market[]> = {
       icon: "https://api.dicebear.com/7.x/shapes/svg?seed=fed",
     },
     {
+
+      id: 33,
       title: "Will inflation drop below 2% in the US by Q4 2026?",
       category: "Business",
       yesPrice: 48,
@@ -365,6 +425,8 @@ export const marketsByCategory: Record<string, Market[]> = {
       icon: "https://api.dicebear.com/7.x/shapes/svg?seed=inflation",
     },
     {
+
+      id: 34,
       title: "Will Amazon stock reach $300 in 2026?",
       category: "Business",
       yesPrice: 59,
@@ -375,6 +437,8 @@ export const marketsByCategory: Record<string, Market[]> = {
       icon: "https://api.dicebear.com/7.x/shapes/svg?seed=amazon",
     },
     {
+
+      id: 35,
       title: "Will there be a US recession in 2026?",
       category: "Business",
       yesPrice: 37,
@@ -385,6 +449,8 @@ export const marketsByCategory: Record<string, Market[]> = {
       icon: "https://api.dicebear.com/7.x/shapes/svg?seed=recession",
     },
     {
+
+      id: 36,
       title: "Will Apple become the first $5T company in 2026?",
       category: "Business",
       yesPrice: 52,
@@ -397,6 +463,8 @@ export const marketsByCategory: Record<string, Market[]> = {
   ],
   tech: [
     {
+
+      id: 37,
       title: "Will AI replace 50% of coding jobs by 2030?",
       category: "Tech",
       yesPrice: 38,
@@ -407,6 +475,8 @@ export const marketsByCategory: Record<string, Market[]> = {
       icon: "https://api.dicebear.com/7.x/shapes/svg?seed=ai",
     },
     {
+
+      id: 38,
       title: "Will SpaceX land humans on Mars by 2030?",
       category: "Tech",
       yesPrice: 23,
@@ -417,6 +487,8 @@ export const marketsByCategory: Record<string, Market[]> = {
       icon: "https://api.dicebear.com/7.x/shapes/svg?seed=spacex",
     },
     {
+
+      id: 39,
       title: "Will Apple release AR glasses in 2026?",
       category: "Tech",
       yesPrice: 35,
@@ -427,6 +499,8 @@ export const marketsByCategory: Record<string, Market[]> = {
       icon: "https://api.dicebear.com/7.x/shapes/svg?seed=apple",
     },
     {
+
+      id: 40,
       title: "Will ChatGPT-5 be released in 2026?",
       category: "Tech",
       yesPrice: 71,
@@ -437,6 +511,8 @@ export const marketsByCategory: Record<string, Market[]> = {
       icon: "https://api.dicebear.com/7.x/shapes/svg?seed=chatgpt",
     },
     {
+
+      id: 41,
       title: "Will quantum computers break RSA encryption by 2028?",
       category: "Tech",
       yesPrice: 26,
@@ -447,6 +523,8 @@ export const marketsByCategory: Record<string, Market[]> = {
       icon: "https://api.dicebear.com/7.x/shapes/svg?seed=quantum",
     },
     {
+
+      id: 42,
       title: "Will self-driving cars be legal in all US states by 2027?",
       category: "Tech",
       yesPrice: 41,
@@ -459,6 +537,8 @@ export const marketsByCategory: Record<string, Market[]> = {
   ],
   climate: [
     {
+
+      id: 43,
       title: "Will global temperatures rise by 1.5°C by 2027?",
       category: "Climate",
       yesPrice: 81,
@@ -469,6 +549,8 @@ export const marketsByCategory: Record<string, Market[]> = {
       icon: "https://api.dicebear.com/7.x/shapes/svg?seed=climate",
     },
     {
+
+      id: 44,
       title: "Will renewable energy exceed 50% of US power by 2028?",
       category: "Climate",
       yesPrice: 56,
@@ -479,6 +561,8 @@ export const marketsByCategory: Record<string, Market[]> = {
       icon: "https://api.dicebear.com/7.x/shapes/svg?seed=renewable",
     },
     {
+
+      id: 45,
       title: "Will Arctic sea ice reach a new record low in 2026?",
       category: "Climate",
       yesPrice: 69,
@@ -489,6 +573,8 @@ export const marketsByCategory: Record<string, Market[]> = {
       icon: "https://api.dicebear.com/7.x/shapes/svg?seed=arctic",
     },
     {
+
+      id: 46,
       title: "Will a major country ban gas cars by 2028?",
       category: "Climate",
       yesPrice: 47,
@@ -499,6 +585,8 @@ export const marketsByCategory: Record<string, Market[]> = {
       icon: "https://api.dicebear.com/7.x/shapes/svg?seed=gasban",
     },
     {
+
+      id: 47,
       title: "Will carbon capture technology scale to 1GT/year by 2030?",
       category: "Climate",
       yesPrice: 33,
@@ -509,6 +597,8 @@ export const marketsByCategory: Record<string, Market[]> = {
       icon: "https://api.dicebear.com/7.x/shapes/svg?seed=carbon",
     },
     {
+
+      id: 48,
       title: "Will a Category 6 hurricane be created by 2027?",
       category: "Climate",
       yesPrice: 54,
