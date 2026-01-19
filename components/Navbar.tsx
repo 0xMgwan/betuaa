@@ -2,11 +2,13 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { TrendingUp, Menu, X } from "lucide-react";
+import { TrendingUp, Moon, Sun, Menu, X } from "lucide-react";
 import SearchBar from "./SearchBar";
 import WalletConnect from "./WalletConnect";
+import { useTheme } from "./ThemeProvider";
 
 export default function Navbar() {
+  const { theme, toggleTheme } = useTheme();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
 
   return (
@@ -39,6 +41,17 @@ export default function Navbar() {
             >
               Ideas
             </Link>
+            <button
+              onClick={toggleTheme}
+              className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+              aria-label="Toggle theme"
+            >
+              {theme === "dark" ? (
+                <Sun className="h-5 w-5 text-gray-600 dark:text-gray-300" />
+              ) : (
+                <Moon className="h-5 w-5 text-gray-600 dark:text-gray-300" />
+              )}
+            </button>
             <WalletConnect />
           </div>
 
