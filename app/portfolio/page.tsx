@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { useAccount } from 'wagmi';
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
+import SellModal from "@/components/SellModal";
 import { useUserPositions } from '@/hooks/useUserPositions';
 import { STABLECOINS } from '@/lib/contracts';
 import { TrendingUp, TrendingDown, DollarSign } from 'lucide-react';
@@ -12,6 +13,7 @@ export default function Portfolio() {
   const { address, isConnected } = useAccount();
   const { positions, activePositions, claimablePositions, isLoading, totalValue, totalPnL, totalPnLPercent } = useUserPositions();
   const [selectedPosition, setSelectedPosition] = useState<any>(null);
+  const [showSellModal, setShowSellModal] = useState(false);
 
   if (!isConnected) {
     return (
@@ -146,7 +148,7 @@ export default function Portfolio() {
                       </div>
                     </div>
 
-                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4">
                       <div>
                         <div className="text-xs text-gray-500 dark:text-gray-400 mb-1">
                           Current Price
@@ -180,6 +182,19 @@ export default function Portfolio() {
                         </div>
                       </div>
                     </div>
+
+                    {/* Sell Button */}
+                    {!position.resolved && (
+                      <button
+                        onClick={() => {
+                          setSelectedPosition(position);
+                          setShowSellModal(true);
+                        }}
+                        className="w-full px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg font-medium transition-colors"
+                      >
+                        Sell Shares
+                      </button>
+                    )}
                   </div>
                 );
               })}
@@ -187,6 +202,19 @@ export default function Portfolio() {
           )}
         </div>
       </div>
+
+      {/* Sell Modal */}
+      {selectedPosition && (
+        <SellModal
+          isOpen={showSellModal}
+          onClose={() => {
+            setShowSellModal(false);
+            setSelectedPosition(null);
+          }}
+          position={selectedPosition}
+        />
+      )}
+
       <Footer />
     </div>
   );
