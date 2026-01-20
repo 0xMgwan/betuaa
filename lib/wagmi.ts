@@ -1,13 +1,14 @@
 import { http, createConfig } from 'wagmi'
 import { base, baseSepolia } from 'wagmi/chains'
-import { coinbaseWallet } from 'wagmi/connectors'
+import { coinbaseWallet, injected } from 'wagmi/connectors'
 
 export const config = createConfig({
   chains: [base, baseSepolia],
   connectors: [
+    injected(), // MetaMask, Coinbase Wallet extension, etc.
     coinbaseWallet({
       appName: 'BetUAA',
-      preference: 'smartWalletOnly',
+      preference: 'all', // Support both smart wallet and extension
     }),
   ],
   ssr: true,
