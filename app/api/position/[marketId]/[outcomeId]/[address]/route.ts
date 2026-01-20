@@ -23,17 +23,24 @@ export async function GET(
       return NextResponse.json({ error: 'Invalid parameters' }, { status: 400 });
     }
 
-    // Fetch user's position from blockchain
+    // Fetch user's position from blockchain using getUserPosition
     const position = await publicClient.readContract({
       address: CONTRACTS.baseSepolia.predictionMarket as `0x${string}`,
       abi: PredictionMarketABI,
-      functionName: 'positions',
+      functionName: 'getUserPosition',
       args: [BigInt(marketIdNum), address as `0x${string}`, BigInt(outcomeIdNum)],
     }) as any;
 
+    console.log('Position data:', position);
+
+    // getUserPosition returns a struct with {shares, averagePrice, outcomeId}
+    // Handle both array and object responses
+    const shares = Array.isArray(position) ? position[0] : position.shares;
+    const averagePrice = Array.isArray(position) ? position[1] : position.averagePrice;
+
     return NextResponse.json({
-      shares: position.shares.toString(),
-      averageBuyPrice: Number(position.averageBuyPrice) / 100, // Convert from basis points
+      shares: shares?.toString() || '0',
+      averageBuyPrice: averagePrice ? Number(averagePrice) / 1e18 : 0,
     });
   } catch (error) {
     console.error('Error fetching position:', error);

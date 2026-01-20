@@ -3,7 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import { TrendingUp, Moon, Sun, Menu, X, Plus } from "lucide-react";
-import { ConnectButton } from '@rainbow-me/rainbowkit';
+import CustomConnectButton from "./CustomConnectButton";
 import SearchBar from "./SearchBar";
 import CreateMarketModal from "./CreateMarketModal";
 import { useTheme } from "./ThemeProvider";
@@ -61,7 +61,7 @@ export default function Navbar() {
                 <Moon className="h-5 w-5 text-gray-600 dark:text-gray-300" />
               )}
             </button>
-            <ConnectButton />
+            <CustomConnectButton />
           </div>
 
           <button
@@ -106,7 +106,7 @@ export default function Navbar() {
               Create Market
             </button>
             <div className="flex justify-center">
-              <ConnectButton />
+              <CustomConnectButton />
             </div>
           </div>
         </div>
