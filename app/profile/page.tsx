@@ -1,15 +1,20 @@
 'use client';
 
+import { useState } from 'react';
 import { useAccount } from 'wagmi';
+import Navbar from "@/components/Navbar";
+import Footer from "@/components/Footer";
 import { useUserMarkets } from '@/hooks/useMarkets';
-import Navbar from '@/components/Navbar';
-import Footer from '@/components/Footer';
 import { STABLECOINS } from '@/lib/contracts';
 import { formatDistanceToNow } from 'date-fns';
+import ResolveMarketModal from '@/components/ResolveMarketModal';
+import { useClaimWinnings } from '@/hooks/usePredictionMarket';
 
 export default function ProfilePage() {
   const { address, isConnected } = useAccount();
   const { markets, isLoading } = useUserMarkets(address);
+  const [selectedMarketToResolve, setSelectedMarketToResolve] = useState<any>(null);
+  const { claimWinnings, isPending: isClaiming } = useClaimWinnings();
 
   if (!isConnected) {
     return (

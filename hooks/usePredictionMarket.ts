@@ -157,14 +157,14 @@ export function useSellShares() {
 }
 
 export function useResolveMarket() {
-  const { data: hash, writeContract, isPending, error } = useWriteContract();
+  const { data: hash, writeContract, isPending, isSuccess, error } = useWriteContract();
   
-  const { isLoading: isConfirming, isSuccess } = useWaitForTransactionReceipt({
+  const { isLoading: isConfirming, isSuccess: isConfirmed } = useWaitForTransactionReceipt({
     hash,
   });
 
   const resolveMarket = async (marketId: number, winningOutcomeId: number) => {
-    writeContract({
+    return writeContract({
       address: CONTRACT_ADDRESS,
       abi: PredictionMarketABI,
       functionName: 'resolveMarket',
@@ -175,23 +175,22 @@ export function useResolveMarket() {
 
   return {
     resolveMarket,
-    hash,
-    isPending,
-    isConfirming,
-    isSuccess,
+    isPending: isPending || isConfirming,
+    isSuccess: isConfirmed,
     error,
+    hash,
   };
 }
 
 export function useClaimWinnings() {
-  const { data: hash, writeContract, isPending, error } = useWriteContract();
+  const { data: hash, writeContract, isPending, isSuccess, error } = useWriteContract();
   
-  const { isLoading: isConfirming, isSuccess } = useWaitForTransactionReceipt({
+  const { isLoading: isConfirming, isSuccess: isConfirmed } = useWaitForTransactionReceipt({
     hash,
   });
 
   const claimWinnings = async (marketId: number, outcomeId: number) => {
-    writeContract({
+    return writeContract({
       address: CONTRACT_ADDRESS,
       abi: PredictionMarketABI,
       functionName: 'claimWinnings',
@@ -202,10 +201,9 @@ export function useClaimWinnings() {
 
   return {
     claimWinnings,
-    hash,
-    isPending,
-    isConfirming,
-    isSuccess,
+    isPending: isPending || isConfirming,
+    isSuccess: isConfirmed,
     error,
+    hash,
   };
 }
