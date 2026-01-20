@@ -1,10 +1,12 @@
 'use client';
 
+import { useState } from 'react';
 import { X } from 'lucide-react';
 import { BlockchainMarket } from '@/hooks/useMarkets';
 import { useMarketDetails } from '@/hooks/useMarketDetails';
 import { STABLECOINS } from '@/lib/contracts';
 import { formatDistanceToNow } from 'date-fns';
+import TradingModal from './TradingModal';
 
 interface BlockchainMarketModalProps {
   isOpen: boolean;
@@ -18,6 +20,8 @@ export default function BlockchainMarketModal({
   market,
 }: BlockchainMarketModalProps) {
   const { outcomes, isLoading } = useMarketDetails(market.id);
+  const [showTradingModal, setShowTradingModal] = useState(false);
+  const [selectedOutcome, setSelectedOutcome] = useState<{ id: number; name: string; price: number } | null>(null);
   
   if (!isOpen) return null;
 
@@ -129,6 +133,10 @@ export default function BlockchainMarketModal({
               </div>
               <button
                 disabled={!isActive}
+                onClick={() => {
+                  setSelectedOutcome({ id: 0, name: yesOutcome?.name || 'Yes', price: yesOutcome?.price || 50 });
+                  setShowTradingModal(true);
+                }}
                 className="w-full px-4 py-2.5 bg-green-600 hover:bg-green-700 disabled:bg-gray-400 text-white rounded-lg font-semibold text-sm transition-colors"
               >
                 {isActive ? `Buy ${yesOutcome?.name || 'Yes'}` : 'Market Closed'}
@@ -147,12 +155,34 @@ export default function BlockchainMarketModal({
               </div>
               <button
                 disabled={!isActive}
+                onClick={() => {
+                  setSelectedOutcome({ id: 1, name: noOutcome?.name || 'No', price: noOutcome?.price || 50 });
+                  setShowTradingModal(true);
+                }}
                 className="w-full px-4 py-2.5 bg-red-600 hover:bg-red-700 disabled:bg-gray-400 text-white rounded-lg font-semibold text-sm transition-colors"
               >
                 {isActive ? `Buy ${noOutcome?.name || 'No'}` : 'Market Closed'}
               </button>
             </div>
           </div>
+
+          {/* Trading Modal */}
+          {selectedOutcome && (
+            <TradingModal
+              isOpen={showTradingModal}
+              onClose={() => {
+                setShowTradingModal(false);
+                setSelectedOutcome(null);
+              }}
+              marketId={market.id}
+              outcomeId={selectedOutcome.id}
+              outcomeName={selectedOutcome.name}
+              currentPrice={selectedOutcome.price}
+              paymentToken={market.paymentToken}
+              tokenSymbol={token?.symbol || 'USDC'}
+              tokenDecimals={token?.decimals || 6}
+            />
+          )}
 
           {/* Market Information */}
           <div className="bg-gray-50 dark:bg-gray-900 rounded-lg p-4">
