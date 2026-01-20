@@ -2,14 +2,16 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { TrendingUp, Moon, Sun, Menu, X } from "lucide-react";
+import { TrendingUp, Moon, Sun, Menu, X, Plus } from "lucide-react";
 import SearchBar from "./SearchBar";
 import WalletConnect from "./WalletConnect";
+import CreateMarketModal from "./CreateMarketModal";
 import { useTheme } from "./ThemeProvider";
 
 export default function Navbar() {
   const { theme, toggleTheme } = useTheme();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
 
   return (
     <nav className="fixed top-0 left-0 right-0 z-50 bg-white dark:bg-gray-950 border-b border-gray-200 dark:border-gray-800">
@@ -41,6 +43,13 @@ export default function Navbar() {
             >
               Ideas
             </Link>
+            <button
+              onClick={() => setIsCreateModalOpen(true)}
+              className="flex items-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-medium text-sm transition-colors"
+            >
+              <Plus className="h-4 w-4" />
+              Create Market
+            </button>
             <button
               onClick={toggleTheme}
               className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
@@ -89,13 +98,22 @@ export default function Navbar() {
             >
               Leaderboard
             </Link>
-            <Button variant="default" className="w-full gap-2">
-              <Wallet className="h-4 w-4" />
-              Connect Wallet
-            </Button>
+            <button
+              onClick={() => setIsCreateModalOpen(true)}
+              className="w-full flex items-center justify-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-medium transition-colors"
+            >
+              <Plus className="h-4 w-4" />
+              Create Market
+            </button>
+            <WalletConnect />
           </div>
         </div>
       )}
+      
+      <CreateMarketModal 
+        isOpen={isCreateModalOpen} 
+        onClose={() => setIsCreateModalOpen(false)} 
+      />
     </nav>
   );
 }

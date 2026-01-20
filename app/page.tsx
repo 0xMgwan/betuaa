@@ -84,7 +84,7 @@ export default function Home() {
             volume: selectedMarket.volume,
             endDate: selectedMarket.endDate,
             participants: selectedMarket.participants,
-            priceHistory: selectedMarket.priceHistory,
+            priceHistory: selectedMarket.priceHistory || [],
             description: selectedMarket.description,
           }}
         />

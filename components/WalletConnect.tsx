@@ -62,7 +62,6 @@ export default function WalletConnect() {
   const handleDisconnect = () => {
     disconnect();
     setUsername(null);
-    setBalance('0.00');
     setShowDropdown(false);
   };
 
