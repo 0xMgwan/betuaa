@@ -10,9 +10,7 @@ export default function Footer() {
         <div className="flex flex-col md:flex-row justify-between items-center gap-4">
           {/* Copyright and Links */}
           <div className="flex flex-wrap items-center justify-center md:justify-start gap-3 text-sm">
-            <div className="mt-8 pt-8 border-t border-gray-200 dark:border-gray-800 text-center text-gray-600 dark:text-gray-400 text-sm">
-              <p> 2026 Stretch. All rights reserved.</p>
-            </div>
+            <span>© 2026 Stretch. All rights reserved.</span>
             <span className="text-gray-400 dark:text-gray-600">•</span>
             <Link href="/privacy" className="hover:text-gray-900 dark:hover:text-gray-200 transition-colors">
               Privacy
@@ -38,14 +36,14 @@ export default function Footer() {
           {/* Social Icons */}
           <div className="flex items-center gap-3">
             <a
-              href="mailto:hello@betuaa.com"
+              href="mailto:hello@stretch.app"
               className="hover:text-gray-900 dark:hover:text-gray-200 transition-colors"
               aria-label="Email"
             >
               <Mail className="h-5 w-5" />
             </a>
             <a
-              href="https://twitter.com/betuaa"
+              href="https://twitter.com/stretchapp"
               target="_blank"
               rel="noopener noreferrer"
               className="hover:text-gray-900 dark:hover:text-gray-200 transition-colors"
@@ -54,7 +52,7 @@ export default function Footer() {
               <Twitter className="h-5 w-5" />
             </a>
             <a
-              href="https://instagram.com/betuaa"
+              href="https://instagram.com/stretchapp"
               target="_blank"
               rel="noopener noreferrer"
               className="hover:text-gray-900 dark:hover:text-gray-200 transition-colors"
@@ -63,7 +61,7 @@ export default function Footer() {
               <Instagram className="h-5 w-5" />
             </a>
             <a
-              href="https://github.com/betuaa"
+              href="https://github.com/stretchapp"
               target="_blank"
               rel="noopener noreferrer"
               className="hover:text-gray-900 dark:hover:text-gray-200 transition-colors"
@@ -72,7 +70,7 @@ export default function Footer() {
               <Github className="h-5 w-5" />
             </a>
             <a
-              href="https://discord.gg/betuaa"
+              href="https://discord.gg/stretch"
               target="_blank"
               rel="noopener noreferrer"
               className="hover:text-gray-900 dark:hover:text-gray-200 transition-colors"
