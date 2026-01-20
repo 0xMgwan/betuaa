@@ -6,6 +6,7 @@ import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import SellModal from "@/components/SellModal";
 import { useUserPositions } from '@/hooks/useUserPositions';
+import { useClaimWinnings } from '@/hooks/usePredictionMarket';
 import { STABLECOINS } from '@/lib/contracts';
 import { TrendingUp, TrendingDown, DollarSign } from 'lucide-react';
 
@@ -14,6 +15,7 @@ export default function Portfolio() {
   const { positions, activePositions, claimablePositions, isLoading, totalValue, totalPnL, totalPnLPercent } = useUserPositions();
   const [selectedPosition, setSelectedPosition] = useState<any>(null);
   const [showSellModal, setShowSellModal] = useState(false);
+  const { claimWinnings, isPending: isClaiming } = useClaimWinnings();
 
   if (!isConnected) {
     return (
@@ -183,8 +185,8 @@ export default function Portfolio() {
                       </div>
                     </div>
 
-                    {/* Sell Button */}
-                    {!position.resolved && (
+                    {/* Action Buttons */}
+                    {!position.resolved ? (
                       <button
                         onClick={() => {
                           setSelectedPosition(position);
@@ -194,6 +196,18 @@ export default function Portfolio() {
                       >
                         Sell Shares
                       </button>
+                    ) : position.outcomeId === position.winningOutcomeId ? (
+                      <button
+                        onClick={() => claimWinnings(position.marketId, position.outcomeId)}
+                        disabled={isClaiming}
+                        className="w-full px-4 py-2 bg-green-600 hover:bg-green-700 disabled:bg-gray-400 text-white rounded-lg font-medium transition-colors"
+                      >
+                        {isClaiming ? 'Claiming...' : 'Claim Winnings 🎉'}
+                      </button>
+                    ) : (
+                      <div className="w-full px-4 py-2 bg-gray-100 dark:bg-gray-700 text-gray-500 dark:text-gray-400 rounded-lg font-medium text-center">
+                        Market Resolved - No Winnings
+                      </div>
                     )}
                   </div>
                 );
