@@ -1,10 +1,76 @@
 'use client';
 
-import { useAllMarkets } from '@/hooks/useMarkets';
+import { useAllMarkets, BlockchainMarket } from '@/hooks/useMarkets';
+import { useMarketDetails } from '@/hooks/useMarketDetails';
 import { STABLECOINS } from '@/lib/contracts';
 import { formatDistanceToNow } from 'date-fns';
+import { TrendingUp } from 'lucide-react';
 
-export default function MarketList() {
+interface MarketListProps {
+  onMarketClick?: (market: BlockchainMarket) => void;
+}
+
+function MarketCard({ market, onMarketClick }: { market: BlockchainMarket; onMarketClick?: (market: BlockchainMarket) => void }) {
+  const { outcomes } = useMarketDetails(market.id);
+  const token = STABLECOINS.baseSepolia.find(
+    (t) => t.address.toLowerCase() === market.paymentToken.toLowerCase()
+  );
+  const closingDate = new Date(Number(market.closingDate) * 1000);
+  const isActive = closingDate > new Date();
+
+  const yesOutcome = outcomes[0];
+  const noOutcome = outcomes[1];
+
+  return (
+    <div
+      onClick={() => onMarketClick?.(market)}
+      className="bg-white dark:bg-gray-800 rounded-xl p-3 border border-gray-200 dark:border-gray-700 hover:border-blue-500 dark:hover:border-blue-400 transition-all cursor-pointer hover:shadow-lg"
+    >
+      {/* Header with category badge and icon */}
+      <div className="flex items-center justify-between mb-2">
+        <div className="flex items-center gap-1.5">
+          <span className="px-1.5 py-0.5 bg-blue-100 dark:bg-blue-900/30 text-blue-800 dark:text-blue-400 text-xs font-medium rounded uppercase">
+            Crypto
+          </span>
+          <span className="text-gray-500 dark:text-gray-400 text-xs">
+            • {formatDistanceToNow(closingDate, { addSuffix: true })}
+          </span>
+        </div>
+        <TrendingUp className="w-3 h-3 text-green-500 flex-shrink-0" />
+      </div>
+
+      {/* Title */}
+      <h3 className="font-bold text-gray-900 dark:text-white text-sm mb-3 line-clamp-2 leading-tight">
+        {market.title}
+      </h3>
+
+      {/* Yes/No Prices - Compact */}
+      <div className="grid grid-cols-2 gap-2">
+        <div className="bg-green-50 dark:bg-green-900/20 rounded-lg p-2">
+          <div className="text-xs text-gray-600 dark:text-gray-400 mb-0.5">Yes</div>
+          <div className="text-2xl font-bold text-green-600 dark:text-green-400">
+            {yesOutcome?.price || 50}¢
+          </div>
+        </div>
+        <div className="bg-red-50 dark:bg-red-900/20 rounded-lg p-2">
+          <div className="text-xs text-gray-600 dark:text-gray-400 mb-0.5">No</div>
+          <div className="text-2xl font-bold text-red-600 dark:text-red-400">
+            {noOutcome?.price || 50}¢
+          </div>
+        </div>
+      </div>
+
+      {/* Volume info at bottom */}
+      <div className="mt-2 pt-2 border-t border-gray-200 dark:border-gray-700">
+        <div className="text-xs text-gray-500 dark:text-gray-400">
+          Volume: <span className="font-semibold text-gray-900 dark:text-white">${(Number(market.totalVolume) / 1e6).toFixed(2)}</span>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+export default function MarketList({ onMarketClick }: MarketListProps) {
   const { markets, isLoading, marketCount } = useAllMarkets();
 
   if (isLoading) {
@@ -35,77 +101,10 @@ export default function MarketList() {
   }
 
   return (
-    <div className="space-y-4">
-      <div className="flex items-center justify-between mb-6">
-        <h2 className="text-2xl font-bold text-gray-900 dark:text-white">
-          Live Markets ({marketCount})
-        </h2>
-      </div>
-
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {markets.map((market) => {
-          const token = STABLECOINS.baseSepolia.find(
-            (t) => t.address.toLowerCase() === market.paymentToken.toLowerCase()
-          );
-          const closingDate = new Date(Number(market.closingDate) * 1000);
-          const isActive = closingDate > new Date();
-
-          return (
-            <div
-              key={market.id}
-              className="bg-white dark:bg-gray-800 rounded-xl p-6 border border-gray-200 dark:border-gray-700 hover:border-blue-500 dark:hover:border-blue-400 transition-all cursor-pointer"
-            >
-              <div className="flex items-start justify-between mb-4">
-                <div className="flex-1">
-                  <h3 className="font-semibold text-gray-900 dark:text-white mb-2">
-                    {market.title}
-                  </h3>
-                  <p className="text-sm text-gray-600 dark:text-gray-400 line-clamp-2">
-                    {market.description}
-                  </p>
-                </div>
-              </div>
-
-              <div className="space-y-2">
-                <div className="flex items-center justify-between text-sm">
-                  <span className="text-gray-500 dark:text-gray-400">
-                    Payment Token:
-                  </span>
-                  <span className="font-medium text-gray-900 dark:text-white">
-                    {token?.icon} {token?.symbol || 'Unknown'}
-                  </span>
-                </div>
-
-                <div className="flex items-center justify-between text-sm">
-                  <span className="text-gray-500 dark:text-gray-400">Status:</span>
-                  <span
-                    className={`px-2 py-1 rounded-full text-xs font-medium ${
-                      isActive
-                        ? 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400'
-                        : 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-400'
-                    }`}
-                  >
-                    {isActive ? 'Active' : 'Closed'}
-                  </span>
-                </div>
-
-                <div className="flex items-center justify-between text-sm">
-                  <span className="text-gray-500 dark:text-gray-400">Closes:</span>
-                  <span className="text-gray-900 dark:text-white">
-                    {formatDistanceToNow(closingDate, { addSuffix: true })}
-                  </span>
-                </div>
-
-                <div className="pt-4 border-t border-gray-200 dark:border-gray-700">
-                  <button className="w-full px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-medium transition-colors">
-                    Trade Now
-                  </button>
-                </div>
-              </div>
-            </div>
-          );
-        })}
-      </div>
+    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      {markets.map((market) => (
+        <MarketCard key={market.id} market={market} onMarketClick={onMarketClick} />
+      ))}
     </div>
   );
 }
