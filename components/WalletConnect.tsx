@@ -130,6 +130,14 @@ export default function WalletConnect() {
 
             <div className="py-1">
               <Link
+                href="/profile"
+                onClick={() => setShowDropdown(false)}
+                className="w-full px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-800 flex items-center gap-2 text-sm"
+              >
+                <TrendingUp className="h-4 w-4" />
+                Profile
+              </Link>
+              <Link
                 href="/portfolio"
                 onClick={() => setShowDropdown(false)}
                 className="w-full px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-800 flex items-center gap-2 text-sm"
