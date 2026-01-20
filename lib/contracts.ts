@@ -1,8 +1,8 @@
 // Contract addresses for BetUAA platform
 export const CONTRACTS = {
   baseSepolia: {
-    predictionMarket: '0x8F23474E7f7641dff430986082C1c07aE9fbb949',
-    mockUSDC: '0xAE44F1ad9111A2F61FBCd0624c6593A967d1F7FF',
+    predictionMarket: '0x724653Ffb86044FF0688FABF8e532AC1A77702ab', // Fixed: handles token decimals correctly
+    mockUSDC: '0xeF40866aEEADefe8f9ee2a1CE3dA80C52bA52D61',
   },
   base: {
     predictionMarket: '', // Deploy to mainnet when ready
@@ -34,7 +34,7 @@ export const STABLECOINS = {
       icon: '🇳🇬',
     },
     {
-      address: '0xAE44F1ad9111A2F61FBCd0624c6593A967d1F7FF',
+      address: '0xeF40866aEEADefe8f9ee2a1CE3dA80C52bA52D61',
       symbol: 'MockUSDC',
       name: 'Mock USDC (Test)',
       decimals: 6,

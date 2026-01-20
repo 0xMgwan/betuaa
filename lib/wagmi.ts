@@ -1,17 +1,11 @@
 import { http, createConfig } from 'wagmi'
 import { base, baseSepolia } from 'wagmi/chains'
-import { coinbaseWallet, injected } from 'wagmi/connectors'
+import { getDefaultConfig } from '@rainbow-me/rainbowkit'
 
-export const config = createConfig({
+export const config = getDefaultConfig({
+  appName: 'BetUAA',
+  projectId: 'YOUR_PROJECT_ID', // Get from WalletConnect Cloud
   chains: [base, baseSepolia],
-  connectors: [
-    injected(), // MetaMask, Coinbase Wallet extension, etc.
-    coinbaseWallet({
-      appName: 'BetUAA',
-      preference: 'all', // Support both smart wallet and extension
-    }),
-  ],
-  ssr: true,
   transports: {
     [base.id]: http(),
     [baseSepolia.id]: http(),

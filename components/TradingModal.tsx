@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { X, AlertCircle } from 'lucide-react';
 import { parseUnits, formatUnits } from 'viem';
 import { useAccount } from 'wagmi';
@@ -52,19 +52,28 @@ export default function TradingModal({
   );
 
   const sharesAmount = amount ? parseUnits(amount, 18) : BigInt(0);
-  const estimatedCost = sharesAmount * BigInt(currentPrice) / BigInt(100);
-  const needsApproval = allowance ? allowance < estimatedCost : true;
+  
+  // Estimate cost for display
+  const estimatedCostDisplay = amount ? parseFloat(amount) * (currentPrice / 100) : 0;
+  
+  // Use unlimited approval approach (standard in DeFi)
+  // Approve max uint256 once, never need to approve again
+  const MAX_UINT256 = BigInt('0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff');
+  
+  // Check if we have any meaningful allowance (> 1000 tokens)
+  const minUsefulAllowance = parseUnits('1000', tokenDecimals);
+  const needsApproval = !allowance || (allowance as bigint) < minUsefulAllowance;
 
   const handleApprove = async () => {
     if (!amount) return;
     setStep('approve');
     
-    // Approve a large amount to avoid repeated approvals
-    const approvalAmount = parseUnits('1000000', tokenDecimals);
+    // Approve unlimited amount (standard DeFi practice)
+    // User only needs to approve once, ever
     await approve(
       paymentToken as `0x${string}`,
       CONTRACTS.baseSepolia.predictionMarket as `0x${string}`,
-      approvalAmount
+      MAX_UINT256
     );
   };
 
@@ -89,10 +98,18 @@ export default function TradingModal({
     }
   };
 
-  // Auto-proceed after approval
-  if (approveSuccess && step === 'approve') {
-    handleBuy();
-  }
+  // Auto-proceed after approval - use useEffect with delay to ensure on-chain confirmation
+  React.useEffect(() => {
+    if (approveSuccess && step === 'approve') {
+      // Wait 3 seconds for approval to be confirmed on-chain before buying
+      const timer = setTimeout(() => {
+        setStep('buy');
+        handleBuy();
+      }, 3000);
+      
+      return () => clearTimeout(timer);
+    }
+  }, [approveSuccess, step]);
 
   // Close modal after successful buy
   if (buySuccess) {
@@ -105,8 +122,7 @@ export default function TradingModal({
 
   if (!isOpen) return null;
 
-  const balanceFormatted = balance ? formatUnits(balance, tokenDecimals) : '0';
-  const estimatedCostFormatted = formatUnits(estimatedCost, tokenDecimals);
+  const balanceFormatted = balance ? formatUnits(balance as bigint, tokenDecimals) : '0';
 
   return (
     <div className="fixed inset-0 bg-black/50 dark:bg-black/70 flex items-center justify-center z-50 p-4">
@@ -178,17 +194,17 @@ export default function TradingModal({
               <div className="flex justify-between text-sm">
                 <span className="text-gray-600 dark:text-gray-400">Estimated cost:</span>
                 <span className="font-medium text-gray-900 dark:text-white">
-                  {parseFloat(estimatedCostFormatted).toFixed(4)} {tokenSymbol}
+                  ~{estimatedCostDisplay.toFixed(4)} {tokenSymbol}
                 </span>
               </div>
             </div>
 
             {/* Warning */}
-            {parseFloat(estimatedCostFormatted) > parseFloat(balanceFormatted) && (
+            {estimatedCostDisplay > parseFloat(balanceFormatted) && (
               <div className="flex items-start gap-2 p-3 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg">
                 <AlertCircle className="w-5 h-5 text-red-600 dark:text-red-400 flex-shrink-0 mt-0.5" />
                 <p className="text-sm text-red-800 dark:text-red-200">
-                  Insufficient balance. You need {parseFloat(estimatedCostFormatted).toFixed(4)} {tokenSymbol}
+                  Insufficient balance. You need ~{estimatedCostDisplay.toFixed(4)} {tokenSymbol}
                 </p>
               </div>
             )}
@@ -205,7 +221,7 @@ export default function TradingModal({
               </button>
               <button
                 type="submit"
-                disabled={!amount || isApproving || isBuying || parseFloat(estimatedCostFormatted) > parseFloat(balanceFormatted)}
+                disabled={!amount || isApproving || isBuying || estimatedCostDisplay > parseFloat(balanceFormatted)}
                 className="flex-1 px-6 py-3 bg-blue-600 hover:bg-blue-700 disabled:bg-gray-400 text-white rounded-lg font-medium transition-colors"
               >
                 {isApproving ? 'Approving...' : isBuying ? 'Buying...' : needsApproval ? 'Approve & Buy' : 'Buy Shares'}
@@ -213,10 +229,18 @@ export default function TradingModal({
             </div>
 
             {/* Status Message */}
-            {step === 'approve' && (
+            {step === 'approve' && !approveSuccess && (
               <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-3">
                 <p className="text-sm text-blue-800 dark:text-blue-200">
                   Step 1/2: Approving {tokenSymbol} spending...
+                </p>
+              </div>
+            )}
+
+            {step === 'approve' && approveSuccess && (
+              <div className="bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg p-3">
+                <p className="text-sm text-green-800 dark:text-green-200">
+                  ✓ Approval confirmed! Waiting for on-chain confirmation before buying...
                 </p>
               </div>
             )}

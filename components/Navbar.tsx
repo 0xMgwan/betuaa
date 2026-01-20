@@ -3,8 +3,8 @@
 import { useState } from "react";
 import Link from "next/link";
 import { TrendingUp, Moon, Sun, Menu, X, Plus } from "lucide-react";
+import { ConnectButton } from '@rainbow-me/rainbowkit';
 import SearchBar from "./SearchBar";
-import WalletConnect from "./WalletConnect";
 import CreateMarketModal from "./CreateMarketModal";
 import { useTheme } from "./ThemeProvider";
 
@@ -61,7 +61,7 @@ export default function Navbar() {
                 <Moon className="h-5 w-5 text-gray-600 dark:text-gray-300" />
               )}
             </button>
-            <WalletConnect />
+            <ConnectButton />
           </div>
 
           <button
@@ -105,7 +105,9 @@ export default function Navbar() {
               <Plus className="h-4 w-4" />
               Create Market
             </button>
-            <WalletConnect />
+            <div className="flex justify-center">
+              <ConnectButton />
+            </div>
           </div>
         </div>
       )}

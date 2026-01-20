@@ -64,7 +64,7 @@ export function useApproveToken() {
   });
 
   const approve = async (tokenAddress: `0x${string}`, spenderAddress: `0x${string}`, amount: bigint) => {
-    writeContract({
+    return writeContract({
       address: tokenAddress,
       abi: ERC20ABI,
       functionName: 'approve',
