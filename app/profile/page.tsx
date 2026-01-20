@@ -185,12 +185,31 @@ export default function ProfilePage() {
                         </div>
                       )}
                     </div>
+
+                    {/* Resolve Market Button */}
+                    {!market.resolved && (
+                      <button
+                        onClick={() => setSelectedMarketToResolve(market)}
+                        className="w-full mt-4 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-medium transition-colors"
+                      >
+                        Resolve Market
+                      </button>
+                    )}
                   </div>
                 );
               })}
             </div>
           )}
         </div>
+
+        {/* Resolve Market Modal */}
+        {selectedMarketToResolve && (
+          <ResolveMarketModal
+            isOpen={!!selectedMarketToResolve}
+            onClose={() => setSelectedMarketToResolve(null)}
+            market={selectedMarketToResolve}
+          />
+        )}
       </div>
       <Footer />
     </div>
