@@ -6,6 +6,7 @@ import { X, TrendingUp, TrendingDown, Clock, DollarSign, Users, Wallet } from "l
 import { Card } from "./ui/card";
 import { Button } from "./ui/button";
 import DepositModal from "./DepositModal";
+import ShareButton from "./ShareButton";
 
 // USDC contract address on Base Sepolia
 const USDC_ADDRESS = '0x036CbD53842c5426634e7929541eC2318f3dCF7e' as `0x${string}`;
@@ -104,16 +105,23 @@ export default function MarketModal({ isOpen, onClose, market }: MarketModalProp
   return (
     <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4 overflow-y-auto">
       <Card className="w-full max-w-3xl my-8 relative bg-white dark:bg-gray-950">
-        <button
-          onClick={onClose}
-          className="absolute top-3 right-3 text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 z-10 bg-white dark:bg-gray-900 rounded-full p-1.5 shadow-lg hover:shadow-xl transition-all"
-        >
-          <X className="h-5 w-5" />
-        </button>
+        <div className="absolute top-3 right-3 flex items-center gap-2 z-10">
+          <ShareButton
+            marketId={market.id}
+            marketTitle={market.question}
+            marketDescription={market.description || ''}
+          />
+          <button
+            onClick={onClose}
+            className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 bg-white dark:bg-gray-900 rounded-full p-1.5 shadow-lg hover:shadow-xl transition-all"
+          >
+            <X className="h-5 w-5" />
+          </button>
+        </div>
 
         <div className="p-5">
           {/* Header */}
-          <div className="mb-4 pr-8">
+          <div className="mb-4 pr-20">
             <div className="flex items-center gap-2 mb-2">
               <span className="text-xs font-semibold text-blue-600 dark:text-blue-400 uppercase">
                 {market.category}

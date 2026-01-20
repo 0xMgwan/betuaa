@@ -7,6 +7,7 @@ import { useMarketDetails } from '@/hooks/useMarketDetails';
 import { STABLECOINS } from '@/lib/contracts';
 import { formatDistanceToNow } from 'date-fns';
 import TradingModal from './TradingModal';
+import ShareButton from './ShareButton';
 
 interface BlockchainMarketModalProps {
   isOpen: boolean;
@@ -57,12 +58,19 @@ export default function BlockchainMarketModal({
               {market.description}
             </p>
           </div>
-          <button
-            onClick={onClose}
-            className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
-          >
-            <X className="w-5 h-5 text-gray-500 dark:text-gray-400" />
-          </button>
+          <div className="flex items-center gap-2">
+            <ShareButton
+              marketId={market.id}
+              marketTitle={market.title}
+              marketDescription={market.description}
+            />
+            <button
+              onClick={onClose}
+              className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
+            >
+              <X className="w-5 h-5 text-gray-500 dark:text-gray-400" />
+            </button>
+          </div>
         </div>
 
         {/* Content */}

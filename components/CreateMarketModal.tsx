@@ -90,19 +90,34 @@ export default function CreateMarketModal({ isOpen, onClose }: CreateMarketModal
             <p className="text-gray-600 dark:text-gray-400 mb-6">
               Your prediction market has been successfully created on Base Sepolia.
             </p>
-            <button
-              onClick={() => {
-                onClose();
-                setStep('form');
-                setTitle('');
-                setDescription('');
-                setClosingDate('');
-                setInitialLiquidity('');
-              }}
-              className="w-full px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-medium"
-            >
-              Create Another Market
-            </button>
+            <div className="flex gap-3">
+              <button
+                onClick={() => {
+                  onClose();
+                  setStep('form');
+                  setTitle('');
+                  setDescription('');
+                  setClosingDate('');
+                  setInitialLiquidity('');
+                }}
+                className="flex-1 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-medium"
+              >
+                Create Another Market
+              </button>
+              <button
+                onClick={() => {
+                  onClose();
+                  setStep('form');
+                  setTitle('');
+                  setDescription('');
+                  setClosingDate('');
+                  setInitialLiquidity('');
+                }}
+                className="flex-1 px-4 py-2 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 rounded-lg font-medium"
+              >
+                Close
+              </button>
+            </div>
           </div>
         </div>
       </div>
