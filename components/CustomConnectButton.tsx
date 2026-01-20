@@ -3,8 +3,24 @@
 import { ConnectButton } from '@rainbow-me/rainbowkit';
 import Link from 'next/link';
 import { User, Wallet, LogOut } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import { useAccount } from 'wagmi';
+import UsernameModal from './UsernameModal';
+import { useUsername } from '@/hooks/useUsername';
 
 export default function CustomConnectButton() {
+  const { isConnected } = useAccount();
+  const { username, hasUsername, isLoading, saveUsername } = useUsername();
+  const [showUsernameModal, setShowUsernameModal] = useState(false);
+  const [hasChecked, setHasChecked] = useState(false);
+
+  // Show username modal when wallet connects without username (only once)
+  useEffect(() => {
+    if (!isLoading && isConnected && !hasUsername && !hasChecked) {
+      setShowUsernameModal(true);
+      setHasChecked(true);
+    }
+  }, [isConnected, hasUsername, isLoading, hasChecked]);
   return (
     <ConnectButton.Custom>
       {({
@@ -99,7 +115,7 @@ export default function CustomConnectButton() {
                     >
                       <Wallet className="w-4 h-4 text-gray-700 dark:text-gray-300" />
                       <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
-                        {account.displayName}
+                        {username || account.displayName}
                       </span>
                     </button>
 
@@ -133,6 +149,16 @@ export default function CustomConnectButton() {
                 </div>
               );
             })()}
+            
+            {/* Username Modal */}
+            <UsernameModal
+              isOpen={showUsernameModal}
+              onClose={() => setShowUsernameModal(false)}
+              onSubmit={(newUsername) => {
+                saveUsername(newUsername);
+                setShowUsernameModal(false);
+              }}
+            />
           </div>
         );
       }}

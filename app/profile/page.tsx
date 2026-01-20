@@ -9,9 +9,11 @@ import { STABLECOINS } from '@/lib/contracts';
 import { formatDistanceToNow } from 'date-fns';
 import ResolveMarketModal from '@/components/ResolveMarketModal';
 import { useClaimWinnings } from '@/hooks/usePredictionMarket';
+import { useUsername } from '@/hooks/useUsername';
 
 export default function ProfilePage() {
   const { address, isConnected } = useAccount();
+  const { username } = useUsername();
   const { markets, isLoading } = useUserMarkets(address);
   const [selectedMarketToResolve, setSelectedMarketToResolve] = useState<any>(null);
   const { claimWinnings, isPending: isClaiming } = useClaimWinnings();
@@ -43,11 +45,11 @@ export default function ProfilePage() {
         <div className="bg-white dark:bg-gray-800 rounded-2xl p-8 mb-8 border border-gray-200 dark:border-gray-700">
           <div className="flex items-center gap-6">
             <div className="w-20 h-20 bg-gradient-to-br from-blue-600 to-purple-600 rounded-full flex items-center justify-center text-white text-2xl font-bold">
-              {address?.slice(2, 4).toUpperCase()}
+              {username ? username.slice(0, 2).toUpperCase() : address?.slice(2, 4).toUpperCase()}
             </div>
             <div>
               <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">
-                My Profile
+                {username || 'My Profile'}
               </h1>
               <p className="text-gray-600 dark:text-gray-400 font-mono text-sm">
                 {address?.slice(0, 6)}...{address?.slice(-4)}
