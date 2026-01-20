@@ -37,6 +37,9 @@ export async function GET(
       args: [BigInt(marketId)],
     }) as any;
 
+    // MarketStatus enum: 0=Active, 1=Closed, 2=Resolved, 3=Disputed
+    const isResolved = Number(market.status) === 2;
+
     return NextResponse.json({
       id: marketId,
       title: market.title,
@@ -44,7 +47,7 @@ export async function GET(
       creator: market.creator,
       paymentToken: market.paymentToken,
       closingDate: market.closingDate.toString(),
-      resolved: market.resolved,
+      resolved: isResolved,
       winningOutcomeId: Number(market.winningOutcomeId),
       totalVolume: market.totalVolume.toString(),
       creatorFeePercent: Number(market.creatorFeePercent),
