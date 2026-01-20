@@ -102,41 +102,43 @@ export function useCreateMarket() {
 }
 
 export function useBuyShares() {
-  const { data: hash, writeContract, isPending, error } = useWriteContract();
-  
-  const { isLoading: isConfirming, isSuccess } = useWaitForTransactionReceipt({
-    hash,
-  });
+  const { data: hash, writeContract, isPending, isSuccess, error } = useWriteContract();
 
-  const buyShares = async (marketId: number, outcomeId: number, amount: bigint) => {
-    writeContract({
+  const buyShares = async (
+    marketId: number,
+    outcomeId: number,
+    shares: bigint
+  ) => {
+    return writeContract({
       address: CONTRACT_ADDRESS,
       abi: PredictionMarketABI,
       functionName: 'buyShares',
-      args: [BigInt(marketId), BigInt(outcomeId), amount],
+      args: [BigInt(marketId), BigInt(outcomeId), shares],
       chainId: baseSepolia.id,
     });
   };
 
+  const { isLoading: isConfirming, isSuccess: isConfirmed } = useWaitForTransactionReceipt({
+    hash,
+  });
+
   return {
     buyShares,
-    hash,
-    isPending,
-    isConfirming,
-    isSuccess,
+    isPending: isPending || isConfirming,
+    isSuccess: isConfirmed,
     error,
+    hash,
   };
 }
 
 export function useSellShares() {
-  const { data: hash, writeContract, isPending, error } = useWriteContract();
-  
-  const { isLoading: isConfirming, isSuccess } = useWaitForTransactionReceipt({
+  const { data: hash, writeContract, isPending, isSuccess, error } = useWriteContract();
+  const { isLoading: isConfirming, isSuccess: isConfirmed } = useWaitForTransactionReceipt({
     hash,
   });
 
   const sellShares = async (marketId: number, outcomeId: number, amount: bigint) => {
-    writeContract({
+    return writeContract({
       address: CONTRACT_ADDRESS,
       abi: PredictionMarketABI,
       functionName: 'sellShares',
@@ -147,11 +149,10 @@ export function useSellShares() {
 
   return {
     sellShares,
-    hash,
-    isPending,
-    isConfirming,
-    isSuccess,
+    isPending: isPending || isConfirming,
+    isSuccess: isConfirmed,
     error,
+    hash,
   };
 }
 
