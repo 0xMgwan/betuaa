@@ -1,10 +1,11 @@
 "use client";
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useAccount } from 'wagmi';
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import SellModal from "@/components/SellModal";
+import ClaimSuccessModal from "@/components/ClaimSuccessModal";
 import { useUserPositions } from '@/hooks/useUserPositions';
 import { useClaimWinnings } from '@/hooks/usePredictionMarket';
 import { STABLECOINS } from '@/lib/contracts';
@@ -15,7 +16,16 @@ export default function Portfolio() {
   const { positions, activePositions, claimablePositions, isLoading, totalValue, totalPnL, totalPnLPercent } = useUserPositions();
   const [selectedPosition, setSelectedPosition] = useState<any>(null);
   const [showSellModal, setShowSellModal] = useState(false);
-  const { claimWinnings, isPending: isClaiming } = useClaimWinnings();
+  const [showClaimSuccess, setShowClaimSuccess] = useState(false);
+  const [claimedPosition, setClaimedPosition] = useState<any>(null);
+  const { claimWinnings, isPending: isClaiming, isSuccess: claimSuccess } = useClaimWinnings();
+
+  // Show success modal when claim is successful
+  useEffect(() => {
+    if (claimSuccess && claimedPosition) {
+      setShowClaimSuccess(true);
+    }
+  }, [claimSuccess, claimedPosition]);
 
   if (!isConnected) {
     return (
@@ -198,7 +208,10 @@ export default function Portfolio() {
                       </button>
                     ) : position.outcomeId === position.winningOutcomeId ? (
                       <button
-                        onClick={() => claimWinnings(position.marketId, position.outcomeId)}
+                        onClick={() => {
+                          setClaimedPosition(position);
+                          claimWinnings(position.marketId, position.outcomeId);
+                        }}
                         disabled={isClaiming}
                         className="w-full px-4 py-2 bg-green-600 hover:bg-green-700 disabled:bg-gray-400 text-white rounded-lg font-medium transition-colors"
                       >
@@ -226,6 +239,23 @@ export default function Portfolio() {
             setSelectedPosition(null);
           }}
           position={selectedPosition}
+        />
+      )}
+
+      {/* Claim Success Modal */}
+      {claimedPosition && (
+        <ClaimSuccessModal
+          isOpen={showClaimSuccess}
+          onClose={() => {
+            setShowClaimSuccess(false);
+            setClaimedPosition(null);
+          }}
+          marketTitle={claimedPosition.marketTitle}
+          shares={Number(claimedPosition.shares) / 1e18}
+          payout={Number(claimedPosition.shares) / 1e18}
+          tokenSymbol={STABLECOINS.baseSepolia.find(
+            (t) => t.address.toLowerCase() === claimedPosition.paymentToken.toLowerCase()
+          )?.symbol || 'USDC'}
         />
       )}
 
