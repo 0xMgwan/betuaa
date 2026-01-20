@@ -15,8 +15,8 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "BetUAA - Prediction Markets",
-  description: "Decentralized prediction markets on Base",
+  title: "Stretch - Decentralized Prediction Markets",
+  description: "Stretch your predictions. Trade on the future with decentralized prediction markets on Base.",
 };
 
 export default function RootLayout({

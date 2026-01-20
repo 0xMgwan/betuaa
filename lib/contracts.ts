@@ -1,4 +1,4 @@
-// Contract addresses for BetUAA platform
+// Contract addresses for Stretch platform
 export const CONTRACTS = {
   baseSepolia: {
     predictionMarket: '0x33063a9fD4d812939586E90924Fa3946e252C019', // Fixed: claimWinnings decimal handling

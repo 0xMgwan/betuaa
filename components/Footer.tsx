@@ -10,7 +10,9 @@ export default function Footer() {
         <div className="flex flex-col md:flex-row justify-between items-center gap-4">
           {/* Copyright and Links */}
           <div className="flex flex-wrap items-center justify-center md:justify-start gap-3 text-sm">
-            <span>BetUAA Inc. © 2026</span>
+            <div className="mt-8 pt-8 border-t border-gray-200 dark:border-gray-800 text-center text-gray-600 dark:text-gray-400 text-sm">
+              <p> 2026 Stretch. All rights reserved.</p>
+            </div>
             <span className="text-gray-400 dark:text-gray-600">•</span>
             <Link href="/privacy" className="hover:text-gray-900 dark:hover:text-gray-200 transition-colors">
               Privacy
