@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { X } from 'lucide-react';
 import { STABLECOINS } from '@/lib/contracts';
 import { useCreateMarket } from '@/hooks/usePredictionMarket';
@@ -26,6 +26,14 @@ export default function CreateMarketModal({ isOpen, onClose }: CreateMarketModal
 
   const selectedStablecoin = STABLECOINS.baseSepolia.find(t => t.address === selectedToken);
 
+  // Automatically create market after approval succeeds
+  useEffect(() => {
+    if (isApproved && step === 'approve') {
+      setStep('create');
+      handleCreateMarket();
+    }
+  }, [isApproved]);
+
   const handleApprove = async () => {
     if (!selectedStablecoin || !initialLiquidity) return;
     
@@ -35,7 +43,6 @@ export default function CreateMarketModal({ isOpen, onClose }: CreateMarketModal
       CONTRACTS.baseSepolia.predictionMarket as `0x${string}`,
       amount
     );
-    setStep('create');
   };
 
   const handleCreateMarket = async () => {
