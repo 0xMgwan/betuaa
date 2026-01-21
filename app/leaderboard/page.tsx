@@ -4,8 +4,10 @@ import { Trophy, TrendingUp, Award, Crown, Medal, Star, Zap } from 'lucide-react
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 import { useAllMarkets } from '@/hooks/useMarkets';
+import { useUserPositions } from '@/hooks/useUserPositions';
 import { useMemo } from 'react';
 import { useRouter } from 'next/navigation';
+import { useAccount } from 'wagmi';
 
 interface TraderStats {
   address: string;
@@ -20,6 +22,16 @@ interface TraderStats {
 export default function LeaderboardPage() {
   const { markets } = useAllMarkets();
   const router = useRouter();
+  const { address: currentUserAddress } = useAccount();
+  const { positions } = useUserPositions();
+
+  // Calculate current user's real win rate (same as profile page)
+  const currentUserWinRate = useMemo(() => {
+    if (!currentUserAddress || positions.length === 0) return 0;
+    const resolvedPositions = positions.filter(p => p.resolved);
+    const winningPositions = resolvedPositions.filter(p => p.winningOutcomeId === p.outcomeId).length;
+    return resolvedPositions.length > 0 ? (winningPositions / resolvedPositions.length) * 100 : 0;
+  }, [positions, currentUserAddress]);
 
   const topTraders = useMemo(() => {
     // Generate leaderboard from market data
@@ -58,10 +70,14 @@ export default function LeaderboardPage() {
       .map((trader, index) => ({
         ...trader,
         rank: index + 1,
+        // Apply real win rate for current user
+        winRate: trader.address.toLowerCase() === currentUserAddress?.toLowerCase() 
+          ? currentUserWinRate 
+          : trader.winRate,
       }));
 
     return traders;
-  }, [markets]);
+  }, [markets, currentUserAddress, currentUserWinRate]);
 
   const getRankBadge = (rank: number) => {
     if (rank === 1) {
