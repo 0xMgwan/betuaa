@@ -2,15 +2,17 @@
 
 import { ConnectButton } from '@rainbow-me/rainbowkit';
 import Link from 'next/link';
-import { User, Wallet, LogOut, BarChart3, Trophy } from 'lucide-react';
+import { User, Wallet, LogOut, BarChart3, Trophy, Languages } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import { useAccount } from 'wagmi';
 import UsernameModal from './UsernameModal';
 import { useUsername } from '@/hooks/useUsername';
+import { useLanguage } from '@/contexts/LanguageContext';
 
 export default function CustomConnectButton() {
   const { isConnected } = useAccount();
   const { username, hasUsername, isLoading, saveUsername } = useUsername();
+  const { language, setLanguage } = useLanguage();
   const [showUsernameModal, setShowUsernameModal] = useState(false);
   const [hasChecked, setHasChecked] = useState(false);
 
@@ -150,6 +152,36 @@ export default function CustomConnectButton() {
                           <Trophy className="w-4 h-4" />
                           Leaderboard
                         </Link>
+                        <div className="border-t border-gray-200 dark:border-gray-700 my-1"></div>
+                        <div className="px-4 py-2">
+                          <div className="flex items-center gap-2 mb-2">
+                            <Languages className="w-4 h-4 text-gray-700 dark:text-gray-300" />
+                            <span className="text-xs font-medium text-gray-500 dark:text-gray-400">Language</span>
+                          </div>
+                          <div className="flex gap-2">
+                            <button
+                              onClick={() => setLanguage('en')}
+                              className={`flex-1 px-3 py-1.5 text-xs font-medium rounded-md transition-colors ${
+                                language === 'en'
+                                  ? 'bg-blue-600 text-white'
+                                  : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'
+                              }`}
+                            >
+                              English
+                            </button>
+                            <button
+                              onClick={() => setLanguage('sw')}
+                              className={`flex-1 px-3 py-1.5 text-xs font-medium rounded-md transition-colors ${
+                                language === 'sw'
+                                  ? 'bg-blue-600 text-white'
+                                  : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'
+                              }`}
+                            >
+                              Swahili
+                            </button>
+                          </div>
+                        </div>
+                        <div className="border-t border-gray-200 dark:border-gray-700 my-1"></div>
                         <button
                           onClick={openAccountModal}
                           className="flex items-center gap-2 w-full px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors text-left"
