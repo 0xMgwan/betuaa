@@ -135,37 +135,37 @@ export default function MarketAnalytics({
   return (
     <div className="space-y-6">
       {/* Stats Overview */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-        <div className="bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl p-4 text-white">
-          <div className="flex items-center gap-2 mb-2">
-            <DollarSign className="w-5 h-5" />
-            <span className="text-sm font-medium opacity-90">Total Volume</span>
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+        <div className="bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl p-3 text-white">
+          <div className="flex items-center gap-1.5 mb-1.5">
+            <DollarSign className="w-4 h-4" />
+            <span className="text-xs font-medium opacity-90">Total Volume</span>
           </div>
-          <p className="text-2xl font-bold">{(totalVolume / 1e6).toFixed(2)} {tokenSymbol}</p>
+          <p className="text-xl font-bold font-mono">{(totalVolume / 1e6).toFixed(2)} {tokenSymbol}</p>
         </div>
 
-        <div className="bg-gradient-to-br from-purple-500 to-purple-600 rounded-xl p-4 text-white">
-          <div className="flex items-center gap-2 mb-2">
-            <Users className="w-5 h-5" />
-            <span className="text-sm font-medium opacity-90">Traders</span>
+        <div className="bg-gradient-to-br from-purple-500 to-purple-600 rounded-xl p-3 text-white">
+          <div className="flex items-center gap-1.5 mb-1.5">
+            <Users className="w-4 h-4" />
+            <span className="text-xs font-medium opacity-90">Traders</span>
           </div>
-          <p className="text-2xl font-bold">{participantCount}</p>
+          <p className="text-xl font-bold font-mono">{participantCount}</p>
         </div>
 
-        <div className="bg-gradient-to-br from-green-500 to-green-600 rounded-xl p-4 text-white">
-          <div className="flex items-center gap-2 mb-2">
-            <TrendingUp className="w-5 h-5" />
-            <span className="text-sm font-medium opacity-90">Yes Price</span>
+        <div className="bg-gradient-to-br from-green-500 to-green-600 rounded-xl p-3 text-white">
+          <div className="flex items-center gap-1.5 mb-1.5">
+            <TrendingUp className="w-4 h-4" />
+            <span className="text-xs font-medium opacity-90">Yes Price</span>
           </div>
-          <p className="text-2xl font-bold">{outcomes[0]?.price || 50}¢</p>
+          <p className="text-xl font-bold font-mono">{yesPrice}¢</p>
         </div>
 
-        <div className="bg-gradient-to-br from-orange-500 to-orange-600 rounded-xl p-4 text-white">
-          <div className="flex items-center gap-2 mb-2">
-            <Activity className="w-5 h-5" />
-            <span className="text-sm font-medium opacity-90">Liquidity</span>
+        <div className="bg-gradient-to-br from-orange-500 to-orange-600 rounded-xl p-3 text-white">
+          <div className="flex items-center gap-1.5 mb-1.5">
+            <Activity className="w-4 h-4" />
+            <span className="text-xs font-medium opacity-90">Liquidity</span>
           </div>
-          <p className="text-2xl font-bold">${(totalVolume / 1e6 * 0.3).toFixed(1)}K</p>
+          <p className="text-xl font-bold font-mono">${(totalVolume / 1e6 * 0.3).toFixed(1)}K</p>
         </div>
       </div>
 
@@ -193,38 +193,36 @@ export default function MarketAnalytics({
       </div>
 
       {/* Tab Content */}
-      <div className="bg-white dark:bg-gray-800 rounded-xl p-6 border border-gray-200 dark:border-gray-700">
+      <div className="bg-white dark:bg-gray-800 rounded-xl p-4 border border-gray-200 dark:border-gray-700">
         {activeTab === 'overview' && (
-          <div className="space-y-6">
-            <div>
-              <div className="flex items-center justify-between mb-4">
-                <h3 className="text-lg font-bold text-gray-900 dark:text-white">Price History</h3>
-                <div className="flex items-center gap-3 text-xs">
-                  <span className="flex items-center gap-1.5">
-                    <span className="w-2.5 h-2.5 bg-green-500 rounded-full"></span>
-                    Yes {yesPrice}¢
-                  </span>
-                  <span className="flex items-center gap-1.5">
-                    <span className="w-2.5 h-2.5 bg-red-500 rounded-full"></span>
-                    No {noPrice}¢
-                  </span>
-                </div>
+          <div>
+            <div className="flex items-center justify-between mb-3">
+              <h3 className="text-base font-bold text-gray-900 dark:text-white">Price History</h3>
+              <div className="flex items-center gap-3 text-xs font-medium">
+                <span className="flex items-center gap-1.5">
+                  <span className="w-2 h-2 bg-green-500 rounded-full"></span>
+                  <span className="font-mono">Yes {yesPrice}¢</span>
+                </span>
+                <span className="flex items-center gap-1.5">
+                  <span className="w-2 h-2 bg-red-500 rounded-full"></span>
+                  <span className="font-mono">No {noPrice}¢</span>
+                </span>
               </div>
-              {isPriceLoading ? (
-                <div className="h-80 flex items-center justify-center bg-gray-50 dark:bg-gray-900 rounded-lg">
-                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
-                </div>
-              ) : (
-                <PriceChart data={priceHistory} height={320} />
-              )}
             </div>
+            {isPriceLoading ? (
+              <div className="h-64 flex items-center justify-center bg-gray-50 dark:bg-gray-900 rounded-lg">
+                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+              </div>
+            ) : (
+              <PriceChart data={priceHistory} height={260} />
+            )}
           </div>
         )}
 
         {activeTab === 'depth' && (
           <div>
-            <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-4">Market Depth</h3>
-            <ResponsiveContainer width="100%" height={300}>
+            <h3 className="text-base font-bold text-gray-900 dark:text-white mb-3">Market Depth</h3>
+            <ResponsiveContainer width="100%" height={260}>
               <AreaChart data={depthData}>
                 <defs>
                   <linearGradient id="yesBids" x1="0" y1="0" x2="0" y2="1">
@@ -236,51 +234,64 @@ export default function MarketAnalytics({
                     <stop offset="95%" stopColor="#ef4444" stopOpacity={0.1}/>
                   </linearGradient>
                 </defs>
-                <CartesianGrid strokeDasharray="3 3" className="stroke-gray-200 dark:stroke-gray-700" />
-                <XAxis dataKey="price" className="text-xs" label={{ value: 'Price (¢)', position: 'insideBottom', offset: -5 }} />
-                <YAxis className="text-xs" label={{ value: 'Shares', angle: -90, position: 'insideLeft' }} />
+                <CartesianGrid strokeDasharray="3 3" className="stroke-gray-200 dark:stroke-gray-700" opacity={0.3} />
+                <XAxis 
+                  dataKey="price" 
+                  tick={{ fontSize: 11, fontFamily: 'ui-monospace, monospace' }}
+                  label={{ value: 'Price (¢)', position: 'insideBottom', offset: -5, fontSize: 11 }} 
+                />
+                <YAxis 
+                  tick={{ fontSize: 11, fontFamily: 'ui-monospace, monospace' }}
+                  label={{ value: 'Shares', angle: -90, position: 'insideLeft', fontSize: 11 }} 
+                />
                 <Tooltip content={<CustomTooltip />} />
-                <Area type="stepAfter" dataKey="yesBids" stroke="#10b981" fill="url(#yesBids)" name="Yes Bids" />
-                <Area type="stepAfter" dataKey="noBids" stroke="#ef4444" fill="url(#noBids)" name="No Bids" />
+                <Area type="stepAfter" dataKey="yesBids" stroke="#10b981" strokeWidth={2} fill="url(#yesBids)" name="Yes Bids" />
+                <Area type="stepAfter" dataKey="noBids" stroke="#ef4444" strokeWidth={2} fill="url(#noBids)" name="No Bids" />
               </AreaChart>
             </ResponsiveContainer>
-            <p className="text-sm text-gray-600 dark:text-gray-400 mt-4">
-              Market depth shows liquidity distribution. Yes: {yesShares.toFixed(2)} shares, No: {noShares.toFixed(2)} shares
+            <p className="text-xs text-gray-600 dark:text-gray-400 mt-2 font-mono">
+              Yes: {yesShares.toFixed(2)} shares • No: {noShares.toFixed(2)} shares
             </p>
           </div>
         )}
 
         {activeTab === 'volume' && (
           <div>
-            <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-4">Volume Over Time</h3>
-            <ResponsiveContainer width="100%" height={300}>
+            <h3 className="text-base font-bold text-gray-900 dark:text-white mb-3">Volume Over Time</h3>
+            <ResponsiveContainer width="100%" height={260}>
               <BarChart data={volumeData}>
-                <CartesianGrid strokeDasharray="3 3" className="stroke-gray-200 dark:stroke-gray-700" />
-                <XAxis dataKey="day" className="text-xs" />
-                <YAxis className="text-xs" label={{ value: `Volume (${tokenSymbol})`, angle: -90, position: 'insideLeft' }} />
+                <CartesianGrid strokeDasharray="3 3" className="stroke-gray-200 dark:stroke-gray-700" opacity={0.3} />
+                <XAxis 
+                  dataKey="day" 
+                  tick={{ fontSize: 11, fontFamily: 'ui-monospace, monospace' }}
+                />
+                <YAxis 
+                  tick={{ fontSize: 11, fontFamily: 'ui-monospace, monospace' }}
+                  label={{ value: `Volume (${tokenSymbol})`, angle: -90, position: 'insideLeft', fontSize: 11 }} 
+                />
                 <Tooltip content={<CustomTooltip />} />
-                <Bar dataKey="volume" fill="#3b82f6" name={`Volume (${tokenSymbol})`} radius={[8, 8, 0, 0]} />
+                <Bar dataKey="volume" fill="#3b82f6" name={`Volume (${tokenSymbol})`} radius={[6, 6, 0, 0]} />
               </BarChart>
             </ResponsiveContainer>
-            <p className="text-sm text-gray-600 dark:text-gray-400 mt-4">
-              Daily trading volume distribution over the past week. Total: {totalVolumeUSDC.toFixed(2)} {tokenSymbol}
+            <p className="text-xs text-gray-600 dark:text-gray-400 mt-2 font-mono">
+              Total: {totalVolumeUSDC.toFixed(2)} {tokenSymbol} • 7-day distribution
             </p>
           </div>
         )}
 
         {activeTab === 'traders' && (
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
-              <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-4">Trader Distribution</h3>
-              <ResponsiveContainer width="100%" height={250}>
+              <h3 className="text-base font-bold text-gray-900 dark:text-white mb-3">Trader Distribution</h3>
+              <ResponsiveContainer width="100%" height={220}>
                 <RePieChart>
                   <Pie
                     data={traderDistribution}
                     cx="50%"
                     cy="50%"
                     labelLine={false}
-                    label={({ name, percent }) => `${name} ${((percent || 0) * 100).toFixed(0)}%`}
-                    outerRadius={80}
+                    label={({ name, percent }) => `${(name || '').split(' ')[0]} ${((percent || 0) * 100).toFixed(0)}%`}
+                    outerRadius={70}
                     fill="#8884d8"
                     dataKey="value"
                   >
@@ -293,21 +304,21 @@ export default function MarketAnalytics({
               </ResponsiveContainer>
             </div>
             <div>
-              <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-4">Trading Insights</h3>
-              <div className="space-y-3">
-                <div className="p-3 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
-                  <p className="text-sm font-medium text-blue-900 dark:text-blue-300">Average Trade Size</p>
-                  <p className="text-2xl font-bold text-blue-600 dark:text-blue-400">
+              <h3 className="text-base font-bold text-gray-900 dark:text-white mb-3">Trading Insights</h3>
+              <div className="space-y-2">
+                <div className="p-2.5 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
+                  <p className="text-xs font-medium text-blue-900 dark:text-blue-300 mb-1">Average Trade Size</p>
+                  <p className="text-xl font-bold text-blue-600 dark:text-blue-400 font-mono">
                     ${avgTradeSize.toFixed(2)}
                   </p>
                 </div>
-                <div className="p-3 bg-purple-50 dark:bg-purple-900/20 rounded-lg">
-                  <p className="text-sm font-medium text-purple-900 dark:text-purple-300">Total Participants</p>
-                  <p className="text-2xl font-bold text-purple-600 dark:text-purple-400">{participantCount}</p>
+                <div className="p-2.5 bg-purple-50 dark:bg-purple-900/20 rounded-lg">
+                  <p className="text-xs font-medium text-purple-900 dark:text-purple-300 mb-1">Total Participants</p>
+                  <p className="text-xl font-bold text-purple-600 dark:text-purple-400 font-mono">{participantCount}</p>
                 </div>
-                <div className="p-3 bg-green-50 dark:bg-green-900/20 rounded-lg">
-                  <p className="text-sm font-medium text-green-900 dark:text-green-300">Probability (Yes)</p>
-                  <p className="text-2xl font-bold text-green-600 dark:text-green-400">
+                <div className="p-2.5 bg-green-50 dark:bg-green-900/20 rounded-lg">
+                  <p className="text-xs font-medium text-green-900 dark:text-green-300 mb-1">Probability (Yes)</p>
+                  <p className="text-xl font-bold text-green-600 dark:text-green-400 font-mono">
                     {yesPrice}%
                   </p>
                 </div>

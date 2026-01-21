@@ -18,13 +18,13 @@ export default function PriceChart({ data, height = 300 }: PriceChartProps) {
   const CustomTooltip = ({ active, payload, label }: any) => {
     if (active && payload && payload.length) {
       return (
-        <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg p-3 shadow-lg">
-          <p className="text-sm font-medium text-gray-900 dark:text-white mb-2">{label}</p>
-          <div className="space-y-1">
-            <p className="text-sm text-green-600 dark:text-green-400">
+        <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg p-2.5 shadow-lg">
+          <p className="text-xs font-medium text-gray-900 dark:text-white mb-1.5 font-mono">{label}</p>
+          <div className="space-y-0.5">
+            <p className="text-xs text-green-600 dark:text-green-400 font-mono">
               Yes: {payload[0].value}¢
             </p>
-            <p className="text-sm text-red-600 dark:text-red-400">
+            <p className="text-xs text-red-600 dark:text-red-400 font-mono">
               No: {payload[1].value}¢
             </p>
           </div>
@@ -41,23 +41,22 @@ export default function PriceChart({ data, height = 300 }: PriceChartProps) {
           data={data}
           margin={{ top: 5, right: 20, left: 0, bottom: 5 }}
         >
-          <CartesianGrid strokeDasharray="3 3" className="stroke-gray-200 dark:stroke-gray-700" />
+          <CartesianGrid strokeDasharray="3 3" className="stroke-gray-200 dark:stroke-gray-700" opacity={0.3} />
           <XAxis
             dataKey="time"
-            className="text-xs text-gray-600 dark:text-gray-400"
-            tick={{ fill: 'currentColor' }}
+            tick={{ fontSize: 11, fontFamily: 'ui-monospace, monospace' }}
           />
           <YAxis
-            className="text-xs text-gray-600 dark:text-gray-400"
-            tick={{ fill: 'currentColor' }}
+            tick={{ fontSize: 11, fontFamily: 'ui-monospace, monospace' }}
             domain={[0, 100]}
             ticks={[0, 25, 50, 75, 100]}
           />
           <Tooltip content={<CustomTooltip />} />
           <Legend
             wrapperStyle={{
-              paddingTop: '10px',
-              fontSize: '14px',
+              paddingTop: '8px',
+              fontSize: '12px',
+              fontFamily: 'ui-monospace, monospace',
             }}
           />
           <Line
