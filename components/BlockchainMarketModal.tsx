@@ -85,7 +85,7 @@ export default function BlockchainMarketModal({
                 Volume
               </div>
               <div className="text-xl font-bold text-gray-900 dark:text-white">
-                $ ${(Number(market.totalVolume) / 1e6).toFixed(1)}M
+                {token?.symbol} {(Number(market.totalVolume) / Math.pow(10, token?.decimals || 6)).toFixed(2)}
               </div>
             </div>
             <div className="bg-gray-50 dark:bg-gray-900 rounded-lg p-3">
