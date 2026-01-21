@@ -138,8 +138,8 @@ export default function CreateMarketModal({ isOpen, onClose }: CreateMarketModal
   }
 
   return (
-    <div className="fixed inset-0 bg-black/50 dark:bg-black/70 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-      <div className="bg-white dark:bg-gray-800 rounded-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto shadow-2xl border border-gray-200 dark:border-gray-700">
+    <div className="fixed inset-0 bg-black/50 dark:bg-black/70 backdrop-blur-sm flex items-center justify-center z-50 p-0 md:p-4">
+      <div className="bg-white dark:bg-gray-800 rounded-none md:rounded-2xl max-w-2xl w-full h-full md:h-auto md:max-h-[90vh] overflow-y-auto shadow-2xl border-0 md:border border-gray-200 dark:border-gray-700">
         <div className="sticky top-0 bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600 p-6 flex items-center justify-between">
           <div className="flex items-center gap-3">
             <div className="p-2 bg-white/20 backdrop-blur-sm rounded-lg">
@@ -191,7 +191,7 @@ export default function CreateMarketModal({ isOpen, onClose }: CreateMarketModal
               value={title}
               onChange={(e) => setTitle(e.target.value)}
               placeholder="Will Bitcoin reach $150,000 by end of 2026?"
-              className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white transition-all"
+              className="w-full px-4 py-3 md:py-3 text-base border border-gray-300 dark:border-gray-600 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white transition-all"
               required
             />
           </div>
@@ -206,7 +206,7 @@ export default function CreateMarketModal({ isOpen, onClose }: CreateMarketModal
               onChange={(e) => setDescription(e.target.value)}
               placeholder="Provide details about the market resolution criteria..."
               rows={4}
-              className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white transition-all"
+              className="w-full px-4 py-3 md:py-3 text-base border border-gray-300 dark:border-gray-600 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white transition-all"
               required
             />
           </div>
@@ -220,7 +220,7 @@ export default function CreateMarketModal({ isOpen, onClose }: CreateMarketModal
               type="datetime-local"
               value={closingDate}
               onChange={(e) => setClosingDate(e.target.value)}
-              className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white transition-all"
+              className="w-full px-4 py-3 md:py-3 text-base border border-gray-300 dark:border-gray-600 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white transition-all"
               required
             />
           </div>
@@ -233,7 +233,7 @@ export default function CreateMarketModal({ isOpen, onClose }: CreateMarketModal
             <select
               value={selectedToken}
               onChange={(e) => setSelectedToken(e.target.value)}
-              className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white transition-all"
+              className="w-full px-4 py-3 md:py-3 text-base border border-gray-300 dark:border-gray-600 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white transition-all"
             >
               {STABLECOINS.baseSepolia.map((token) => (
                 <option key={token.address} value={token.address}>
@@ -258,7 +258,7 @@ export default function CreateMarketModal({ isOpen, onClose }: CreateMarketModal
               placeholder="0"
               step="0.000001"
               min="0"
-              className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white transition-all"
+              className="w-full px-4 py-3 md:py-3 text-base border border-gray-300 dark:border-gray-600 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white transition-all"
             />
             <p className="mt-2 text-sm text-gray-500 dark:text-gray-400">
               Add initial liquidity to help bootstrap your market
