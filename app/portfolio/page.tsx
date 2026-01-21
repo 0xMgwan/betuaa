@@ -27,6 +27,14 @@ export default function Portfolio() {
   const [selectedBlockchainMarket, setSelectedBlockchainMarket] = useState<any>(null);
   const { claimWinnings, isPending: isClaiming, isSuccess: claimSuccess } = useClaimWinnings();
 
+  const generatePriceHistory = (yesPrice: number, noPrice: number) => {
+    return Array.from({ length: 10 }, (_, i) => ({
+      time: `${i}h`,
+      yes: yesPrice + (Math.random() - 0.5) * 10,
+      no: noPrice + (Math.random() - 0.5) * 10,
+    }));
+  };
+
   useEffect(() => {
     if (address) {
       const favorites = JSON.parse(localStorage.getItem(`favorites_${address}`) || '[]');
@@ -341,8 +349,11 @@ export default function Portfolio() {
                         volume={`$${(Number(market.totalVolume) / 1e6).toFixed(2)}M`}
                         endDate={closingDate.toLocaleDateString()}
                         trend="up"
-                        priceHistory={[]}
-                        onClick={() => {}}
+                        priceHistory={generatePriceHistory(50, 50)}
+                        onClick={() => {
+                          console.log('Favorite card clicked:', market.title);
+                          setSelectedBlockchainMarket(market);
+                        }}
                         isBlockchain={true}
                         status={market.resolved ? 'resolved' : isActive ? 'active' : 'closed'}
                       />
