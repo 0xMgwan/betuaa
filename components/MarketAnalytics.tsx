@@ -72,11 +72,40 @@ export default function MarketAnalytics({
     { price: Math.min(90, midPrice + 20), yesBids: 0, noBids: noShares * 0.3 },
   ];
 
-  // Trader distribution
+  // Calculate trader distribution based on market data
+  const avgTradeSize = participantCount > 0 ? totalVolumeUSDC / participantCount : 0;
+  
+  // Estimate distribution based on average trade size
+  let whalePercent = 0;
+  let mediumPercent = 0;
+  let retailPercent = 0;
+  
+  if (avgTradeSize > 500) {
+    // High average = more whales
+    whalePercent = 30;
+    mediumPercent = 45;
+    retailPercent = 25;
+  } else if (avgTradeSize > 100) {
+    // Medium average = balanced
+    whalePercent = 20;
+    mediumPercent = 50;
+    retailPercent = 30;
+  } else if (avgTradeSize > 10) {
+    // Low average = more retail
+    whalePercent = 10;
+    mediumPercent = 35;
+    retailPercent = 55;
+  } else {
+    // Very low average = mostly retail
+    whalePercent = 5;
+    mediumPercent = 25;
+    retailPercent = 70;
+  }
+  
   const traderDistribution = [
-    { name: 'Whales (>$1000)', value: 15, color: '#3b82f6' },
-    { name: 'Medium ($100-$1000)', value: 35, color: '#8b5cf6' },
-    { name: 'Retail (<$100)', value: 50, color: '#ec4899' },
+    { name: 'Whales (>$1000)', value: whalePercent, color: '#3b82f6' },
+    { name: 'Medium ($100-$1000)', value: mediumPercent, color: '#8b5cf6' },
+    { name: 'Retail (<$100)', value: retailPercent, color: '#ec4899' },
   ];
 
   const CustomTooltip = ({ active, payload, label }: any) => {
