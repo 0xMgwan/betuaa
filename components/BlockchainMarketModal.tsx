@@ -1,15 +1,17 @@
 'use client';
 
 import { useState } from 'react';
-import { X, TrendingUp } from 'lucide-react';
-import { BlockchainMarket } from '@/hooks/useMarkets';
+import { X, TrendingUp, TrendingDown, Users, DollarSign, Clock, ExternalLink, BarChart3 } from 'lucide-react';
 import { useMarketDetails } from '@/hooks/useMarketDetails';
 import { usePriceHistory } from '@/hooks/usePriceHistory';
 import { STABLECOINS } from '@/lib/contracts';
 import { formatDistanceToNow } from 'date-fns';
-import TradingModal from './TradingModal';
+import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from 'recharts';
+import MarketAnalytics from './MarketAnalytics';
 import ShareButton from './ShareButton';
 import PriceChart from './PriceChart';
+import TradingModal from './TradingModal';
+import { BlockchainMarket } from '@/hooks/useMarkets';
 
 interface BlockchainMarketModalProps {
   isOpen: boolean;
@@ -246,6 +248,25 @@ export default function BlockchainMarketModal({
               Trading is available until {closingDate.toLocaleDateString()}. 
               After resolution, winning shares can be redeemed for {token?.symbol || 'tokens'}.
             </p>
+          </div>
+
+          {/* Market Analytics */}
+          <div>
+            <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-4 flex items-center gap-2">
+              <BarChart3 className="w-6 h-6" />
+              Advanced Analytics
+            </h3>
+            <MarketAnalytics
+              marketId={market.id}
+              totalVolume={Number(market.totalVolume)}
+              participantCount={market.participantCount}
+              outcomes={outcomes.map((outcome, index) => ({
+                name: outcome.name,
+                price: outcome.price,
+                totalShares: Number(outcome.totalShares)
+              }))}
+              tokenSymbol={token?.symbol}
+            />
           </div>
         </div>
       </div>
