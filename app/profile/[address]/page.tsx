@@ -6,7 +6,8 @@ import { useAccount } from 'wagmi';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 import { useUserPositions } from '@/hooks/useUserPositions';
-import { TrendingUp, TrendingDown, DollarSign, Target, Award, Calendar, Users, BarChart3, Trophy } from 'lucide-react';
+import { useAllMarkets } from '@/hooks/useMarkets';
+import { TrendingUp, TrendingDown, DollarSign, Target, Award, Calendar, Users, BarChart3, Trophy, CheckCircle, Clock as ClockIcon, XCircle } from 'lucide-react';
 
 export default function ProfilePage() {
   const params = useParams();
@@ -14,24 +15,43 @@ export default function ProfilePage() {
   const { address: currentUserAddress } = useAccount();
   const isOwnProfile = currentUserAddress?.toLowerCase() === profileAddress?.toLowerCase();
   
-  // Mock user data - will be replaced with real data from blockchain/database
-  const [userData, setUserData] = useState({
+  // Get real data from blockchain
+  const { positions, activePositions, totalValue, totalPnL } = useUserPositions();
+  const { markets: allMarkets } = useAllMarkets();
+  
+  // Filter markets created by this user
+  const marketsCreated = allMarkets.filter(
+    market => market.creator.toLowerCase() === profileAddress.toLowerCase()
+  );
+  
+  // Calculate real stats
+  const totalTrades = positions.length;
+  const resolvedPositions = positions.filter(p => p.resolved);
+  const winningPositions = resolvedPositions.filter(p => p.winningOutcomeId === p.outcomeId).length;
+  const winRate = resolvedPositions.length > 0 ? (winningPositions / resolvedPositions.length) * 100 : 0;
+  
+  // Calculate total volume from positions
+  const calculatedVolume = positions.reduce((sum, pos) => {
+    return sum + (Number(pos.shares) / 1e18 * pos.currentPrice / 100);
+  }, 0);
+  
+  const userData = {
     address: profileAddress,
     username: profileAddress ? `${profileAddress.slice(0, 6)}...${profileAddress.slice(-4)}` : '',
-    joinedDate: new Date(Date.now() - 90 * 24 * 60 * 60 * 1000), // 90 days ago
-    totalVolume: 15420.50,
-    totalProfit: 2340.25,
-    winRate: 68.5,
-    totalTrades: 127,
-    activeTrades: 8,
-    marketsCreated: 3,
-    followers: 234,
-    following: 89,
-    rank: 42,
-    badges: ['Early Adopter', 'High Roller', 'Profit Master'],
-  });
+    joinedDate: new Date(Date.now() - 90 * 24 * 60 * 60 * 1000),
+    totalVolume: calculatedVolume,
+    totalProfit: totalPnL,
+    winRate: winRate,
+    totalTrades: totalTrades,
+    activeTrades: activePositions.length,
+    marketsCreated: marketsCreated.length,
+    followers: 0, // TODO: Implement follow system
+    following: 0, // TODO: Implement follow system
+    rank: 42, // TODO: Calculate from leaderboard
+    badges: winRate > 60 ? ['Profit Master'] : [],
+  };
 
-  const [activeTab, setActiveTab] = useState<'overview' | 'positions' | 'activity' | 'created'>('overview');
+  const [activeTab, setActiveTab] = useState<'positions' | 'activity' | 'created'>('positions');
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 via-blue-50 to-purple-50 dark:from-gray-950 dark:via-gray-900 dark:to-gray-950">
@@ -161,17 +181,6 @@ export default function ProfilePage() {
         {/* Tab Navigation */}
         <div className="flex gap-2 mb-6 border-b border-gray-200 dark:border-gray-700">
           <button
-            onClick={() => setActiveTab('overview')}
-            className={`flex items-center gap-2 px-4 py-2 font-medium text-sm transition-colors ${
-              activeTab === 'overview'
-                ? 'text-blue-600 dark:text-blue-400 border-b-2 border-blue-600 dark:border-blue-400'
-                : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200'
-            }`}
-          >
-            <BarChart3 className="w-4 h-4" />
-            Overview
-          </button>
-          <button
             onClick={() => setActiveTab('positions')}
             className={`flex items-center gap-2 px-4 py-2 font-medium text-sm transition-colors ${
               activeTab === 'positions'
@@ -210,32 +219,56 @@ export default function ProfilePage() {
 
         {/* Tab Content */}
         <div className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-xl rounded-2xl p-6 border border-gray-200 dark:border-gray-700 shadow-lg">
-          {activeTab === 'overview' && (
-            <div className="space-y-6">
-              <h3 className="text-xl font-bold text-gray-900 dark:text-white">Trading Overview</h3>
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <div className="p-4 bg-gray-50 dark:bg-gray-900 rounded-lg">
-                  <p className="text-sm text-gray-600 dark:text-gray-400 mb-1">Active Positions</p>
-                  <p className="text-2xl font-bold text-gray-900 dark:text-white">{userData.activeTrades}</p>
-                </div>
-                <div className="p-4 bg-gray-50 dark:bg-gray-900 rounded-lg">
-                  <p className="text-sm text-gray-600 dark:text-gray-400 mb-1">Markets Created</p>
-                  <p className="text-2xl font-bold text-gray-900 dark:text-white">{userData.marketsCreated}</p>
-                </div>
-                <div className="p-4 bg-gray-50 dark:bg-gray-900 rounded-lg">
-                  <p className="text-sm text-gray-600 dark:text-gray-400 mb-1">Avg. Trade Size</p>
-                  <p className="text-2xl font-bold text-gray-900 dark:text-white">
-                    ${(userData.totalVolume / userData.totalTrades).toFixed(2)}
-                  </p>
-                </div>
-              </div>
-            </div>
-          )}
-
           {activeTab === 'positions' && (
             <div>
               <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-4">Active Positions</h3>
-              <p className="text-gray-600 dark:text-gray-400">Position details will be displayed here...</p>
+              {activePositions.length === 0 ? (
+                <p className="text-gray-600 dark:text-gray-400 text-center py-8">No active positions</p>
+              ) : (
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                  {activePositions.map((position, index) => (
+                    <div key={index} className="bg-white dark:bg-gray-800 rounded-lg p-4 border border-gray-200 dark:border-gray-700 hover:shadow-lg transition-shadow">
+                      <div className="flex items-start justify-between mb-2">
+                        <span className="text-xs font-semibold text-blue-600 dark:text-blue-400 uppercase">
+                          CRYPTO
+                        </span>
+                        <span className={`px-2 py-0.5 rounded text-xs font-bold ${
+                          position.outcomeName.toLowerCase().includes('yes') 
+                            ? 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400'
+                            : 'bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400'
+                        }`}>
+                          {position.outcomeName}
+                        </span>
+                      </div>
+                      
+                      <h4 className="font-semibold text-sm mb-3 line-clamp-2 text-gray-900 dark:text-white">
+                        {position.marketTitle}
+                      </h4>
+                      
+                      <div className="grid grid-cols-3 gap-2 text-xs">
+                        <div>
+                          <p className="text-gray-500 dark:text-gray-400">Shares</p>
+                          <p className="font-bold text-gray-900 dark:text-white">
+                            {(Number(position.shares) / 1e18).toFixed(2)}
+                          </p>
+                        </div>
+                        <div>
+                          <p className="text-gray-500 dark:text-gray-400">Price</p>
+                          <p className="font-bold text-gray-900 dark:text-white">{position.currentPrice}¢</p>
+                        </div>
+                        <div>
+                          <p className="text-gray-500 dark:text-gray-400">P&L</p>
+                          <p className={`font-bold ${
+                            position.unrealizedPnL >= 0 ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'
+                          }`}>
+                            {position.unrealizedPnL >= 0 ? '+' : ''}{position.unrealizedPnL.toFixed(2)}
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
           )}
 
@@ -249,7 +282,84 @@ export default function ProfilePage() {
           {activeTab === 'created' && (
             <div>
               <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-4">Markets Created</h3>
-              <p className="text-gray-600 dark:text-gray-400">Created markets will be displayed here...</p>
+              {marketsCreated.length === 0 ? (
+                <p className="text-gray-600 dark:text-gray-400 text-center py-8">No markets created yet</p>
+              ) : (
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                  {marketsCreated.map((market) => {
+                    const closingDate = new Date(Number(market.closingDate) * 1000);
+                    const isActive = closingDate > new Date() && !market.resolved;
+                    const isClosed = closingDate <= new Date() && !market.resolved;
+                    
+                    return (
+                      <div key={market.id} className="bg-white dark:bg-gray-800 rounded-lg p-4 border border-gray-200 dark:border-gray-700 hover:shadow-lg transition-shadow">
+                        <div className="flex items-start justify-between mb-2">
+                          <span className="text-xs font-semibold text-blue-600 dark:text-blue-400 uppercase">
+                            CRYPTO
+                          </span>
+                          <span className={`px-2 py-0.5 rounded text-xs font-bold flex items-center gap-1 ${
+                            market.resolved
+                              ? 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300'
+                              : isActive
+                              ? 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400'
+                              : 'bg-orange-100 dark:bg-orange-900/30 text-orange-700 dark:text-orange-400'
+                          }`}>
+                            {market.resolved ? (
+                              <>
+                                <CheckCircle className="w-3 h-3" />
+                                Resolved
+                              </>
+                            ) : isActive ? (
+                              <>
+                                <ClockIcon className="w-3 h-3" />
+                                Active
+                              </>
+                            ) : (
+                              <>
+                                <XCircle className="w-3 h-3" />
+                                Closed
+                              </>
+                            )}
+                          </span>
+                        </div>
+                        
+                        <h4 className="font-semibold text-sm mb-2 line-clamp-2 text-gray-900 dark:text-white">
+                          {market.title}
+                        </h4>
+                        
+                        <p className="text-xs text-gray-600 dark:text-gray-400 mb-3 line-clamp-2">
+                          {market.description}
+                        </p>
+                        
+                        <div className="grid grid-cols-3 gap-2 text-xs mb-3">
+                          <div>
+                            <p className="text-gray-500 dark:text-gray-400">Volume</p>
+                            <p className="font-bold text-gray-900 dark:text-white">
+                              ${(Number(market.totalVolume) / 1e6).toFixed(2)}
+                            </p>
+                          </div>
+                          <div>
+                            <p className="text-gray-500 dark:text-gray-400">Traders</p>
+                            <p className="font-bold text-gray-900 dark:text-white">{market.participantCount}</p>
+                          </div>
+                          <div>
+                            <p className="text-gray-500 dark:text-gray-400">Closes</p>
+                            <p className="font-bold text-gray-900 dark:text-white">
+                              {closingDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
+                            </p>
+                          </div>
+                        </div>
+
+                        {isClosed && isOwnProfile && (
+                          <button className="w-full px-3 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-bold text-sm transition-colors">
+                            Resolve Market
+                          </button>
+                        )}
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
             </div>
           )}
         </div>

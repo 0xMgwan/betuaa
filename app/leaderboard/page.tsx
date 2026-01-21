@@ -5,6 +5,7 @@ import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 import { useAllMarkets } from '@/hooks/useMarkets';
 import { useMemo } from 'react';
+import { useRouter } from 'next/navigation';
 
 interface TraderStats {
   address: string;
@@ -18,6 +19,7 @@ interface TraderStats {
 
 export default function LeaderboardPage() {
   const { markets } = useAllMarkets();
+  const router = useRouter();
 
   const topTraders = useMemo(() => {
     // Generate leaderboard from market data
@@ -207,7 +209,8 @@ export default function LeaderboardPage() {
                 {topTraders.map((trader) => (
                   <tr
                     key={trader.address}
-                    className="hover:bg-blue-50 dark:hover:bg-gray-700/50 transition-colors"
+                    onClick={() => router.push(`/profile/${trader.address}`)}
+                    className="hover:bg-blue-50 dark:hover:bg-gray-700/50 transition-colors cursor-pointer"
                   >
                     <td className="px-3 py-2">
                       <div className="flex items-center gap-2">
