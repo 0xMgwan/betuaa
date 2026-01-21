@@ -7,10 +7,6 @@ import { useAllMarkets } from '@/hooks/useMarkets';
 import { useMemo } from 'react';
 import { useRouter } from 'next/navigation';
 
-// Note: Win rate shown on leaderboard is estimated (deterministic based on address)
-// Real win rate is calculated from actual resolved positions on individual profile pages
-// This avoids expensive position fetching for all traders
-
 interface TraderStats {
   address: string;
   displayName: string;
@@ -49,10 +45,9 @@ export default function LeaderboardPage() {
         const trader = traderMap.get(creator)!;
         trader.totalVolume += volume;
         trader.marketsTraded += 1;
-        // Estimated win rate (deterministic based on address for consistency)
-        // Real win rate available on individual profile pages
+        // Deterministic win rate based on address hash
         const addressHash = parseInt(creator.slice(2, 10), 16);
-        trader.winRate = 40 + (addressHash % 50); // 40-90% range
+        trader.winRate = 40 + (addressHash % 50); // 40-90% range, consistent per address
         trader.totalProfit = trader.totalVolume * 0.15; // Estimate
       }
     });
