@@ -21,6 +21,8 @@ interface CategoryTabsProps {
 }
 
 export default function CategoryTabs({ activeCategory, onCategoryChange }: CategoryTabsProps) {
+  const { t } = useTranslation();
+  
   return (
     <div className="border-b border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-950">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -42,7 +44,7 @@ export default function CategoryTabs({ activeCategory, onCategoryChange }: Categ
                 `}
               >
                 <Icon className="h-4 w-4" />
-                {category.name}
+                {t(`categories.${category.id}` as any)}
               </button>
             );
           })}
