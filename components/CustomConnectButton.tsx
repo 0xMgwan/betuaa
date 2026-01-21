@@ -2,7 +2,7 @@
 
 import { ConnectButton } from '@rainbow-me/rainbowkit';
 import Link from 'next/link';
-import { User, Wallet, LogOut, BarChart3 } from 'lucide-react';
+import { User, Wallet, LogOut, BarChart3, Trophy } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import { useAccount } from 'wagmi';
 import UsernameModal from './UsernameModal';
@@ -142,6 +142,13 @@ export default function CustomConnectButton() {
                         >
                           <BarChart3 className="w-4 h-4" />
                           Stats
+                        </Link>
+                        <Link
+                          href="/leaderboard"
+                          className="flex items-center gap-2 px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+                        >
+                          <Trophy className="w-4 h-4" />
+                          Leaderboard
                         </Link>
                         <button
                           onClick={openAccountModal}

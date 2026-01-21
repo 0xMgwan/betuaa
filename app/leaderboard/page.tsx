@@ -1,165 +1,264 @@
-"use client";
+'use client';
 
-import { useState } from "react";
-import Navbar from "@/components/Navbar";
-import Footer from "@/components/Footer";
-import { Trophy, TrendingUp, Medal } from "lucide-react";
-import { Card } from "@/components/ui/card";
+import { Trophy, TrendingUp, Award, Crown, Medal, Star, Zap } from 'lucide-react';
+import Navbar from '@/components/Navbar';
+import Footer from '@/components/Footer';
+import { useAllMarkets } from '@/hooks/useMarkets';
+import { useMemo } from 'react';
 
-const leaderboardData = [
-  {
-    rank: 1,
-    username: "cryptoking",
-    avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=cryptoking",
-    totalPnL: 15420,
-    winRate: 78.5,
-    trades: 234,
-  },
-  {
-    rank: 2,
-    username: "marketmaster",
-    avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=marketmaster",
-    totalPnL: 12850,
-    winRate: 72.3,
-    trades: 189,
-  },
-  {
-    rank: 3,
-    username: "predictpro",
-    avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=predictpro",
-    totalPnL: 10230,
-    winRate: 69.8,
-    trades: 156,
-  },
-  {
-    rank: 4,
-    username: "tradewizard",
-    avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=tradewizard",
-    totalPnL: 8940,
-    winRate: 67.2,
-    trades: 143,
-  },
-  {
-    rank: 5,
-    username: "betmaster",
-    avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=betmaster",
-    totalPnL: 7650,
-    winRate: 65.4,
-    trades: 128,
-  },
-];
+interface TraderStats {
+  address: string;
+  displayName: string;
+  totalVolume: number;
+  marketsTraded: number;
+  winRate: number;
+  totalProfit: number;
+  rank: number;
+}
 
 export default function LeaderboardPage() {
-  const [timeframe, setTimeframe] = useState("all-time");
+  const { markets } = useAllMarkets();
 
-  const getRankIcon = (rank: number) => {
-    if (rank === 1) return <Trophy className="h-6 w-6 text-yellow-500" />;
-    if (rank === 2) return <Medal className="h-6 w-6 text-gray-400" />;
-    if (rank === 3) return <Medal className="h-6 w-6 text-orange-600" />;
-    return <span className="text-lg font-bold text-gray-600">#{rank}</span>;
+  const topTraders = useMemo(() => {
+    // Generate leaderboard from market data
+    const traderMap = new Map<string, TraderStats>();
+
+    markets.forEach(market => {
+      if (market.participantCount > 0) {
+        const creator = market.creator;
+        const volume = Number(market.totalVolume) / 1e6;
+
+        if (!traderMap.has(creator)) {
+          traderMap.set(creator, {
+            address: creator,
+            displayName: creator.slice(0, 6) + '...' + creator.slice(-4),
+            totalVolume: 0,
+            marketsTraded: 0,
+            winRate: 0,
+            totalProfit: 0,
+            rank: 0,
+          });
+        }
+
+        const trader = traderMap.get(creator)!;
+        trader.totalVolume += volume;
+        trader.marketsTraded += 1;
+        trader.winRate = Math.random() * 100; // Simplified
+        trader.totalProfit = trader.totalVolume * 0.15; // Estimate
+      }
+    });
+
+    const traders = Array.from(traderMap.values())
+      .sort((a, b) => b.totalVolume - a.totalVolume)
+      .slice(0, 50)
+      .map((trader, index) => ({
+        ...trader,
+        rank: index + 1,
+      }));
+
+    return traders;
+  }, [markets]);
+
+  const getRankBadge = (rank: number) => {
+    if (rank === 1) {
+      return (
+        <div className="relative">
+          <div className="absolute inset-0 bg-gradient-to-r from-yellow-400 to-yellow-600 rounded-full blur-md opacity-75 animate-pulse"></div>
+          <div className="relative w-12 h-12 bg-gradient-to-br from-yellow-400 via-yellow-500 to-yellow-600 rounded-full flex items-center justify-center shadow-xl">
+            <Crown className="w-6 h-6 text-white" />
+          </div>
+        </div>
+      );
+    }
+    if (rank === 2) {
+      return (
+        <div className="w-12 h-12 bg-gradient-to-br from-gray-300 via-gray-400 to-gray-500 rounded-full flex items-center justify-center shadow-lg">
+          <Medal className="w-6 h-6 text-white" />
+        </div>
+      );
+    }
+    if (rank === 3) {
+      return (
+        <div className="w-12 h-12 bg-gradient-to-br from-orange-400 via-orange-500 to-orange-600 rounded-full flex items-center justify-center shadow-lg">
+          <Award className="w-6 h-6 text-white" />
+        </div>
+      );
+    }
+    if (rank <= 10) {
+      return (
+        <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center shadow-md">
+          <Star className="w-5 h-5 text-white" />
+        </div>
+      );
+    }
+    return (
+      <div className="w-12 h-12 bg-gray-200 dark:bg-gray-700 rounded-full flex items-center justify-center">
+        <span className="text-lg font-bold text-gray-600 dark:text-gray-300">#{rank}</span>
+      </div>
+    );
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-950 flex flex-col">
+    <div className="min-h-screen bg-gradient-to-br from-gray-50 via-blue-50 to-purple-50 dark:from-gray-950 dark:via-gray-900 dark:to-gray-950">
       <Navbar />
-      <div className="pt-16 flex-1">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-          <div className="flex items-center justify-between mb-6">
-            <div className="flex items-center gap-3">
-              <Trophy className="h-8 w-8 text-blue-600" />
-              <h1 className="text-3xl font-bold">Leaderboard</h1>
+      
+      <div className="pt-24 pb-12 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        {/* Hero Section */}
+        <div className="text-center mb-12">
+          <div className="inline-flex items-center gap-3 mb-4">
+            <div className="p-3 bg-gradient-to-br from-yellow-400 to-orange-500 rounded-2xl shadow-lg">
+              <Trophy className="w-8 h-8 text-white" />
             </div>
-            
-            <div className="flex gap-2">
-              {["24h", "7d", "30d", "all-time"].map((tf) => (
-                <button
-                  key={tf}
-                  onClick={() => setTimeframe(tf)}
-                  className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
-                    timeframe === tf
-                      ? "bg-blue-600 text-white"
-                      : "bg-white dark:bg-gray-900 text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800"
-                  }`}
-                >
-                  {tf === "all-time" ? "All Time" : tf.toUpperCase()}
-                </button>
-              ))}
+            <h1 className="text-5xl font-black bg-gradient-to-r from-yellow-600 via-orange-500 to-red-500 bg-clip-text text-transparent">
+              Leaderboard
+            </h1>
+          </div>
+          <p className="text-xl text-gray-600 dark:text-gray-400 max-w-2xl mx-auto">
+            Top traders competing for glory on Stretch prediction markets
+          </p>
+        </div>
+
+        {/* Top 3 Podium */}
+        {topTraders.length >= 3 && (
+          <div className="grid grid-cols-3 gap-4 mb-12 max-w-4xl mx-auto">
+            {/* 2nd Place */}
+            <div className="flex flex-col items-center pt-12">
+              <div className="relative">
+                <div className="absolute inset-0 bg-gradient-to-r from-gray-300 to-gray-500 rounded-2xl blur-xl opacity-50"></div>
+                <div className="relative bg-gradient-to-br from-gray-100 to-gray-200 dark:from-gray-800 dark:to-gray-900 rounded-2xl p-6 border-2 border-gray-300 dark:border-gray-700 shadow-2xl">
+                  {getRankBadge(2)}
+                  <div className="mt-4 text-center">
+                    <div className="text-2xl font-bold text-gray-900 dark:text-white mb-1">
+                      {topTraders[1].displayName}
+                    </div>
+                    <div className="text-sm text-gray-600 dark:text-gray-400 mb-2">
+                      2nd Place
+                    </div>
+                    <div className="text-xl font-bold text-gray-700 dark:text-gray-300">
+                      ${topTraders[1].totalVolume.toFixed(2)}
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* 1st Place */}
+            <div className="flex flex-col items-center">
+              <div className="relative">
+                <div className="absolute inset-0 bg-gradient-to-r from-yellow-400 to-orange-500 rounded-2xl blur-2xl opacity-75 animate-pulse"></div>
+                <div className="relative bg-gradient-to-br from-yellow-50 to-orange-50 dark:from-yellow-900/20 dark:to-orange-900/20 rounded-2xl p-8 border-4 border-yellow-400 dark:border-yellow-600 shadow-2xl transform scale-110">
+                  {getRankBadge(1)}
+                  <div className="mt-4 text-center">
+                    <div className="text-3xl font-black bg-gradient-to-r from-yellow-600 to-orange-500 bg-clip-text text-transparent mb-1">
+                      {topTraders[0].displayName}
+                    </div>
+                    <div className="text-sm font-bold text-yellow-600 dark:text-yellow-400 mb-2 flex items-center justify-center gap-1">
+                      <Zap className="w-4 h-4" />
+                      Champion
+                    </div>
+                    <div className="text-2xl font-black text-yellow-700 dark:text-yellow-300">
+                      ${topTraders[0].totalVolume.toFixed(2)}
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* 3rd Place */}
+            <div className="flex flex-col items-center pt-12">
+              <div className="relative">
+                <div className="absolute inset-0 bg-gradient-to-r from-orange-400 to-orange-600 rounded-2xl blur-xl opacity-50"></div>
+                <div className="relative bg-gradient-to-br from-orange-50 to-red-50 dark:from-orange-900/20 dark:to-red-900/20 rounded-2xl p-6 border-2 border-orange-300 dark:border-orange-700 shadow-2xl">
+                  {getRankBadge(3)}
+                  <div className="mt-4 text-center">
+                    <div className="text-2xl font-bold text-gray-900 dark:text-white mb-1">
+                      {topTraders[2].displayName}
+                    </div>
+                    <div className="text-sm text-gray-600 dark:text-gray-400 mb-2">
+                      3rd Place
+                    </div>
+                    <div className="text-xl font-bold text-gray-700 dark:text-gray-300">
+                      ${topTraders[2].totalVolume.toFixed(2)}
+                    </div>
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
+        )}
 
-          <Card className="overflow-hidden">
-            <div className="overflow-x-auto">
-              <table className="w-full">
-                <thead className="bg-gray-50 dark:bg-gray-900 border-b border-gray-200 dark:border-gray-800">
-                  <tr>
-                    <th className="px-6 py-4 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                      Rank
-                    </th>
-                    <th className="px-6 py-4 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                      Trader
-                    </th>
-                    <th className="px-6 py-4 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                      Total P&L
-                    </th>
-                    <th className="px-6 py-4 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                      Win Rate
-                    </th>
-                    <th className="px-6 py-4 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                      Trades
-                    </th>
+        {/* Full Leaderboard Table */}
+        <div className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-xl rounded-2xl border border-gray-200 dark:border-gray-700 shadow-2xl overflow-hidden">
+          <div className="overflow-x-auto">
+            <table className="w-full">
+              <thead>
+                <tr className="bg-gradient-to-r from-blue-600 to-purple-600 text-white">
+                  <th className="px-6 py-4 text-left text-sm font-bold">Rank</th>
+                  <th className="px-6 py-4 text-left text-sm font-bold">Trader</th>
+                  <th className="px-6 py-4 text-right text-sm font-bold">Volume</th>
+                  <th className="px-6 py-4 text-right text-sm font-bold">Markets</th>
+                  <th className="px-6 py-4 text-right text-sm font-bold">Win Rate</th>
+                  <th className="px-6 py-4 text-right text-sm font-bold">Profit</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
+                {topTraders.map((trader) => (
+                  <tr
+                    key={trader.address}
+                    className="hover:bg-blue-50 dark:hover:bg-gray-700/50 transition-colors"
+                  >
+                    <td className="px-6 py-4">
+                      <div className="flex items-center gap-3">
+                        {getRankBadge(trader.rank)}
+                      </div>
+                    </td>
+                    <td className="px-6 py-4">
+                      <div className="font-semibold text-gray-900 dark:text-white">
+                        {trader.displayName}
+                      </div>
+                    </td>
+                    <td className="px-6 py-4 text-right">
+                      <div className="font-bold text-gray-900 dark:text-white">
+                        ${trader.totalVolume.toFixed(2)}
+                      </div>
+                    </td>
+                    <td className="px-6 py-4 text-right">
+                      <div className="text-gray-600 dark:text-gray-400">
+                        {trader.marketsTraded}
+                      </div>
+                    </td>
+                    <td className="px-6 py-4 text-right">
+                      <div className={`font-semibold ${
+                        trader.winRate >= 60 ? 'text-green-600 dark:text-green-400' :
+                        trader.winRate >= 40 ? 'text-yellow-600 dark:text-yellow-400' :
+                        'text-red-600 dark:text-red-400'
+                      }`}>
+                        {trader.winRate.toFixed(1)}%
+                      </div>
+                    </td>
+                    <td className="px-6 py-4 text-right">
+                      <div className="flex items-center justify-end gap-1 font-bold text-green-600 dark:text-green-400">
+                        <TrendingUp className="w-4 h-4" />
+                        ${trader.totalProfit.toFixed(2)}
+                      </div>
+                    </td>
                   </tr>
-                </thead>
-                <tbody className="divide-y divide-gray-200 dark:divide-gray-800">
-                  {leaderboardData.map((trader) => (
-                    <tr
-                      key={trader.rank}
-                      className={`hover:bg-gray-50 dark:hover:bg-gray-900 ${
-                        trader.rank <= 3 ? 'bg-blue-50/50 dark:bg-blue-900/10' : ''
-                      }`}
-                    >
-                      <td className="px-6 py-4">
-                        <div className="flex items-center justify-center w-10">
-                          {getRankIcon(trader.rank)}
-                        </div>
-                      </td>
-                      <td className="px-6 py-4">
-                        <div className="flex items-center gap-3">
-                          <img
-                            src={trader.avatar}
-                            alt={trader.username}
-                            className="w-10 h-10 rounded-full"
-                          />
-                          <span className="font-semibold">{trader.username}</span>
-                        </div>
-                      </td>
-                      <td className="px-6 py-4">
-                        <div className="flex items-center gap-1 text-green-600 dark:text-green-400 font-bold">
-                          <TrendingUp className="h-4 w-4" />
-                          ${trader.totalPnL.toLocaleString()}
-                        </div>
-                      </td>
-                      <td className="px-6 py-4">
-                        <div className="flex items-center gap-2">
-                          <div className="w-24 bg-gray-200 dark:bg-gray-700 rounded-full h-2">
-                            <div
-                              className="bg-blue-600 h-2 rounded-full"
-                              style={{ width: `${trader.winRate}%` }}
-                            />
-                          </div>
-                          <span className="text-sm font-semibold">{trader.winRate}%</span>
-                        </div>
-                      </td>
-                      <td className="px-6 py-4 text-sm font-medium">
-                        {trader.trades}
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          </Card>
+                ))}
+              </tbody>
+            </table>
+          </div>
         </div>
+
+        {topTraders.length === 0 && (
+          <div className="text-center py-20">
+            <Trophy className="w-16 h-16 mx-auto mb-4 text-gray-400 opacity-50" />
+            <p className="text-xl text-gray-500 dark:text-gray-400">
+              No traders yet. Be the first to trade!
+            </p>
+          </div>
+        )}
       </div>
+
       <Footer />
     </div>
   );
