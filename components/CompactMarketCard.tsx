@@ -106,7 +106,7 @@ export default function CompactMarketCard({
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2 mb-2">
             <span className="text-xs font-semibold text-blue-600 dark:text-blue-400 uppercase">
-              {category}
+              {actualCategory}
             </span>
             {isBlockchain && (
               <span className={`px-2 py-0.5 rounded text-xs font-bold ${
