@@ -147,7 +147,7 @@ export default function CreateMarketModal({ isOpen, onClose }: CreateMarketModal
             <div className="p-2 bg-white/20 backdrop-blur-sm rounded-lg">
               <Sparkles className="w-6 h-6 text-white" />
             </div>
-            <h2 className="text-2xl font-bold text-white">Create Prediction Market</h2>
+            <h2 className="text-2xl font-bold text-white">{t('createMarket.title')}</h2>
           </div>
           <button
             onClick={onClose}
@@ -162,7 +162,7 @@ export default function CreateMarketModal({ isOpen, onClose }: CreateMarketModal
           <div>
             <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-3 flex items-center gap-2">
               <Tag className="w-4 h-4" />
-              Category
+              {t('createMarket.category')}
             </label>
             <div className="grid grid-cols-3 gap-3">
               {CATEGORIES.map((cat) => (
@@ -186,13 +186,13 @@ export default function CreateMarketModal({ isOpen, onClose }: CreateMarketModal
           <div>
             <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2 flex items-center gap-2">
               <FileText className="w-4 h-4" />
-              Market Question
+              {t('createMarket.marketQuestion')}
             </label>
             <input
               type="text"
               value={title}
               onChange={(e) => setTitle(e.target.value)}
-              placeholder="Will Bitcoin reach $150,000 by end of 2026?"
+              placeholder={t('createMarket.questionPlaceholder')}
               className="w-full px-4 py-3 md:py-3 text-base border border-gray-300 dark:border-gray-600 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white transition-all"
               required
             />
@@ -201,12 +201,12 @@ export default function CreateMarketModal({ isOpen, onClose }: CreateMarketModal
           <div>
             <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2 flex items-center gap-2">
               <FileText className="w-4 h-4" />
-              Description
+              {t('createMarket.description')}
             </label>
             <textarea
               value={description}
               onChange={(e) => setDescription(e.target.value)}
-              placeholder="Provide details about the market resolution criteria..."
+              placeholder={t('createMarket.descriptionPlaceholder')}
               rows={4}
               className="w-full px-4 py-3 md:py-3 text-base border border-gray-300 dark:border-gray-600 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white transition-all"
               required
@@ -216,7 +216,7 @@ export default function CreateMarketModal({ isOpen, onClose }: CreateMarketModal
           <div>
             <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2 flex items-center gap-2">
               <Calendar className="w-4 h-4" />
-              Closing Date
+              {t('createMarket.closingDate')}
             </label>
             <input
               type="datetime-local"
@@ -230,7 +230,7 @@ export default function CreateMarketModal({ isOpen, onClose }: CreateMarketModal
           <div>
             <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2 flex items-center gap-2">
               <DollarSign className="w-4 h-4" />
-              Payment Token
+              {t('createMarket.paymentToken')}
             </label>
             <select
               value={selectedToken}

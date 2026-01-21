@@ -2,6 +2,7 @@
 
 import { Clock, TrendingUp, CheckCircle, Users } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
+import { useTranslation } from '@/hooks/useTranslation';
 
 interface Activity {
   id: string;
