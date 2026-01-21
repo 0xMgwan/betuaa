@@ -9,7 +9,27 @@ import CreateMarketModal from "./CreateMarketModal";
 import { useTheme } from "./ThemeProvider";
 import Logo from "./Logo";
 
-export default function Navbar() {
+interface NavbarProps {
+  searchQuery?: string;
+  onSearchChange?: (query: string) => void;
+  showFilters?: boolean;
+  onToggleFilters?: () => void;
+  statusFilter?: 'all' | 'active' | 'closed' | 'resolved';
+  onStatusFilterChange?: (status: 'all' | 'active' | 'closed' | 'resolved') => void;
+  sortBy?: 'volume' | 'closing' | 'created' | 'activity';
+  onSortChange?: (sort: 'volume' | 'closing' | 'created' | 'activity') => void;
+}
+
+export default function Navbar({ 
+  searchQuery, 
+  onSearchChange, 
+  showFilters, 
+  onToggleFilters,
+  statusFilter,
+  onStatusFilterChange,
+  sortBy,
+  onSortChange
+}: NavbarProps = {}) {
   const { theme, toggleTheme } = useTheme();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
@@ -23,7 +43,16 @@ export default function Navbar() {
           </Link>
 
           <div className="hidden md:flex items-center flex-1 max-w-2xl">
-            <SearchBar />
+            <SearchBar 
+              searchQuery={searchQuery}
+              onSearchChange={onSearchChange}
+              showFilters={showFilters}
+              onToggleFilters={onToggleFilters}
+              statusFilter={statusFilter}
+              onStatusFilterChange={onStatusFilterChange}
+              sortBy={sortBy}
+              onSortChange={onSortChange}
+            />
           </div>
 
           <div className="hidden md:flex items-center space-x-6">

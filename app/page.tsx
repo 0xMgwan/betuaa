@@ -14,6 +14,7 @@ import { marketsByCategory, Market } from "@/lib/marketData";
 import { generatePriceHistory } from "@/lib/generatePriceHistory";
 import { BlockchainMarket } from "@/hooks/useMarkets";
 import { useActivityFeed } from "@/hooks/useActivityFeed";
+import MarketFilters from "@/components/MarketFilters";
 
 export default function Home() {
   const [activeCategory, setActiveCategory] = useState("all");
@@ -21,18 +22,67 @@ export default function Home() {
   const [selectedBlockchainMarket, setSelectedBlockchainMarket] = useState<BlockchainMarket | null>(null);
   const [renderKey, setRenderKey] = useState(0);
   const { activities } = useActivityFeed();
+  
+  // Search and filter state
+  const [searchQuery, setSearchQuery] = useState("");
+  const [statusFilter, setStatusFilter] = useState<'all' | 'active' | 'closed' | 'resolved'>('all');
+  const [sortBy, setSortBy] = useState<'volume' | 'closing' | 'created' | 'activity'>('volume');
+  const [showFilters, setShowFilters] = useState(false);
 
   const displayedMarkets = useMemo(() => {
-    const markets = activeCategory === "all" 
+    let markets = activeCategory === "all" 
       ? Object.values(marketsByCategory).flat()
       : marketsByCategory[activeCategory] || [];
     
-    console.log('🔄 Computing displayedMarkets for:', activeCategory);
-    console.log('📊 Markets found:', markets.length);
-    console.log('🎯 First market ID:', markets[0]?.id, 'Title:', markets[0]?.title?.substring(0, 30));
+    // Apply search filter
+    if (searchQuery.trim()) {
+      const query = searchQuery.toLowerCase();
+      markets = markets.filter(market => 
+        market.title.toLowerCase().includes(query) ||
+        (market.description?.toLowerCase().includes(query) || false)
+      );
+    }
+    
+    // Apply status filter (for mock data, we'll use endDate as proxy)
+    if (statusFilter !== 'all') {
+      const now = new Date();
+      markets = markets.filter(market => {
+        // For mock markets, use endDate string to determine status
+        const endDateStr = market.endDate;
+        const endDate = new Date(endDateStr);
+        const isActive = endDate > now;
+        
+        if (statusFilter === 'active') return isActive;
+        if (statusFilter === 'closed') return !isActive;
+        if (statusFilter === 'resolved') return false; // Mock markets aren't resolved
+        return true;
+      });
+    }
+    
+    // Apply sorting
+    markets = [...markets].sort((a, b) => {
+      if (sortBy === 'volume') {
+        // Parse volume strings like "$2.4M" for comparison
+        const parseVolume = (vol: string) => {
+          const num = parseFloat(vol.replace(/[$,M]/g, ''));
+          return vol.includes('M') ? num * 1000000 : num;
+        };
+        return parseVolume(b.volume) - parseVolume(a.volume);
+      }
+      if (sortBy === 'closing') {
+        return new Date(a.endDate).getTime() - new Date(b.endDate).getTime();
+      }
+      if (sortBy === 'created') {
+        return b.id - a.id; // Newer markets have higher IDs
+      }
+      if (sortBy === 'activity') {
+        return b.participants - a.participants; // Use participants as proxy for activity
+      }
+      return 0;
+    });
     
     return markets;
-  }, [activeCategory]);
+  }, [activeCategory, searchQuery, statusFilter, sortBy]);
 
   useEffect(() => {
     console.log('✅ Category changed to:', activeCategory);
@@ -47,7 +97,16 @@ export default function Home() {
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-950">
-      <Navbar />
+      <Navbar 
+        searchQuery={searchQuery}
+        onSearchChange={setSearchQuery}
+        showFilters={showFilters}
+        onToggleFilters={() => setShowFilters(!showFilters)}
+        statusFilter={statusFilter}
+        onStatusFilterChange={setStatusFilter}
+        sortBy={sortBy}
+        onSortChange={setSortBy}
+      />
       <div className="pt-16">
         <CategoryTabs 
           activeCategory={activeCategory}
@@ -64,23 +123,42 @@ export default function Home() {
               <MarketList onMarketClick={setSelectedBlockchainMarket} />
 
               <div className="mt-8">
-                <div key={renderKey} className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  {marketsWithHistory.map((market) => (
-                    <CompactMarketCard
-                      key={`${activeCategory}-${market.id}`}
-                      id={market.id}
-                      question={market.title}
-                      category={market.category}
-                      yesPrice={market.yesPrice / 100}
-                      noPrice={market.noPrice / 100}
-                      volume={market.volume}
-                      endDate={market.endDate}
-                      trend={market.trend || "up"}
-                      priceHistory={market.priceHistory}
-                      onClick={() => setSelectedMarket(market)}
-                    />
-                  ))}
+                {/* Results Count */}
+                <div className="mb-4 flex items-center justify-between">
+                  <p className="text-sm text-gray-600 dark:text-gray-400">
+                    {marketsWithHistory.length} {marketsWithHistory.length === 1 ? 'market' : 'markets'} found
+                  </p>
                 </div>
+
+                {/* Markets Grid or Empty State */}
+                {marketsWithHistory.length === 0 ? (
+                  <div className="text-center py-12 bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700">
+                    <p className="text-gray-600 dark:text-gray-400 text-lg mb-2">
+                      No markets found
+                    </p>
+                    <p className="text-gray-500 dark:text-gray-500 text-sm">
+                      Try adjusting your filters or search query
+                    </p>
+                  </div>
+                ) : (
+                  <div key={renderKey} className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    {marketsWithHistory.map((market) => (
+                      <CompactMarketCard
+                        key={`${activeCategory}-${market.id}`}
+                        id={market.id}
+                        question={market.title}
+                        category={market.category}
+                        yesPrice={market.yesPrice / 100}
+                        noPrice={market.noPrice / 100}
+                        volume={market.volume}
+                        endDate={market.endDate}
+                        trend={market.trend || "up"}
+                        priceHistory={market.priceHistory}
+                        onClick={() => setSelectedMarket(market)}
+                      />
+                    ))}
+                  </div>
+                )}
               </div>
             </div>
 
