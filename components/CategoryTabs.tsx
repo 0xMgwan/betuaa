@@ -23,7 +23,7 @@ export default function CategoryTabs({ activeCategory, onCategoryChange }: Categ
   return (
     <div className="border-b border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-950">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex items-center gap-1 overflow-x-auto scrollbar-hide py-3">
+        <div className="flex items-center gap-1 overflow-x-auto scrollbar-hide py-3 -mx-4 px-4 sm:mx-0 sm:px-0 snap-x snap-mandatory touch-pan-x">
           {categories.map((category) => {
             const Icon = category.icon;
             const isActive = activeCategory === category.id;
@@ -32,11 +32,11 @@ export default function CategoryTabs({ activeCategory, onCategoryChange }: Categ
                 key={category.id}
                 onClick={() => onCategoryChange(category.id)}
                 className={`
-                  flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-semibold whitespace-nowrap transition-all
+                  flex items-center gap-2 px-4 py-2.5 md:py-2 rounded-lg text-sm font-semibold whitespace-nowrap transition-all snap-start
                   ${
                     isActive
                       ? "bg-blue-500 text-white shadow-md"
-                      : "text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800"
+                      : "text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 active:bg-gray-200 dark:active:bg-gray-700"
                   }
                 `}
               >

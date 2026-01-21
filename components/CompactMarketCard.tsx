@@ -119,7 +119,7 @@ export default function CompactMarketCard({
 
   return (
     <Card 
-      className="p-4 hover:shadow-xl hover:scale-[1.02] transition-all duration-300 cursor-pointer group"
+      className="p-3 md:p-4 hover:shadow-xl hover:scale-[1.02] transition-all duration-300 cursor-pointer group active:scale-[0.98]"
       onClick={onClick}
     >
       <div className="flex items-start gap-3 mb-3">
