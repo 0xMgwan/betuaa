@@ -1,10 +1,34 @@
 import { useLanguage } from '@/contexts/LanguageContext';
-import en from '@/locales/en.json';
-import sw from '@/locales/sw.json';
 
 const translations = {
-  en,
-  sw,
+  en: {
+    nav: {
+      markets: "Markets",
+      ideas: "Ideas",
+      createMarket: "Create Market",
+      search: "Search markets or profiles",
+      profile: "Profile",
+      portfolio: "Portfolio",
+      stats: "Stats",
+      leaderboard: "Leaderboard",
+      disconnect: "Disconnect",
+      language: "Language"
+    }
+  },
+  sw: {
+    nav: {
+      markets: "Masoko",
+      ideas: "Mawazo",
+      createMarket: "Unda Soko",
+      search: "Tafuta masoko au wasifu",
+      profile: "Wasifu",
+      portfolio: "Mkoba",
+      stats: "Takwimu",
+      leaderboard: "Ubao wa Viongozi",
+      disconnect: "Ondoa Muunganisho",
+      language: "Lugha"
+    }
+  }
 };
 
 export function useTranslation() {

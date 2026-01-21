@@ -8,6 +8,7 @@ import { useAccount } from 'wagmi';
 import UsernameModal from './UsernameModal';
 import { useUsername } from '@/hooks/useUsername';
 import { useLanguage } from '@/contexts/LanguageContext';
+import { useTranslation } from '@/hooks/useTranslation';
 
 export default function CustomConnectButton() {
   const { isConnected } = useAccount();
