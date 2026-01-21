@@ -159,7 +159,7 @@ export default function Portfolio() {
               </p>
             </div>
           ) : (
-            <div className="space-y-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
               {positions.map((position) => {
                 const token = STABLECOINS.baseSepolia.find(
                   (t) => t.address.toLowerCase() === position.paymentToken.toLowerCase()
@@ -176,30 +176,28 @@ export default function Portfolio() {
                     <div className={`absolute top-0 right-0 w-64 h-64 ${isWinning ? 'bg-gradient-to-br from-green-500/10 to-emerald-500/10' : 'bg-gradient-to-br from-blue-500/10 to-purple-500/10'} rounded-full blur-3xl group-hover:scale-150 transition-transform duration-500`}></div>
                     
                     <div className="relative">
-                      <div className="flex items-start justify-between mb-3">
-                        <div className="flex-1">
-                          <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-2">
-                            {position.marketTitle}
-                          </h3>
-                          <div className="flex items-center gap-2">
-                            <span className={`px-2 py-0.5 rounded-full text-xs font-bold ${
-                              position.outcomeId === 0
-                                ? 'bg-gradient-to-r from-green-500 to-emerald-600 text-white shadow-lg shadow-green-500/50'
-                                : 'bg-gradient-to-r from-red-500 to-orange-600 text-white shadow-lg shadow-red-500/50'
-                            }`}>
-                              {position.outcomeId === 0 ? 'Yes' : 'No'}
-                            </span>
+                      <div className="mb-3">
+                        <h3 className="text-base font-bold text-gray-900 dark:text-white mb-2 line-clamp-2">
+                          {position.marketTitle}
+                        </h3>
+                        <div className="flex items-center justify-between">
+                          <span className={`px-2 py-0.5 rounded-full text-xs font-bold ${
+                            position.outcomeId === 0
+                              ? 'bg-gradient-to-r from-green-500 to-emerald-600 text-white shadow-lg shadow-green-500/50'
+                              : 'bg-gradient-to-r from-red-500 to-orange-600 text-white shadow-lg shadow-red-500/50'
+                          }`}>
+                            {position.outcomeId === 0 ? 'Yes' : 'No'}
+                          </span>
+                          <div className="text-right">
+                            <div className="text-xl font-black text-gray-900 dark:text-white">
+                              {sharesNumber.toFixed(2)}
+                            </div>
+                            <div className="text-xs text-gray-500 dark:text-gray-400">shares</div>
                           </div>
-                        </div>
-                        <div className="text-right">
-                          <div className="text-2xl font-black text-gray-900 dark:text-white">
-                            {sharesNumber.toFixed(2)}
-                          </div>
-                          <div className="text-xs text-gray-500 dark:text-gray-400">shares</div>
                         </div>
                       </div>
 
-                      <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-4">
+                      <div className="grid grid-cols-2 gap-3 mb-4">
                         <div>
                           <div className="text-xs text-gray-500 dark:text-gray-400 mb-1">Current Price</div>
                           <div className="text-lg font-bold text-gray-900 dark:text-white">{position.currentPrice}¢</div>
