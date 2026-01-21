@@ -62,20 +62,20 @@ export default function Navbar({
               href="/"
               className="text-gray-700 hover:text-blue-600 dark:text-gray-300 dark:hover:text-blue-400 transition-colors font-medium text-sm"
             >
-              Markets
+              {t('nav.markets')}
             </Link>
             <Link
               href="/ideas"
               className="text-gray-700 hover:text-blue-600 dark:text-gray-300 dark:hover:text-blue-400 transition-colors font-medium text-sm"
             >
-              Ideas
+              {t('nav.ideas')}
             </Link>
             <button
               onClick={() => setIsCreateModalOpen(true)}
               className="flex items-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-medium text-sm transition-colors"
             >
               <Plus className="h-4 w-4" />
-              Create Market
+              {t('nav.createMarket')}
             </button>
             <button
               onClick={toggleTheme}

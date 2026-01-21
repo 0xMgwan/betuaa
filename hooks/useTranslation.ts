@@ -13,6 +13,23 @@ const translations = {
       leaderboard: "Leaderboard",
       disconnect: "Disconnect",
       language: "Language"
+    },
+    categories: {
+      trending: "Trending",
+      new: "New",
+      all: "All",
+      sports: "Sports",
+      crypto: "Crypto",
+      politics: "Politics",
+      business: "Business",
+      tech: "Tech",
+      climate: "Climate"
+    },
+    market: {
+      liveMarkets: "Live Markets",
+      volume: "Volume",
+      yes: "Yes",
+      no: "No"
     }
   },
   sw: {
@@ -27,6 +44,23 @@ const translations = {
       leaderboard: "Ubao wa Viongozi",
       disconnect: "Ondoa Muunganisho",
       language: "Lugha"
+    },
+    categories: {
+      trending: "Maarufu",
+      new: "Mpya",
+      all: "Yote",
+      sports: "Michezo",
+      crypto: "Sarafu za Kidijitali",
+      politics: "Siasa",
+      business: "Biashara",
+      tech: "Teknolojia",
+      climate: "Hali ya Hewa"
+    },
+    market: {
+      liveMarkets: "Masoko ya Moja kwa Moja",
+      volume: "Kiasi",
+      yes: "Ndiyo",
+      no: "Hapana"
     }
   }
 };

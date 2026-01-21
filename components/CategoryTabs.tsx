@@ -1,6 +1,7 @@
 "use client";
 
 import { TrendingUp, Sparkles, Grid3x3, Trophy, Bitcoin, Globe, Briefcase, Zap, Cloud } from "lucide-react";
+import { useTranslation } from "@/hooks/useTranslation";
 
 const categories = [
   { id: "trending", name: "Trending", icon: TrendingUp },
