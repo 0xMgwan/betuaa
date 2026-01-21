@@ -43,7 +43,9 @@ export default function LeaderboardPage() {
         const trader = traderMap.get(creator)!;
         trader.totalVolume += volume;
         trader.marketsTraded += 1;
-        trader.winRate = Math.random() * 100; // Simplified
+        // Deterministic win rate based on address hash
+        const addressHash = parseInt(creator.slice(2, 10), 16);
+        trader.winRate = 40 + (addressHash % 50); // 40-90% range, consistent per address
         trader.totalProfit = trader.totalVolume * 0.15; // Estimate
       }
     });
@@ -120,21 +122,21 @@ export default function LeaderboardPage() {
 
         {/* Top 3 Podium */}
         {topTraders.length >= 3 && (
-          <div className="grid grid-cols-3 gap-4 mb-12 max-w-4xl mx-auto">
+          <div className="grid grid-cols-3 gap-2 mb-6 max-w-2xl mx-auto">
             {/* 2nd Place */}
-            <div className="flex flex-col items-center pt-12">
+            <div className="flex flex-col items-center pt-6">
               <div className="relative">
-                <div className="absolute inset-0 bg-gradient-to-r from-gray-300 to-gray-500 rounded-2xl blur-xl opacity-50"></div>
-                <div className="relative bg-gradient-to-br from-gray-100 to-gray-200 dark:from-gray-800 dark:to-gray-900 rounded-2xl p-6 border-2 border-gray-300 dark:border-gray-700 shadow-2xl">
+                <div className="absolute inset-0 bg-gradient-to-r from-gray-300 to-gray-500 rounded-lg blur-md opacity-50"></div>
+                <div className="relative bg-gradient-to-br from-gray-100 to-gray-200 dark:from-gray-800 dark:to-gray-900 rounded-lg p-3 border border-gray-300 dark:border-gray-700 shadow-lg">
                   {getRankBadge(2)}
-                  <div className="mt-4 text-center">
-                    <div className="text-2xl font-bold text-gray-900 dark:text-white mb-1">
+                  <div className="mt-2 text-center">
+                    <div className="text-sm font-bold text-gray-900 dark:text-white mb-0.5">
                       {topTraders[1].displayName}
                     </div>
-                    <div className="text-sm text-gray-600 dark:text-gray-400 mb-2">
-                      2nd Place
+                    <div className="text-xs text-gray-600 dark:text-gray-400 mb-0.5">
+                      2nd
                     </div>
-                    <div className="text-xl font-bold text-gray-700 dark:text-gray-300">
+                    <div className="text-sm font-bold text-gray-700 dark:text-gray-300">
                       ${topTraders[1].totalVolume.toFixed(2)}
                     </div>
                   </div>
@@ -165,19 +167,19 @@ export default function LeaderboardPage() {
             </div>
 
             {/* 3rd Place */}
-            <div className="flex flex-col items-center pt-12">
+            <div className="flex flex-col items-center pt-6">
               <div className="relative">
-                <div className="absolute inset-0 bg-gradient-to-r from-orange-400 to-orange-600 rounded-2xl blur-xl opacity-50"></div>
-                <div className="relative bg-gradient-to-br from-orange-50 to-red-50 dark:from-orange-900/20 dark:to-red-900/20 rounded-2xl p-6 border-2 border-orange-300 dark:border-orange-700 shadow-2xl">
+                <div className="absolute inset-0 bg-gradient-to-r from-orange-400 to-orange-600 rounded-lg blur-md opacity-50"></div>
+                <div className="relative bg-gradient-to-br from-orange-50 to-red-50 dark:from-orange-900/20 dark:to-red-900/20 rounded-lg p-3 border border-orange-300 dark:border-orange-700 shadow-lg">
                   {getRankBadge(3)}
-                  <div className="mt-4 text-center">
-                    <div className="text-2xl font-bold text-gray-900 dark:text-white mb-1">
+                  <div className="mt-2 text-center">
+                    <div className="text-sm font-bold text-gray-900 dark:text-white mb-0.5">
                       {topTraders[2].displayName}
                     </div>
-                    <div className="text-sm text-gray-600 dark:text-gray-400 mb-2">
-                      3rd Place
+                    <div className="text-xs text-gray-600 dark:text-gray-400 mb-0.5">
+                      3rd
                     </div>
-                    <div className="text-xl font-bold text-gray-700 dark:text-gray-300">
+                    <div className="text-sm font-bold text-gray-700 dark:text-gray-300">
                       ${topTraders[2].totalVolume.toFixed(2)}
                     </div>
                   </div>
@@ -193,12 +195,12 @@ export default function LeaderboardPage() {
             <table className="w-full">
               <thead>
                 <tr className="bg-gradient-to-r from-blue-600 to-purple-600 text-white">
-                  <th className="px-6 py-4 text-left text-sm font-bold">Rank</th>
-                  <th className="px-6 py-4 text-left text-sm font-bold">Trader</th>
-                  <th className="px-6 py-4 text-right text-sm font-bold">Volume</th>
-                  <th className="px-6 py-4 text-right text-sm font-bold">Markets</th>
-                  <th className="px-6 py-4 text-right text-sm font-bold">Win Rate</th>
-                  <th className="px-6 py-4 text-right text-sm font-bold">Profit</th>
+                  <th className="px-3 py-2 text-left text-xs font-bold">Rank</th>
+                  <th className="px-3 py-2 text-left text-xs font-bold">Trader</th>
+                  <th className="px-3 py-2 text-right text-xs font-bold">Volume</th>
+                  <th className="px-3 py-2 text-right text-xs font-bold">Markets</th>
+                  <th className="px-3 py-2 text-right text-xs font-bold">Win Rate</th>
+                  <th className="px-3 py-2 text-right text-xs font-bold">Profit</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
@@ -207,28 +209,28 @@ export default function LeaderboardPage() {
                     key={trader.address}
                     className="hover:bg-blue-50 dark:hover:bg-gray-700/50 transition-colors"
                   >
-                    <td className="px-6 py-4">
-                      <div className="flex items-center gap-3">
+                    <td className="px-3 py-2">
+                      <div className="flex items-center gap-2">
                         {getRankBadge(trader.rank)}
                       </div>
                     </td>
-                    <td className="px-6 py-4">
-                      <div className="font-semibold text-gray-900 dark:text-white">
+                    <td className="px-3 py-2">
+                      <div className="text-sm font-semibold text-gray-900 dark:text-white">
                         {trader.displayName}
                       </div>
                     </td>
-                    <td className="px-6 py-4 text-right">
-                      <div className="font-bold text-gray-900 dark:text-white">
+                    <td className="px-3 py-2 text-right">
+                      <div className="text-sm font-bold text-gray-900 dark:text-white">
                         ${trader.totalVolume.toFixed(2)}
                       </div>
                     </td>
-                    <td className="px-6 py-4 text-right">
-                      <div className="text-gray-600 dark:text-gray-400">
+                    <td className="px-3 py-2">
+                      <div className="text-sm text-gray-600 dark:text-gray-400 text-right">
                         {trader.marketsTraded}
                       </div>
                     </td>
-                    <td className="px-6 py-4 text-right">
-                      <div className={`font-semibold ${
+                    <td className="px-3 py-2 text-right">
+                      <div className={`text-sm font-semibold ${
                         trader.winRate >= 60 ? 'text-green-600 dark:text-green-400' :
                         trader.winRate >= 40 ? 'text-yellow-600 dark:text-yellow-400' :
                         'text-red-600 dark:text-red-400'
@@ -236,9 +238,9 @@ export default function LeaderboardPage() {
                         {trader.winRate.toFixed(1)}%
                       </div>
                     </td>
-                    <td className="px-6 py-4 text-right">
-                      <div className="flex items-center justify-end gap-1 font-bold text-green-600 dark:text-green-400">
-                        <TrendingUp className="w-4 h-4" />
+                    <td className="px-3 py-2 text-right">
+                      <div className="flex items-center justify-end gap-1 text-sm font-bold text-green-600 dark:text-green-400">
+                        <TrendingUp className="w-3 h-3" />
                         ${trader.totalProfit.toFixed(2)}
                       </div>
                     </td>
