@@ -23,6 +23,25 @@ export default function ActivityFeed({ activities, maxItems = 10 }: ActivityFeed
   const { t } = useTranslation();
   const displayedActivities = activities.slice(0, maxItems);
 
+  const formatTime = (timestamp: number): string => {
+    const now = Date.now();
+    const diff = now - timestamp;
+    const minutes = Math.floor(diff / 60000);
+    const hours = Math.floor(diff / 3600000);
+    const days = Math.floor(diff / 86400000);
+    const months = Math.floor(diff / 2592000000);
+
+    if (months > 0) {
+      return `${t('activity.about')} ${months} ${months === 1 ? t('activity.monthAgo') : t('activity.monthsAgo')}`;
+    } else if (days > 0) {
+      return `${t('activity.about')} ${days} ${days === 1 ? t('activity.dayAgo') : t('activity.daysAgo')}`;
+    } else if (hours > 0) {
+      return `${t('activity.about')} ${hours} ${hours === 1 ? t('activity.hourAgo') : t('activity.hoursAgo')}`;
+    } else {
+      return `${t('activity.about')} ${minutes || 1} ${minutes === 1 ? t('activity.minuteAgo') : t('activity.minutesAgo')}`;
+    }
+  };
+
   const getActivityIcon = (type: Activity['type']) => {
     switch (type) {
       case 'trade':
