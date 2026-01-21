@@ -13,6 +13,7 @@ export default function CustomConnectButton() {
   const { isConnected } = useAccount();
   const { username, hasUsername, isLoading, saveUsername } = useUsername();
   const { language, setLanguage } = useLanguage();
+  const { t } = useTranslation();
   const [showUsernameModal, setShowUsernameModal] = useState(false);
   const [hasChecked, setHasChecked] = useState(false);
 
@@ -129,28 +130,28 @@ export default function CustomConnectButton() {
                           className="flex items-center gap-2 px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
                         >
                           <User className="w-4 h-4" />
-                          Profile
+                          {t('nav.profile')}
                         </Link>
                         <Link
                           href="/portfolio"
                           className="flex items-center gap-2 px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
                         >
                           <Wallet className="w-4 h-4" />
-                          Portfolio
+                          {t('nav.portfolio')}
                         </Link>
                         <Link
                           href="/stats"
                           className="flex items-center gap-2 px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
                         >
                           <BarChart3 className="w-4 h-4" />
-                          Stats
+                          {t('nav.stats')}
                         </Link>
                         <Link
                           href="/leaderboard"
                           className="flex items-center gap-2 px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
                         >
                           <Trophy className="w-4 h-4" />
-                          Leaderboard
+                          {t('nav.leaderboard')}
                         </Link>
                         <div className="border-t border-gray-200 dark:border-gray-700 my-1"></div>
                         <div className="px-4 py-2">

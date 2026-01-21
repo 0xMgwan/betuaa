@@ -32,6 +32,7 @@ export default function Navbar({
   onSortChange
 }: NavbarProps = {}) {
   const { theme, toggleTheme } = useTheme();
+  const { t } = useTranslation();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
 
@@ -111,6 +112,7 @@ export default function Navbar({
               <SearchBar 
                 searchQuery={searchQuery}
                 onSearchChange={onSearchChange}
+                placeholder={t('nav.search')}
                 showFilters={showFilters}
                 onToggleFilters={onToggleFilters}
                 statusFilter={statusFilter}
@@ -155,7 +157,7 @@ export default function Navbar({
                 className="flex items-center justify-center gap-2 w-full px-4 py-3 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white rounded-xl font-bold transition-all shadow-lg"
               >
                 <Plus className="h-5 w-5" />
-                Create Market
+                {t('nav.createMarket')}
               </button>
               
               <div className="flex items-center gap-3">

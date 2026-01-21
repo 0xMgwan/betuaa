@@ -12,6 +12,7 @@ interface SearchBarProps {
   onStatusFilterChange?: (status: 'all' | 'active' | 'closed' | 'resolved') => void;
   sortBy?: 'volume' | 'closing' | 'created' | 'activity';
   onSortChange?: (sort: 'volume' | 'closing' | 'created' | 'activity') => void;
+  placeholder?: string;
 }
 
 export default function SearchBar({ 
