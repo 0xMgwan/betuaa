@@ -17,14 +17,14 @@ export function usePriceHistory(marketId: number) {
   // Get current prices
   const { data: yesPrice } = useReadContract({
     address: CONTRACTS.baseSepolia.predictionMarket as `0x${string}`,
-    abi: PredictionMarketABI.abi,
+    abi: PredictionMarketABI as any,
     functionName: 'calculatePrice',
     args: [BigInt(marketId), BigInt(0)],
   });
 
   const { data: noPrice } = useReadContract({
     address: CONTRACTS.baseSepolia.predictionMarket as `0x${string}`,
-    abi: PredictionMarketABI.abi,
+    abi: PredictionMarketABI as any,
     functionName: 'calculatePrice',
     args: [BigInt(marketId), BigInt(1)],
   });
