@@ -145,18 +145,18 @@ export default function LeaderboardPage() {
             {/* 1st Place */}
             <div className="flex flex-col items-center">
               <div className="relative">
-                <div className="absolute inset-0 bg-gradient-to-r from-yellow-400 to-orange-500 rounded-2xl blur-2xl opacity-75 animate-pulse"></div>
-                <div className="relative bg-gradient-to-br from-yellow-50 to-orange-50 dark:from-yellow-900/20 dark:to-orange-900/20 rounded-2xl p-8 border-4 border-yellow-400 dark:border-yellow-600 shadow-2xl transform scale-110">
+                <div className="absolute inset-0 bg-gradient-to-r from-yellow-400 to-orange-500 rounded-xl blur-xl opacity-75 animate-pulse"></div>
+                <div className="relative bg-gradient-to-br from-yellow-50 to-orange-50 dark:from-yellow-900/20 dark:to-orange-900/20 rounded-xl p-5 border-3 border-yellow-400 dark:border-yellow-600 shadow-2xl transform scale-105">
                   {getRankBadge(1)}
-                  <div className="mt-4 text-center">
-                    <div className="text-3xl font-black bg-gradient-to-r from-yellow-600 to-orange-500 bg-clip-text text-transparent mb-1">
+                  <div className="mt-3 text-center">
+                    <div className="text-xl font-black bg-gradient-to-r from-yellow-600 to-orange-500 bg-clip-text text-transparent mb-1">
                       {topTraders[0].displayName}
                     </div>
-                    <div className="text-sm font-bold text-yellow-600 dark:text-yellow-400 mb-2 flex items-center justify-center gap-1">
-                      <Zap className="w-4 h-4" />
+                    <div className="text-xs font-bold text-yellow-600 dark:text-yellow-400 mb-1 flex items-center justify-center gap-1">
+                      <Zap className="w-3 h-3" />
                       Champion
                     </div>
-                    <div className="text-2xl font-black text-yellow-700 dark:text-yellow-300">
+                    <div className="text-lg font-black text-yellow-700 dark:text-yellow-300">
                       ${topTraders[0].totalVolume.toFixed(2)}
                     </div>
                   </div>
