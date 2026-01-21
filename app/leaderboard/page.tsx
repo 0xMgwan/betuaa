@@ -21,6 +21,7 @@ interface TraderStats {
 }
 
 export default function LeaderboardPage() {
+  const { t } = useTranslation();
   const { markets } = useAllMarkets();
   const router = useRouter();
   const { address: currentUserAddress } = useAccount();
