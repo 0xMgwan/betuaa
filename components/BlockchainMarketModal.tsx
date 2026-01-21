@@ -11,6 +11,7 @@ import MarketAnalytics from './MarketAnalytics';
 import ShareButton from './ShareButton';
 import PriceChart from './PriceChart';
 import TradingModal from './TradingModal';
+import MarketComments from './MarketComments';
 import { BlockchainMarket } from '@/hooks/useMarkets';
 
 interface BlockchainMarketModalProps {
@@ -206,6 +207,9 @@ export default function BlockchainMarketModal({
               After resolution, winning shares can be redeemed for {token?.symbol || 'tokens'}.
             </p>
           </div>
+
+          {/* Market Comments */}
+          <MarketComments marketId={market.id} marketTitle={market.title} />
         </div>
       </div>
     </div>
