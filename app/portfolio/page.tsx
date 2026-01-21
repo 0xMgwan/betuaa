@@ -8,17 +8,29 @@ import SellModal from "@/components/SellModal";
 import ClaimSuccessModal from "@/components/ClaimSuccessModal";
 import { useUserPositions } from '@/hooks/useUserPositions';
 import { useClaimWinnings } from '@/hooks/usePredictionMarket';
+import { useAllMarkets } from '@/hooks/useMarkets';
 import { STABLECOINS } from '@/lib/contracts';
-import { TrendingUp, TrendingDown, DollarSign, Sparkles, Award, Target } from 'lucide-react';
+import { TrendingUp, TrendingDown, DollarSign, Sparkles, Award, Target, Star, Activity } from 'lucide-react';
+import CompactMarketCard from '@/components/CompactMarketCard';
 
 export default function Portfolio() {
   const { address, isConnected } = useAccount();
   const { positions, activePositions, claimablePositions, isLoading, totalValue, totalPnL, totalPnLPercent } = useUserPositions();
+  const { markets: blockchainMarkets } = useAllMarkets();
   const [selectedPosition, setSelectedPosition] = useState<any>(null);
   const [showSellModal, setShowSellModal] = useState(false);
   const [showClaimSuccess, setShowClaimSuccess] = useState(false);
   const [claimedPosition, setClaimedPosition] = useState<any>(null);
+  const [activeTab, setActiveTab] = useState<'positions' | 'favorites' | 'activity'>('positions');
+  const [favoriteIds, setFavoriteIds] = useState<number[]>([]);
   const { claimWinnings, isPending: isClaiming, isSuccess: claimSuccess } = useClaimWinnings();
+
+  useEffect(() => {
+    if (address) {
+      const favorites = JSON.parse(localStorage.getItem(`favorites_${address}`) || '[]');
+      setFavoriteIds(favorites);
+    }
+  }, [address]);
 
   useEffect(() => {
     if (claimSuccess && claimedPosition) {
@@ -62,8 +74,48 @@ export default function Portfolio() {
           </p>
         </div>
 
-        {/* Stats Grid with Premium Design */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+        {/* Tab Navigation */}
+        <div className="flex gap-2 mb-6 border-b border-gray-200 dark:border-gray-700">
+          <button
+            onClick={() => setActiveTab('positions')}
+            className={`flex items-center gap-2 px-4 py-2 font-medium text-sm transition-colors ${
+              activeTab === 'positions'
+                ? 'text-blue-600 dark:text-blue-400 border-b-2 border-blue-600 dark:border-blue-400'
+                : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200'
+            }`}
+          >
+            <Target className="w-4 h-4" />
+            My Positions
+          </button>
+          <button
+            onClick={() => setActiveTab('favorites')}
+            className={`flex items-center gap-2 px-4 py-2 font-medium text-sm transition-colors ${
+              activeTab === 'favorites'
+                ? 'text-blue-600 dark:text-blue-400 border-b-2 border-blue-600 dark:border-blue-400'
+                : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200'
+            }`}
+          >
+            <Star className="w-4 h-4" />
+            Favorites ({favoriteIds.length})
+          </button>
+          <button
+            onClick={() => setActiveTab('activity')}
+            className={`flex items-center gap-2 px-4 py-2 font-medium text-sm transition-colors ${
+              activeTab === 'activity'
+                ? 'text-blue-600 dark:text-blue-400 border-b-2 border-blue-600 dark:border-blue-400'
+                : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200'
+            }`}
+          >
+            <Activity className="w-4 h-4" />
+            Activity
+          </button>
+        </div>
+
+        {/* Tab Content */}
+        {activeTab === 'positions' && (
+          <>
+            {/* Stats Grid with Premium Design */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
           {/* Total Value Card */}
           <div className="group relative overflow-hidden bg-white/80 dark:bg-gray-800/80 backdrop-blur-xl rounded-2xl p-6 border border-gray-200 dark:border-gray-700 shadow-lg hover:shadow-2xl transition-all duration-300 hover:-translate-y-1">
             <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-blue-500/20 to-cyan-500/20 rounded-full blur-3xl group-hover:scale-150 transition-transform duration-500"></div>
@@ -253,6 +305,99 @@ export default function Portfolio() {
             </div>
           )}
         </div>
+          </>
+        )}
+
+        {/* Favorites Tab */}
+        {activeTab === 'favorites' && (
+          <div>
+            {favoriteIds.length === 0 ? (
+              <div className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-xl rounded-2xl p-12 text-center border border-gray-200 dark:border-gray-700">
+                <Star className="w-16 h-16 mx-auto mb-4 text-gray-400" />
+                <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-2">
+                  No Favorites Yet
+                </h2>
+                <p className="text-gray-600 dark:text-gray-400">
+                  Start adding markets to your favorites by clicking the star icon
+                </p>
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {blockchainMarkets
+                  .filter(market => favoriteIds.includes(market.id))
+                  .map((market) => {
+                    const closingDate = new Date(Number(market.closingDate) * 1000);
+                    const isActive = closingDate > new Date() && !market.resolved;
+                    return (
+                      <CompactMarketCard
+                        key={market.id}
+                        id={market.id}
+                        question={market.title}
+                        category="CRYPTO"
+                        yesPrice={50}
+                        noPrice={50}
+                        volume={`$${(Number(market.totalVolume) / 1e6).toFixed(2)}M`}
+                        endDate={closingDate.toLocaleDateString()}
+                        trend="up"
+                        priceHistory={[]}
+                        onClick={() => {}}
+                        isBlockchain={true}
+                        status={market.resolved ? 'resolved' : isActive ? 'active' : 'closed'}
+                      />
+                    );
+                  })}
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* Activity Tab */}
+        {activeTab === 'activity' && (
+          <div className="space-y-4">
+            <div className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-xl rounded-2xl p-6 border border-gray-200 dark:border-gray-700">
+              <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-4">Recent Activity</h3>
+              <div className="space-y-3">
+                {positions.slice(0, 5).map((position, index) => (
+                  <div key={index} className="flex items-center gap-3 p-3 bg-gray-50 dark:bg-gray-900 rounded-lg">
+                    <div className={`w-10 h-10 rounded-full flex items-center justify-center ${
+                      position.outcomeName.toLowerCase().includes('yes') ? 'bg-green-100 dark:bg-green-900/30' : 'bg-red-100 dark:bg-red-900/30'
+                    }`}>
+                      {position.outcomeName.toLowerCase().includes('yes') ? (
+                        <TrendingUp className="w-5 h-5 text-green-600 dark:text-green-400" />
+                      ) : (
+                        <TrendingDown className="w-5 h-5 text-red-600 dark:text-red-400" />
+                      )}
+                    </div>
+                    <div className="flex-1">
+                      <p className="text-sm font-medium text-gray-900 dark:text-white">
+                        Bought {position.outcomeName} shares
+                      </p>
+                      <p className="text-xs text-gray-500 dark:text-gray-400">
+                        {position.marketTitle}
+                      </p>
+                    </div>
+                    <div className="text-right">
+                      <p className="text-sm font-bold text-gray-900 dark:text-white">
+                        {(Number(position.shares) / 1e18).toFixed(2)} shares
+                      </p>
+                      <p className={`text-xs font-medium ${
+                        position.unrealizedPnL >= 0 ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'
+                      }`}>
+                        {position.unrealizedPnL >= 0 ? '+' : ''}{position.unrealizedPnL.toFixed(2)} USDC
+                      </p>
+                    </div>
+                  </div>
+                ))}
+                {positions.length === 0 && (
+                  <div className="text-center py-8 text-gray-500 dark:text-gray-400">
+                    <Activity className="w-12 h-12 mx-auto mb-2 opacity-50" />
+                    <p className="text-sm">No activity yet</p>
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+        )}
       </div>
 
       {showSellModal && selectedPosition && (
