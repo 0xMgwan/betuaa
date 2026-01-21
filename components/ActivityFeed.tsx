@@ -99,7 +99,7 @@ export default function ActivityFeed({ activities, maxItems = 10 }: ActivityFeed
           {/* Time */}
           <div className="flex items-center gap-1 text-xs text-gray-500 dark:text-gray-400 whitespace-nowrap">
             <Clock className="w-3 h-3" />
-            {formatDistanceToNow(activity.timestamp, { addSuffix: true })}
+            {formatTime(activity.timestamp)}
           </div>
         </div>
       ))}

@@ -49,7 +49,13 @@ const translations = {
       won: "won",
       about: "about",
       hourAgo: "hour ago",
-      hoursAgo: "hours ago"
+      hoursAgo: "hours ago",
+      minuteAgo: "minute ago",
+      minutesAgo: "minutes ago",
+      dayAgo: "day ago",
+      daysAgo: "days ago",
+      monthAgo: "month ago",
+      monthsAgo: "months ago"
     },
     profile: {
       joined: "Joined",
@@ -139,7 +145,13 @@ const translations = {
       won: "imeshinda",
       about: "karibu",
       hourAgo: "saa 1 iliyopita",
-      hoursAgo: "masaa iliyopita"
+      hoursAgo: "masaa iliyopita",
+      minuteAgo: "dakika 1 iliyopita",
+      minutesAgo: "dakika iliyopita",
+      dayAgo: "siku 1 iliyopita",
+      daysAgo: "siku iliyopita",
+      monthAgo: "mwezi 1 uliopita",
+      monthsAgo: "miezi iliyopita"
     },
     profile: {
       joined: "Alijiunga",
