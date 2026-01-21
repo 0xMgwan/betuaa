@@ -1,13 +1,15 @@
 'use client';
 
 import { useState } from 'react';
-import { X } from 'lucide-react';
+import { X, TrendingUp } from 'lucide-react';
 import { BlockchainMarket } from '@/hooks/useMarkets';
 import { useMarketDetails } from '@/hooks/useMarketDetails';
+import { usePriceHistory } from '@/hooks/usePriceHistory';
 import { STABLECOINS } from '@/lib/contracts';
 import { formatDistanceToNow } from 'date-fns';
 import TradingModal from './TradingModal';
 import ShareButton from './ShareButton';
+import PriceChart from './PriceChart';
 
 interface BlockchainMarketModalProps {
   isOpen: boolean;
@@ -21,6 +23,7 @@ export default function BlockchainMarketModal({
   market,
 }: BlockchainMarketModalProps) {
   const { outcomes, isLoading } = useMarketDetails(market.id);
+  const { priceHistory, isLoading: isPriceLoading } = usePriceHistory(market.id);
   const [showTradingModal, setShowTradingModal] = useState(false);
   const [selectedOutcome, setSelectedOutcome] = useState<{ id: number; name: string; price: number } | null>(null);
   
@@ -120,10 +123,14 @@ export default function BlockchainMarketModal({
                 </span>
               </div>
             </div>
-            <div className="bg-gray-50 dark:bg-gray-900 rounded-lg p-4 h-40 flex items-center justify-center">
-              <p className="text-gray-500 dark:text-gray-400 text-xs">
-                Price history chart coming soon
-              </p>
+            <div className="bg-gray-50 dark:bg-gray-900 rounded-lg p-4">
+              {isPriceLoading ? (
+                <div className="h-64 flex items-center justify-center">
+                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+                </div>
+              ) : (
+                <PriceChart data={priceHistory} height={280} />
+              )}
             </div>
           </div>
 
