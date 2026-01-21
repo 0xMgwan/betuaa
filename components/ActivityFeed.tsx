@@ -52,7 +52,7 @@ export default function ActivityFeed({ activities, maxItems = 10 }: ActivityFeed
         return (
           <>
             <span className="font-semibold text-gray-900 dark:text-white">{activity.user}</span>
-            {' '}created market
+            {' '}{t('activity.createdMarket')}
           </>
         );
       case 'market_resolved':
