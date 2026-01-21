@@ -7,6 +7,7 @@ import { useCreateMarket } from '@/hooks/usePredictionMarket';
 import { useApproveToken } from '@/hooks/useERC20';
 import { CONTRACTS } from '@/lib/contracts';
 import { parseUnits } from 'viem';
+import { useTranslation } from '@/hooks/useTranslation';
 
 const CATEGORIES = [
   { value: 'crypto', label: 'Crypto', icon: '₿', color: 'from-orange-500 to-yellow-500' },
@@ -23,6 +24,7 @@ interface CreateMarketModalProps {
 }
 
 export default function CreateMarketModal({ isOpen, onClose }: CreateMarketModalProps) {
+  const { t } = useTranslation();
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
   const [closingDate, setClosingDate] = useState('');
