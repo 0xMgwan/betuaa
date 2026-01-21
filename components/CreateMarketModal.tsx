@@ -1,12 +1,21 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { X } from 'lucide-react';
+import { X, Sparkles, Calendar, DollarSign, Tag, FileText, TrendingUp } from 'lucide-react';
 import { STABLECOINS } from '@/lib/contracts';
 import { useCreateMarket } from '@/hooks/usePredictionMarket';
 import { useApproveToken } from '@/hooks/useERC20';
 import { CONTRACTS } from '@/lib/contracts';
 import { parseUnits } from 'viem';
+
+const CATEGORIES = [
+  { value: 'crypto', label: 'Crypto', icon: '₿', color: 'from-orange-500 to-yellow-500' },
+  { value: 'sports', label: 'Sports', icon: '⚽', color: 'from-green-500 to-emerald-500' },
+  { value: 'politics', label: 'Politics', icon: '🏛️', color: 'from-blue-500 to-indigo-500' },
+  { value: 'entertainment', label: 'Entertainment', icon: '🎬', color: 'from-purple-500 to-pink-500' },
+  { value: 'technology', label: 'Technology', icon: '💻', color: 'from-cyan-500 to-blue-500' },
+  { value: 'other', label: 'Other', icon: '📊', color: 'from-gray-500 to-slate-500' },
+];
 
 interface CreateMarketModalProps {
   isOpen: boolean;
@@ -19,6 +28,7 @@ export default function CreateMarketModal({ isOpen, onClose }: CreateMarketModal
   const [closingDate, setClosingDate] = useState('');
   const [initialLiquidity, setInitialLiquidity] = useState('');
   const [selectedToken, setSelectedToken] = useState<string>(STABLECOINS.baseSepolia[0].address);
+  const [category, setCategory] = useState('crypto');
   const [step, setStep] = useState<'form' | 'approve' | 'create'>('form');
 
   const { createMarket, isPending: isCreating, isSuccess } = useCreateMarket();
@@ -125,21 +135,52 @@ export default function CreateMarketModal({ isOpen, onClose }: CreateMarketModal
   }
 
   return (
-    <div className="fixed inset-0 bg-black/50 dark:bg-black/70 flex items-center justify-center z-50 p-4">
-      <div className="bg-white dark:bg-gray-800 rounded-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
-        <div className="sticky top-0 bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 p-6 flex items-center justify-between">
-          <h2 className="text-2xl font-bold text-gray-900 dark:text-white">Create Prediction Market</h2>
+    <div className="fixed inset-0 bg-black/50 dark:bg-black/70 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+      <div className="bg-white dark:bg-gray-800 rounded-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto shadow-2xl border border-gray-200 dark:border-gray-700">
+        <div className="sticky top-0 bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600 p-6 flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <div className="p-2 bg-white/20 backdrop-blur-sm rounded-lg">
+              <Sparkles className="w-6 h-6 text-white" />
+            </div>
+            <h2 className="text-2xl font-bold text-white">Create Prediction Market</h2>
+          </div>
           <button
             onClick={onClose}
-            className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
+            className="p-2 hover:bg-white/20 rounded-lg transition-colors"
           >
-            <X className="w-5 h-5 text-gray-500 dark:text-gray-400" />
+            <X className="w-5 h-5 text-white" />
           </button>
         </div>
 
         <form onSubmit={handleSubmit} className="p-6 space-y-6">
+          {/* Category Selector */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-3 flex items-center gap-2">
+              <Tag className="w-4 h-4" />
+              Category
+            </label>
+            <div className="grid grid-cols-3 gap-3">
+              {CATEGORIES.map((cat) => (
+                <button
+                  key={cat.value}
+                  type="button"
+                  onClick={() => setCategory(cat.value)}
+                  className={`p-3 rounded-xl border-2 transition-all ${
+                    category === cat.value
+                      ? `border-transparent bg-gradient-to-r ${cat.color} text-white shadow-lg`
+                      : 'border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600'
+                  }`}
+                >
+                  <div className="text-2xl mb-1">{cat.icon}</div>
+                  <div className="text-xs font-semibold">{cat.label}</div>
+                </button>
+              ))}
+            </div>
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2 flex items-center gap-2">
+              <FileText className="w-4 h-4" />
               Market Question
             </label>
             <input
@@ -147,13 +188,14 @@ export default function CreateMarketModal({ isOpen, onClose }: CreateMarketModal
               value={title}
               onChange={(e) => setTitle(e.target.value)}
               placeholder="Will Bitcoin reach $150,000 by end of 2026?"
-              className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
+              className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white transition-all"
               required
             />
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2 flex items-center gap-2">
+              <FileText className="w-4 h-4" />
               Description
             </label>
             <textarea
@@ -161,32 +203,34 @@ export default function CreateMarketModal({ isOpen, onClose }: CreateMarketModal
               onChange={(e) => setDescription(e.target.value)}
               placeholder="Provide details about the market resolution criteria..."
               rows={4}
-              className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
+              className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white transition-all"
               required
             />
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2 flex items-center gap-2">
+              <Calendar className="w-4 h-4" />
               Closing Date
             </label>
             <input
               type="datetime-local"
               value={closingDate}
               onChange={(e) => setClosingDate(e.target.value)}
-              className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
+              className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white transition-all"
               required
             />
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2 flex items-center gap-2">
+              <DollarSign className="w-4 h-4" />
               Payment Token
             </label>
             <select
               value={selectedToken}
               onChange={(e) => setSelectedToken(e.target.value)}
-              className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
+              className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white transition-all"
             >
               {STABLECOINS.baseSepolia.map((token) => (
                 <option key={token.address} value={token.address}>
@@ -200,7 +244,8 @@ export default function CreateMarketModal({ isOpen, onClose }: CreateMarketModal
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2 flex items-center gap-2">
+              <TrendingUp className="w-4 h-4" />
               Initial Liquidity (Optional)
             </label>
             <input
@@ -210,7 +255,7 @@ export default function CreateMarketModal({ isOpen, onClose }: CreateMarketModal
               placeholder="0"
               step="0.000001"
               min="0"
-              className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
+              className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white transition-all"
             />
             <p className="mt-2 text-sm text-gray-500 dark:text-gray-400">
               Add initial liquidity to help bootstrap your market
@@ -221,14 +266,14 @@ export default function CreateMarketModal({ isOpen, onClose }: CreateMarketModal
             <button
               type="button"
               onClick={onClose}
-              className="flex-1 px-6 py-3 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 font-medium transition-colors"
+              className="flex-1 px-6 py-3 border-2 border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 rounded-xl hover:bg-gray-50 dark:hover:bg-gray-700 font-bold transition-all"
             >
               Cancel
             </button>
             <button
               type="submit"
               disabled={isApproving || isCreating}
-              className="flex-1 px-6 py-3 bg-blue-600 hover:bg-blue-700 disabled:bg-gray-400 text-white rounded-lg font-medium transition-colors"
+              className="flex-1 px-6 py-3 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 disabled:from-gray-400 disabled:to-gray-500 text-white rounded-xl font-bold transition-all shadow-lg hover:shadow-xl disabled:shadow-none"
             >
               {isApproving ? 'Approving...' : isCreating ? 'Creating...' : 'Create Market'}
             </button>
