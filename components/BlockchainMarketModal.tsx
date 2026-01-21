@@ -80,61 +80,18 @@ export default function BlockchainMarketModal({
 
         {/* Content */}
         <div className="p-4 space-y-4">
-          {/* Stats Grid */}
-          <div className="grid grid-cols-3 gap-3">
-            <div className="bg-gray-50 dark:bg-gray-900 rounded-lg p-3">
-              <div className="text-xs text-gray-500 dark:text-gray-400 mb-1">
-                Volume
-              </div>
-              <div className="text-xl font-bold text-gray-900 dark:text-white">
-                {token?.symbol} {(Number(market.totalVolume) / Math.pow(10, token?.decimals || 6)).toFixed(2)}
-              </div>
-            </div>
-            <div className="bg-gray-50 dark:bg-gray-900 rounded-lg p-3">
-              <div className="text-xs text-gray-500 dark:text-gray-400 mb-1">
-                Traders
-              </div>
-              <div className="text-xl font-bold text-gray-900 dark:text-white flex items-center gap-1">
-                <span>👥</span> {market.participantCount || 0}
-              </div>
-            </div>
-            <div className="bg-gray-50 dark:bg-gray-900 rounded-lg p-3">
-              <div className="text-xs text-gray-500 dark:text-gray-400 mb-1">
-                24h Change
-              </div>
-              <div className="text-xl font-bold text-green-600 dark:text-green-400 flex items-center gap-1">
-                <span>📈</span> +0.0%
-              </div>
-            </div>
-          </div>
-
-          {/* Price History Section */}
-          <div>
-            <div className="flex items-center justify-between mb-3">
-              <h3 className="text-base font-semibold text-gray-900 dark:text-white">
-                Price History
-              </h3>
-              <div className="flex items-center gap-3 text-xs">
-                <span className="flex items-center gap-1.5">
-                  <span className="w-2.5 h-2.5 bg-green-500 rounded-full"></span>
-                  Yes {yesOutcome?.price || 50}¢
-                </span>
-                <span className="flex items-center gap-1.5">
-                  <span className="w-2.5 h-2.5 bg-red-500 rounded-full"></span>
-                  No {noOutcome?.price || 50}¢
-                </span>
-              </div>
-            </div>
-            <div className="bg-gray-50 dark:bg-gray-900 rounded-lg p-4">
-              {isPriceLoading ? (
-                <div className="h-64 flex items-center justify-center">
-                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
-                </div>
-              ) : (
-                <PriceChart data={priceHistory} height={280} />
-              )}
-            </div>
-          </div>
+          {/* Market Analytics - Moved to Top */}
+          <MarketAnalytics
+            marketId={market.id}
+            totalVolume={Number(market.totalVolume)}
+            participantCount={market.participantCount}
+            outcomes={outcomes.map((outcome) => ({
+              name: outcome.name,
+              price: outcome.price,
+              totalShares: Number(outcome.totalShares)
+            }))}
+            tokenSymbol={token?.symbol}
+          />
 
           {/* Trading Section */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
@@ -248,25 +205,6 @@ export default function BlockchainMarketModal({
               Trading is available until {closingDate.toLocaleDateString()}. 
               After resolution, winning shares can be redeemed for {token?.symbol || 'tokens'}.
             </p>
-          </div>
-
-          {/* Market Analytics */}
-          <div>
-            <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-4 flex items-center gap-2">
-              <BarChart3 className="w-6 h-6" />
-              Advanced Analytics
-            </h3>
-            <MarketAnalytics
-              marketId={market.id}
-              totalVolume={Number(market.totalVolume)}
-              participantCount={market.participantCount}
-              outcomes={outcomes.map((outcome, index) => ({
-                name: outcome.name,
-                price: outcome.price,
-                totalShares: Number(outcome.totalShares)
-              }))}
-              tokenSymbol={token?.symbol}
-            />
           </div>
         </div>
       </div>
