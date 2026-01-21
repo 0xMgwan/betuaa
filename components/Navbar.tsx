@@ -8,6 +8,7 @@ import SearchBar from "./SearchBar";
 import CreateMarketModal from "./CreateMarketModal";
 import { useTheme } from "./ThemeProvider";
 import Logo from "./Logo";
+import { useTranslation } from "@/hooks/useTranslation";
 
 interface NavbarProps {
   searchQuery?: string;
