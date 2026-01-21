@@ -13,8 +13,10 @@ import { STABLECOINS } from '@/lib/contracts';
 import { TrendingUp, TrendingDown, DollarSign, Sparkles, Award, Target, Star, Activity } from 'lucide-react';
 import CompactMarketCard from '@/components/CompactMarketCard';
 import BlockchainMarketModal from '@/components/BlockchainMarketModal';
+import { useTranslation } from '@/hooks/useTranslation';
 
 export default function Portfolio() {
+  const { t } = useTranslation();
   const { address, isConnected } = useAccount();
   const { positions, activePositions, claimablePositions, isLoading, totalValue, totalPnL, totalPnLPercent } = useUserPositions();
   const { markets: blockchainMarkets } = useAllMarkets();
@@ -77,10 +79,10 @@ export default function Portfolio() {
         {/* Header */}
         <div className="mb-8">
           <h1 className="text-4xl font-black bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent mb-2">
-            Portfolio
+            {t('portfolio.title')}
           </h1>
           <p className="text-gray-600 dark:text-gray-400 text-lg">
-            Track your positions and performance
+            {t('portfolio.trackPositions')}
           </p>
         </div>
 
@@ -95,7 +97,7 @@ export default function Portfolio() {
             }`}
           >
             <Target className="w-4 h-4" />
-            My Positions
+            {t('portfolio.myPositions')}
           </button>
           <button
             onClick={() => setActiveTab('favorites')}
@@ -117,7 +119,7 @@ export default function Portfolio() {
             }`}
           >
             <Activity className="w-4 h-4" />
-            Activity
+            {t('portfolio.activity')}
           </button>
         </div>
 
@@ -135,7 +137,7 @@ export default function Portfolio() {
                   <DollarSign className="w-5 h-5 text-white" />
                 </div>
                 <div className="text-sm font-medium text-gray-600 dark:text-gray-400">
-                  Total Value
+                  {t('portfolio.totalValue')}
                 </div>
               </div>
               <div className="text-4xl font-black bg-gradient-to-br from-blue-600 to-cyan-600 bg-clip-text text-transparent">
@@ -153,7 +155,7 @@ export default function Portfolio() {
                   {totalPnL >= 0 ? <TrendingUp className="w-5 h-5 text-white" /> : <TrendingDown className="w-5 h-5 text-white" />}
                 </div>
                 <div className="text-sm font-medium text-gray-600 dark:text-gray-400">
-                  Unrealized P&L
+                  {t('portfolio.unrealizedPL')}
                 </div>
               </div>
               <div className={`text-4xl font-black ${totalPnL >= 0 ? 'bg-gradient-to-br from-green-600 to-emerald-600' : 'bg-gradient-to-br from-red-600 to-orange-600'} bg-clip-text text-transparent`}>
@@ -171,7 +173,7 @@ export default function Portfolio() {
                   <Target className="w-5 h-5 text-white" />
                 </div>
                 <div className="text-sm font-medium text-gray-600 dark:text-gray-400">
-                  Active Positions
+                  {t('portfolio.activePositions')}
                 </div>
               </div>
               <div className="text-4xl font-black bg-gradient-to-br from-purple-600 to-pink-600 bg-clip-text text-transparent">
@@ -181,7 +183,7 @@ export default function Portfolio() {
                 <div className="mt-2 flex items-center gap-1">
                   <Award className="w-4 h-4 text-green-600 dark:text-green-400" />
                   <span className="text-sm font-bold text-green-600 dark:text-green-400">
-                    {claimablePositions.length} claimable
+                    {claimablePositions.length} {t('portfolio.claimable')}
                   </span>
                 </div>
               )}
@@ -301,11 +303,11 @@ export default function Portfolio() {
                           disabled={isClaiming}
                           className="w-full px-4 py-2.5 bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white rounded-lg font-bold shadow-lg shadow-green-500/50 hover:shadow-xl hover:shadow-green-500/50 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
                         >
-                          {isClaiming ? 'Claiming...' : 'Claim Winnings'}
+                          {isClaiming ? 'Claiming...' : t('portfolio.claimWinnings')}
                         </button>
                       ) : (
                         <div className="w-full px-4 py-2.5 bg-gray-200 dark:bg-gray-700 text-gray-600 dark:text-gray-400 rounded-lg font-bold text-center">
-                          Market Resolved - No Winnings
+                          {t('portfolio.marketResolved')}
                         </div>
                       )}
                     </div>
