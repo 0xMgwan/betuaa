@@ -18,6 +18,7 @@ import MarketFilters from "@/components/MarketFilters";
 import { useTranslation } from "@/hooks/useTranslation";
 
 export default function Home() {
+  const { t } = useTranslation();
   const [activeCategory, setActiveCategory] = useState("all");
   const [selectedMarket, setSelectedMarket] = useState<Market | null>(null);
   const [selectedBlockchainMarket, setSelectedBlockchainMarket] = useState<BlockchainMarket | null>(null);
