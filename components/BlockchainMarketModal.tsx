@@ -93,7 +93,7 @@ export default function BlockchainMarketModal({
                 Traders
               </div>
               <div className="text-xl font-bold text-gray-900 dark:text-white flex items-center gap-1">
-                <span>👥</span> 0
+                <span>👥</span> {market.participantCount || 0}
               </div>
             </div>
             <div className="bg-gray-50 dark:bg-gray-900 rounded-lg p-3">

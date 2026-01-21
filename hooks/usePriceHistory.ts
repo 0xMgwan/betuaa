@@ -64,9 +64,13 @@ export function usePriceHistory(marketId: number) {
       setIsLoading(false);
     };
 
-    if (yesPrice !== undefined && noPrice !== undefined) {
+    // Generate price history after a short delay to allow contract calls to complete
+    // If contract calls fail, still generate with default 50/50 prices
+    const timeout = setTimeout(() => {
       generatePriceHistory();
-    }
+    }, 1000);
+
+    return () => clearTimeout(timeout);
   }, [marketId, yesPrice, noPrice]);
 
   return { priceHistory, isLoading };

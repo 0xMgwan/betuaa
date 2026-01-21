@@ -16,6 +16,7 @@ export interface BlockchainMarket {
   resolved: boolean;
   winningOutcomeId: number;
   totalVolume: bigint;
+  participantCount: number;
   creatorFeePercent: number;
   platformFeePercent: number;
 }

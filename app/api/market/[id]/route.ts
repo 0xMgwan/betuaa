@@ -50,6 +50,7 @@ export async function GET(
       resolved: isResolved,
       winningOutcomeId: Number(market.winningOutcomeId),
       totalVolume: market.totalVolume.toString(),
+      participantCount: Number(market.participantCount || 0),
       creatorFeePercent: Number(market.creatorFeePercent),
       platformFeePercent: Number(market.platformFeePercent),
       outcomes: outcomes.map((outcome: any) => ({
