@@ -298,17 +298,17 @@ export default function MarketAnalytics({
                 <div className="p-3 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
                   <p className="text-sm font-medium text-blue-900 dark:text-blue-300">Average Trade Size</p>
                   <p className="text-2xl font-bold text-blue-600 dark:text-blue-400">
-                    ${(totalVolume / participantCount / 1e6).toFixed(2)}
+                    ${avgTradeSize.toFixed(2)}
                   </p>
                 </div>
                 <div className="p-3 bg-purple-50 dark:bg-purple-900/20 rounded-lg">
-                  <p className="text-sm font-medium text-purple-900 dark:text-purple-300">Most Active Hour</p>
-                  <p className="text-2xl font-bold text-purple-600 dark:text-purple-400">14:00 UTC</p>
+                  <p className="text-sm font-medium text-purple-900 dark:text-purple-300">Total Participants</p>
+                  <p className="text-2xl font-bold text-purple-600 dark:text-purple-400">{participantCount}</p>
                 </div>
                 <div className="p-3 bg-green-50 dark:bg-green-900/20 rounded-lg">
-                  <p className="text-sm font-medium text-green-900 dark:text-green-300">Win Rate (Yes)</p>
+                  <p className="text-sm font-medium text-green-900 dark:text-green-300">Probability (Yes)</p>
                   <p className="text-2xl font-bold text-green-600 dark:text-green-400">
-                    {outcomes[0]?.price || 50}%
+                    {yesPrice}%
                   </p>
                 </div>
               </div>
