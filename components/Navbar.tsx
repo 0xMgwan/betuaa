@@ -83,13 +83,6 @@ export default function Navbar() {
             >
               Markets
             </Link>
-            <Link
-              href="/ideas"
-              className="block text-gray-700 hover:text-blue-600 dark:text-gray-300 dark:hover:text-blue-400 transition-colors font-medium"
-              onClick={() => setIsMenuOpen(false)}
-            >
-              Ideas
-            </Link>
             <button
               onClick={() => {
                 setIsCreateModalOpen(true);
