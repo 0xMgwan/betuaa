@@ -20,6 +20,7 @@ interface ActivityFeedProps {
 }
 
 export default function ActivityFeed({ activities, maxItems = 10 }: ActivityFeedProps) {
+  const { t } = useTranslation();
   const displayedActivities = activities.slice(0, maxItems);
 
   const getActivityIcon = (type: Activity['type']) => {
@@ -57,9 +58,9 @@ export default function ActivityFeed({ activities, maxItems = 10 }: ActivityFeed
       case 'market_resolved':
         return (
           <>
-            Market resolved:{' '}
+            {t('activity.marketResolved')}{' '}
             <span className="font-semibold text-green-600 dark:text-green-400">{activity.outcome}</span>
-            {' '}won
+            {' '}{t('activity.won')}
           </>
         );
       case 'claim':
