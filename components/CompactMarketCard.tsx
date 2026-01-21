@@ -64,14 +64,20 @@ export default function CompactMarketCard({
 
   // Get category icon
   const getCategoryIcon = () => {
-    const iconClass = "h-5 w-5 text-white";
-    switch (category.toLowerCase()) {
+    const cat = actualCategory.toLowerCase();
+    switch (cat) {
       case 'sports':
         return '⚽';
       case 'crypto':
         return '₿';
       case 'politics':
         return '🏛️';
+      case 'entertainment':
+        return '🎬';
+      case 'technology':
+        return '💻';
+      case 'other':
+        return '📊';
       case 'business':
         return '💼';
       case 'tech':
