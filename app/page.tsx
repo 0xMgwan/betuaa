@@ -12,7 +12,7 @@ import ActivityFeed from "@/components/ActivityFeed";
 import Footer from "@/components/Footer";
 import { marketsByCategory, Market } from "@/lib/marketData";
 import { generatePriceHistory } from "@/lib/generatePriceHistory";
-import { BlockchainMarket } from "@/hooks/useMarkets";
+import { BlockchainMarket, useAllMarkets } from "@/hooks/useMarkets";
 import { useActivityFeed } from "@/hooks/useActivityFeed";
 import MarketFilters from "@/components/MarketFilters";
 
@@ -22,12 +22,61 @@ export default function Home() {
   const [selectedBlockchainMarket, setSelectedBlockchainMarket] = useState<BlockchainMarket | null>(null);
   const [renderKey, setRenderKey] = useState(0);
   const { activities } = useActivityFeed();
+  const { markets: blockchainMarkets, isLoading: isLoadingBlockchain } = useAllMarkets();
   
   // Search and filter state
   const [searchQuery, setSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState<'all' | 'active' | 'closed' | 'resolved'>('all');
   const [sortBy, setSortBy] = useState<'volume' | 'closing' | 'created' | 'activity'>('volume');
   const [showFilters, setShowFilters] = useState(false);
+
+  const displayedBlockchainMarkets = useMemo(() => {
+    let markets = [...blockchainMarkets];
+    
+    // Apply search filter
+    if (searchQuery.trim()) {
+      const query = searchQuery.toLowerCase();
+      markets = markets.filter(market => 
+        market.title.toLowerCase().includes(query) ||
+        market.description.toLowerCase().includes(query)
+      );
+    }
+    
+    // Apply status filter
+    if (statusFilter !== 'all') {
+      const now = new Date();
+      markets = markets.filter(market => {
+        const closingDate = new Date(Number(market.closingDate) * 1000);
+        const isActive = closingDate > now && !market.resolved;
+        const isClosed = closingDate <= now && !market.resolved;
+        const isResolved = market.resolved;
+        
+        if (statusFilter === 'active') return isActive;
+        if (statusFilter === 'closed') return isClosed;
+        if (statusFilter === 'resolved') return isResolved;
+        return true;
+      });
+    }
+    
+    // Apply sorting
+    markets = [...markets].sort((a, b) => {
+      if (sortBy === 'volume') {
+        return Number(b.totalVolume) - Number(a.totalVolume);
+      }
+      if (sortBy === 'closing') {
+        return Number(a.closingDate) - Number(b.closingDate);
+      }
+      if (sortBy === 'created') {
+        return b.id - a.id;
+      }
+      if (sortBy === 'activity') {
+        return b.participantCount - a.participantCount;
+      }
+      return 0;
+    });
+    
+    return markets;
+  }, [blockchainMarkets, searchQuery, statusFilter, sortBy]);
 
   const displayedMarkets = useMemo(() => {
     let markets = activeCategory === "all" 
@@ -47,14 +96,13 @@ export default function Home() {
     if (statusFilter !== 'all') {
       const now = new Date();
       markets = markets.filter(market => {
-        // For mock markets, use endDate string to determine status
         const endDateStr = market.endDate;
         const endDate = new Date(endDateStr);
         const isActive = endDate > now;
         
         if (statusFilter === 'active') return isActive;
         if (statusFilter === 'closed') return !isActive;
-        if (statusFilter === 'resolved') return false; // Mock markets aren't resolved
+        if (statusFilter === 'resolved') return false;
         return true;
       });
     }
@@ -62,7 +110,6 @@ export default function Home() {
     // Apply sorting
     markets = [...markets].sort((a, b) => {
       if (sortBy === 'volume') {
-        // Parse volume strings like "$2.4M" for comparison
         const parseVolume = (vol: string) => {
           const num = parseFloat(vol.replace(/[$,M]/g, ''));
           return vol.includes('M') ? num * 1000000 : num;
@@ -73,10 +120,10 @@ export default function Home() {
         return new Date(a.endDate).getTime() - new Date(b.endDate).getTime();
       }
       if (sortBy === 'created') {
-        return b.id - a.id; // Newer markets have higher IDs
+        return b.id - a.id;
       }
       if (sortBy === 'activity') {
-        return b.participants - a.participants; // Use participants as proxy for activity
+        return b.participants - a.participants;
       }
       return 0;
     });
@@ -120,18 +167,50 @@ export default function Home() {
           <div className="mt-12 grid grid-cols-1 lg:grid-cols-3 gap-8">
             {/* Markets Section */}
             <div className="lg:col-span-2">
-              <MarketList onMarketClick={setSelectedBlockchainMarket} />
+              {/* Blockchain Markets - using same card format */}
+              {displayedBlockchainMarkets.length > 0 && (
+                <div className="mb-8">
+                  <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-4">
+                    Live Markets
+                  </h2>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    {displayedBlockchainMarkets.map((market) => {
+                      const closingDate = new Date(Number(market.closingDate) * 1000);
+                      const isActive = closingDate > new Date() && !market.resolved;
+                      
+                      return (
+                        <div key={market.id} onClick={() => setSelectedBlockchainMarket(market)}>
+                          <CompactMarketCard
+                            id={market.id}
+                            question={market.title}
+                            category="CRYPTO"
+                            yesPrice={50}
+                            noPrice={50}
+                            volume={`$${(Number(market.totalVolume) / 1e6).toFixed(2)}M`}
+                            endDate={closingDate.toLocaleDateString()}
+                            trend="up"
+                            priceHistory={generatePriceHistory(50, 50)}
+                            onClick={() => setSelectedBlockchainMarket(market)}
+                            isBlockchain={true}
+                            status={market.resolved ? 'resolved' : isActive ? 'active' : 'closed'}
+                          />
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+              )}
 
               <div className="mt-8">
                 {/* Results Count */}
                 <div className="mb-4 flex items-center justify-between">
                   <p className="text-sm text-gray-600 dark:text-gray-400">
-                    {marketsWithHistory.length} {marketsWithHistory.length === 1 ? 'market' : 'markets'} found
+                    {displayedBlockchainMarkets.length + marketsWithHistory.length} {(displayedBlockchainMarkets.length + marketsWithHistory.length) === 1 ? 'market' : 'markets'} found
                   </p>
                 </div>
 
                 {/* Markets Grid or Empty State */}
-                {marketsWithHistory.length === 0 ? (
+                {displayedBlockchainMarkets.length === 0 && marketsWithHistory.length === 0 ? (
                   <div className="text-center py-12 bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700">
                     <p className="text-gray-600 dark:text-gray-400 text-lg mb-2">
                       No markets found
@@ -141,6 +220,7 @@ export default function Home() {
                     </p>
                   </div>
                 ) : (
+                  marketsWithHistory.length > 0 &&
                   <div key={renderKey} className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     {marketsWithHistory.map((market) => (
                       <CompactMarketCard

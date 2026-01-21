@@ -14,6 +14,8 @@ interface CompactMarketCardProps {
   trend: "up" | "down";
   priceHistory: { time: string; yes: number; no: number }[];
   onClick?: () => void;
+  isBlockchain?: boolean;
+  status?: 'active' | 'closed' | 'resolved';
 }
 
 export default function CompactMarketCard({
@@ -26,6 +28,8 @@ export default function CompactMarketCard({
   trend,
   priceHistory,
   onClick,
+  isBlockchain = false,
+  status = 'active',
 }: CompactMarketCardProps) {
   // Generate SVG path for mini chart
   const maxPrice = Math.max(...priceHistory.map(p => Math.max(p.yes, p.no)));
@@ -98,6 +102,17 @@ export default function CompactMarketCard({
             <span className="text-xs font-semibold text-blue-600 dark:text-blue-400 uppercase">
               {category}
             </span>
+            {isBlockchain && (
+              <span className={`px-2 py-0.5 rounded text-xs font-bold ${
+                status === 'resolved'
+                  ? 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300'
+                  : status === 'active'
+                  ? 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400'
+                  : 'bg-orange-100 dark:bg-orange-900/30 text-orange-700 dark:text-orange-400'
+              }`}>
+                {status.charAt(0).toUpperCase() + status.slice(1)}
+              </span>
+            )}
             <span className="text-xs text-gray-500 flex items-center gap-1">
               <Clock className="h-3 w-3" />
               {endDate}
