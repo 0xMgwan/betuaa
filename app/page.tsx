@@ -193,6 +193,7 @@ export default function Home() {
                             onClick={() => setSelectedBlockchainMarket(market)}
                             isBlockchain={true}
                             status={market.resolved ? 'resolved' : isActive ? 'active' : 'closed'}
+                            description={market.description}
                           />
                         </div>
                       );

@@ -356,6 +356,7 @@ export default function Portfolio() {
                         }}
                         isBlockchain={true}
                         status={market.resolved ? 'resolved' : isActive ? 'active' : 'closed'}
+                        description={market.description}
                       />
                     );
                   })}

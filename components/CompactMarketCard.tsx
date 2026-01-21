@@ -2,6 +2,7 @@
 
 import { TrendingUp, TrendingDown, Clock } from "lucide-react";
 import { Card } from "./ui/card";
+import { extractCategory, getCategoryInfo } from '@/lib/categoryUtils';
 
 interface CompactMarketCardProps {
   id: number;
@@ -16,6 +17,7 @@ interface CompactMarketCardProps {
   onClick?: () => void;
   isBlockchain?: boolean;
   status?: 'active' | 'closed' | 'resolved';
+  description?: string;
 }
 
 export default function CompactMarketCard({
@@ -30,7 +32,11 @@ export default function CompactMarketCard({
   onClick,
   isBlockchain = false,
   status = 'active',
+  description,
 }: CompactMarketCardProps) {
+  // Extract category from description if available (for blockchain markets)
+  const actualCategory = description ? getCategoryInfo(extractCategory(description)).label : category;
+  
   // Generate SVG path for mini chart
   const maxPrice = Math.max(...priceHistory.map(p => Math.max(p.yes, p.no)));
   const minPrice = Math.min(...priceHistory.map(p => Math.min(p.yes, p.no)));

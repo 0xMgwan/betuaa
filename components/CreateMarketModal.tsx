@@ -61,9 +61,12 @@ export default function CreateMarketModal({ isOpen, onClose }: CreateMarketModal
     const closingTimestamp = BigInt(Math.floor(new Date(closingDate).getTime() / 1000));
     const liquidityAmount = parseUnits(initialLiquidity || '0', selectedStablecoin.decimals);
 
+    // Encode category in description with special format
+    const descriptionWithCategory = `[CATEGORY:${category}] ${description}`;
+
     await createMarket(
       title,
-      description,
+      descriptionWithCategory,
       0, // Binary market
       closingTimestamp,
       ['Yes', 'No'],
