@@ -9,8 +9,10 @@ import { useUserPositions } from '@/hooks/useUserPositions';
 import { useAllMarkets } from '@/hooks/useMarkets';
 import ResolveMarketModal from '@/components/ResolveMarketModal';
 import { TrendingUp, TrendingDown, DollarSign, Target, Award, Calendar, Users, BarChart3, Trophy, CheckCircle, Clock as ClockIcon, XCircle } from 'lucide-react';
+import { useTranslation } from '@/hooks/useTranslation';
 
 export default function ProfilePage() {
+  const { t } = useTranslation();
   const params = useParams();
   const profileAddress = params.address as string;
   const { address: currentUserAddress } = useAccount();
@@ -91,15 +93,15 @@ export default function ProfilePage() {
               <div className="flex flex-wrap items-center gap-4 text-sm text-gray-600 dark:text-gray-400 mb-4">
                 <div className="flex items-center gap-1.5">
                   <Calendar className="w-4 h-4" />
-                  Joined {userData.joinedDate.toLocaleDateString('en-US', { month: 'short', year: 'numeric' })}
+                  {t('profile.joined')} {userData.joinedDate.toLocaleDateString('en-US', { month: 'short', year: 'numeric' })}
                 </div>
                 <div className="flex items-center gap-1.5">
                   <Trophy className="w-4 h-4" />
-                  Rank #{userData.rank}
+                  {t('profile.rank')} #{userData.rank}
                 </div>
                 <div className="flex items-center gap-1.5">
                   <Users className="w-4 h-4" />
-                  {userData.followers} followers · {userData.following} following
+                  {userData.followers} {t('profile.followers')} · {userData.following} {t('profile.following')}
                 </div>
               </div>
 
@@ -133,7 +135,7 @@ export default function ProfilePage() {
               <div className="p-2 bg-gradient-to-br from-blue-500 to-cyan-600 rounded-lg">
                 <DollarSign className="w-5 h-5 text-white" />
               </div>
-              <span className="text-sm font-medium text-gray-600 dark:text-gray-400">Total Volume</span>
+              <span className="text-sm font-medium text-gray-600 dark:text-gray-400">{t('profile.totalVolume')}</span>
             </div>
             <p className="text-3xl font-black text-gray-900 dark:text-white font-mono">
               ${userData.totalVolume.toLocaleString()}
@@ -159,7 +161,7 @@ export default function ProfilePage() {
               <div className="p-2 bg-gradient-to-br from-purple-500 to-pink-600 rounded-lg">
                 <Award className="w-5 h-5 text-white" />
               </div>
-              <span className="text-sm font-medium text-gray-600 dark:text-gray-400">Win Rate</span>
+              <span className="text-sm font-medium text-gray-600 dark:text-gray-400">{t('profile.winRate')}</span>
             </div>
             <p className="text-3xl font-black text-purple-600 dark:text-purple-400 font-mono">
               {userData.winRate}%
@@ -191,7 +193,7 @@ export default function ProfilePage() {
             }`}
           >
             <Target className="w-4 h-4" />
-            Active Positions ({userData.activeTrades})
+            {t('profile.activePositions')} ({userData.activeTrades})
           </button>
           <button
             onClick={() => setActiveTab('activity')}
@@ -202,7 +204,7 @@ export default function ProfilePage() {
             }`}
           >
             <TrendingUp className="w-4 h-4" />
-            Activity
+            {t('profile.activity')}
           </button>
           {userData.marketsCreated > 0 && (
             <button
@@ -214,7 +216,7 @@ export default function ProfilePage() {
               }`}
             >
               <Award className="w-4 h-4" />
-              Created Markets ({userData.marketsCreated})
+              {t('profile.createdMarkets')} ({userData.marketsCreated})
             </button>
           )}
         </div>
