@@ -14,6 +14,7 @@ import TradingModal from './TradingModal';
 import MarketComments from './MarketComments';
 import FavoriteButton from './FavoriteButton';
 import { BlockchainMarket } from '@/hooks/useMarkets';
+import { cleanDescription } from '@/lib/categoryUtils';
 
 interface BlockchainMarketModalProps {
   isOpen: boolean;
@@ -62,7 +63,7 @@ export default function BlockchainMarketModal({
               {market.title}
             </h2>
             <p className="text-gray-600 dark:text-gray-400">
-              {market.description}
+              {cleanDescription(market.description)}
             </p>
           </div>
           <div className="flex items-center gap-2">
@@ -73,7 +74,7 @@ export default function BlockchainMarketModal({
             <ShareButton
               marketId={market.id}
               marketTitle={market.title}
-              marketDescription={market.description}
+              marketDescription={cleanDescription(market.description)}
             />
             <button
               onClick={onClose}
