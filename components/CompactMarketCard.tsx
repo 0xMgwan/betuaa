@@ -74,13 +74,22 @@ export default function CompactMarketCard({
   };
 
   const getCategoryColor = () => {
-    switch (category.toLowerCase()) {
+    // Use actualCategory for blockchain markets, fallback to category prop
+    const cat = (description ? actualCategory : category).toLowerCase();
+    
+    switch (cat) {
       case 'sports':
         return 'from-green-500 to-emerald-600';
       case 'crypto':
         return 'from-orange-500 to-yellow-600';
       case 'politics':
         return 'from-blue-500 to-indigo-600';
+      case 'entertainment':
+        return 'from-purple-500 to-pink-600';
+      case 'technology':
+        return 'from-cyan-500 to-blue-600';
+      case 'other':
+        return 'from-gray-500 to-slate-600';
       case 'business':
         return 'from-purple-500 to-pink-600';
       case 'tech':
