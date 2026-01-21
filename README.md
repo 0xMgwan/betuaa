@@ -28,6 +28,7 @@ A fully decentralized prediction market platform built on Base blockchain, allow
 - **Decimal Handling** - Proper handling of 6-decimal (USDC) and 18-decimal tokens
 - **Unlimited Approval** - One-time approval for seamless trading
 - **Gas Optimized** - Efficient smart contracts with minimal gas costs
+- **i18n Support** - Complete internationalization with English & Swahili
 
 ## 🏗️ Architecture
 
@@ -108,7 +109,13 @@ http://localhost:3000
    - Choose username (3-20 characters, alphanumeric + underscore)
    - Username is permanent and stored locally
 
-3. **Get Test Tokens**
+3. **Choose Language**
+   - Click wallet address dropdown
+   - Scroll to "Language" section
+   - Select English or Swahili
+   - Preference persists across sessions
+
+4. **Get Test Tokens**
    - Get Base Sepolia ETH from [Base Faucet](https://www.coinbase.com/faucets/base-ethereum-sepolia-faucet)
    - Get MockUSDC from contract: `0xeF40866aEEADefe8f9ee2a1CE3dA80C52bA52D61`
 

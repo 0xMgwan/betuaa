@@ -148,7 +148,7 @@ export default function ProfilePage() {
               <div className="p-2 bg-gradient-to-br from-green-500 to-emerald-600 rounded-lg">
                 <TrendingUp className="w-5 h-5 text-white" />
               </div>
-              <span className="text-sm font-medium text-gray-600 dark:text-gray-400">Total Profit</span>
+              <span className="text-sm font-medium text-gray-600 dark:text-gray-400">{t('profile.totalProfit')}</span>
             </div>
             <p className="text-3xl font-black text-green-600 dark:text-green-400 font-mono">
               +${userData.totalProfit.toLocaleString()}
@@ -225,7 +225,7 @@ export default function ProfilePage() {
         <div className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-xl rounded-2xl p-6 border border-gray-200 dark:border-gray-700 shadow-lg">
           {activeTab === 'positions' && (
             <div>
-              <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-4">Active Positions</h3>
+              <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-4">{t('profile.activePositions')}</h3>
               {activePositions.length === 0 ? (
                 <p className="text-gray-600 dark:text-gray-400 text-center py-8">No active positions</p>
               ) : (
@@ -278,7 +278,7 @@ export default function ProfilePage() {
 
           {activeTab === 'activity' && (
             <div>
-              <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-4">Recent Activity</h3>
+              <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-4">{t('activity.recentActivity')}</h3>
               <p className="text-gray-600 dark:text-gray-400">Activity feed will be displayed here...</p>
             </div>
           )}
