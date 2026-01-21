@@ -7,6 +7,7 @@ import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 import { useUserPositions } from '@/hooks/useUserPositions';
 import { useAllMarkets } from '@/hooks/useMarkets';
+import ResolveMarketModal from '@/components/ResolveMarketModal';
 import { TrendingUp, TrendingDown, DollarSign, Target, Award, Calendar, Users, BarChart3, Trophy, CheckCircle, Clock as ClockIcon, XCircle } from 'lucide-react';
 
 export default function ProfilePage() {
@@ -52,6 +53,7 @@ export default function ProfilePage() {
   };
 
   const [activeTab, setActiveTab] = useState<'positions' | 'activity' | 'created'>('positions');
+  const [selectedMarketToResolve, setSelectedMarketToResolve] = useState<any>(null);
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 via-blue-50 to-purple-50 dark:from-gray-950 dark:via-gray-900 dark:to-gray-950">
@@ -351,7 +353,10 @@ export default function ProfilePage() {
                         </div>
 
                         {isClosed && isOwnProfile && (
-                          <button className="w-full px-3 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-bold text-sm transition-colors">
+                          <button 
+                            onClick={() => setSelectedMarketToResolve(market)}
+                            className="w-full px-3 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-bold text-sm transition-colors"
+                          >
                             Resolve Market
                           </button>
                         )}
@@ -364,6 +369,14 @@ export default function ProfilePage() {
           )}
         </div>
       </div>
+
+      {selectedMarketToResolve && (
+        <ResolveMarketModal
+          isOpen={!!selectedMarketToResolve}
+          onClose={() => setSelectedMarketToResolve(null)}
+          market={selectedMarketToResolve}
+        />
+      )}
 
       <Footer />
     </div>
