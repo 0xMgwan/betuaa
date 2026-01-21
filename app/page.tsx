@@ -184,8 +184,8 @@ export default function Home() {
                             id={market.id}
                             question={market.title}
                             category="CRYPTO"
-                            yesPrice={50}
-                            noPrice={50}
+                            yesPrice={0.50}
+                            noPrice={0.50}
                             volume={`$${(Number(market.totalVolume) / 1e6).toFixed(2)}M`}
                             endDate={closingDate.toLocaleDateString()}
                             trend="up"
