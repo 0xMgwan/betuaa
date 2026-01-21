@@ -37,6 +37,16 @@ export default function CompactMarketCard({
   // Extract category from description if available (for blockchain markets)
   const actualCategory = description ? getCategoryInfo(extractCategory(description)).label : category;
   
+  // Debug logging
+  if (description) {
+    console.log('CompactMarketCard Debug:', {
+      description,
+      extractedCategory: extractCategory(description),
+      actualCategory,
+      originalCategory: category
+    });
+  }
+  
   // Generate SVG path for mini chart
   const maxPrice = Math.max(...priceHistory.map(p => Math.max(p.yes, p.no)));
   const minPrice = Math.min(...priceHistory.map(p => Math.min(p.yes, p.no)));
