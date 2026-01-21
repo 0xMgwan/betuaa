@@ -95,6 +95,16 @@ const translations = {
       learn: "Learn",
       careers: "Careers",
       press: "Press"
+    },
+    leaderboard: {
+      title: "Leaderboard",
+      subtitle: "Top traders competing for glory on Stretch prediction markets",
+      rank: "Rank",
+      trader: "Trader",
+      volume: "Volume",
+      markets: "Markets",
+      winRate: "Win Rate",
+      profit: "Profit"
     }
   },
   sw: {
@@ -191,6 +201,16 @@ const translations = {
       learn: "Jifunze",
       careers: "Kazi",
       press: "Habari"
+    },
+    leaderboard: {
+      title: "Ubao wa Viongozi",
+      subtitle: "Wafanyabiashara bora wanaoshindana kwa utukufu kwenye masoko ya utabiri wa Stretch",
+      rank: "Nafasi",
+      trader: "Mfanyabiashara",
+      volume: "Kiasi",
+      markets: "Masoko",
+      winRate: "Kiwango cha Ushindi",
+      profit: "Faida"
     }
   }
 };

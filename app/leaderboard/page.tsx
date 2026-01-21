@@ -8,6 +8,7 @@ import { useUserPositions } from '@/hooks/useUserPositions';
 import { useMemo } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAccount } from 'wagmi';
+import { useTranslation } from '@/hooks/useTranslation';
 
 interface TraderStats {
   address: string;
@@ -130,11 +131,11 @@ export default function LeaderboardPage() {
               <Trophy className="w-8 h-8 text-white" />
             </div>
             <h1 className="text-5xl font-black bg-gradient-to-r from-yellow-600 via-orange-500 to-red-500 bg-clip-text text-transparent">
-              Leaderboard
+              {t('leaderboard.title')}
             </h1>
           </div>
           <p className="text-xl text-gray-600 dark:text-gray-400 max-w-2xl mx-auto">
-            Top traders competing for glory on Stretch prediction markets
+            {t('leaderboard.subtitle')}
           </p>
         </div>
 
@@ -213,12 +214,24 @@ export default function LeaderboardPage() {
             <table className="w-full">
               <thead>
                 <tr className="bg-gradient-to-r from-blue-600 to-purple-600 text-white">
-                  <th className="px-3 py-2 text-left text-xs font-bold">Rank</th>
-                  <th className="px-3 py-2 text-left text-xs font-bold">Trader</th>
-                  <th className="px-3 py-2 text-right text-xs font-bold">Volume</th>
-                  <th className="px-3 py-2 text-right text-xs font-bold">Markets</th>
-                  <th className="px-3 py-2 text-right text-xs font-bold">Win Rate</th>
-                  <th className="px-3 py-2 text-right text-xs font-bold">Profit</th>
+                  <th className="px-6 py-4 text-left text-xs font-bold text-white uppercase tracking-wider">
+                    {t('leaderboard.rank')}
+                  </th>
+                  <th className="px-6 py-4 text-left text-xs font-bold text-white uppercase tracking-wider">
+                    {t('leaderboard.trader')}
+                  </th>
+                  <th className="px-6 py-4 text-right text-xs font-bold text-white uppercase tracking-wider">
+                    {t('leaderboard.volume')}
+                  </th>
+                  <th className="px-6 py-4 text-right text-xs font-bold text-white uppercase tracking-wider">
+                    {t('leaderboard.markets')}
+                  </th>
+                  <th className="px-6 py-4 text-right text-xs font-bold text-white uppercase tracking-wider">
+                    {t('leaderboard.winRate')}
+                  </th>
+                  <th className="px-6 py-4 text-right text-xs font-bold text-white uppercase tracking-wider">
+                    {t('leaderboard.profit')}
+                  </th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
