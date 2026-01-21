@@ -371,7 +371,7 @@ export default function Portfolio() {
         {activeTab === 'activity' && (
           <div className="space-y-4">
             <div className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-xl rounded-2xl p-6 border border-gray-200 dark:border-gray-700">
-              <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-4">Recent Activity</h3>
+              <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-4">{t('activity.recentActivity')}</h3>
               <div className="space-y-3">
                 {positions.slice(0, 5).map((position, index) => (
                   <div key={index} className="flex items-center gap-3 p-3 bg-gray-50 dark:bg-gray-900 rounded-lg">

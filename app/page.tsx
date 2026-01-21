@@ -15,6 +15,7 @@ import { generatePriceHistory } from "@/lib/generatePriceHistory";
 import { BlockchainMarket, useAllMarkets } from "@/hooks/useMarkets";
 import { useActivityFeed } from "@/hooks/useActivityFeed";
 import MarketFilters from "@/components/MarketFilters";
+import { useTranslation } from "@/hooks/useTranslation";
 
 export default function Home() {
   const [activeCategory, setActiveCategory] = useState("all");
