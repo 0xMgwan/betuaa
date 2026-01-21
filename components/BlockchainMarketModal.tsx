@@ -12,6 +12,7 @@ import ShareButton from './ShareButton';
 import PriceChart from './PriceChart';
 import TradingModal from './TradingModal';
 import MarketComments from './MarketComments';
+import FavoriteButton from './FavoriteButton';
 import { BlockchainMarket } from '@/hooks/useMarkets';
 
 interface BlockchainMarketModalProps {
@@ -65,6 +66,10 @@ export default function BlockchainMarketModal({
             </p>
           </div>
           <div className="flex items-center gap-2">
+            <FavoriteButton
+              marketId={market.id}
+              marketTitle={market.title}
+            />
             <ShareButton
               marketId={market.id}
               marketTitle={market.title}
