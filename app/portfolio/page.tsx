@@ -9,7 +9,7 @@ import ClaimSuccessModal from "@/components/ClaimSuccessModal";
 import { useUserPositions } from '@/hooks/useUserPositions';
 import { useClaimWinnings } from '@/hooks/usePredictionMarket';
 import { STABLECOINS } from '@/lib/contracts';
-import { TrendingUp, TrendingDown, DollarSign } from 'lucide-react';
+import { TrendingUp, TrendingDown, DollarSign, Sparkles, Award, Target } from 'lucide-react';
 
 export default function Portfolio() {
   const { address, isConnected } = useAccount();
@@ -20,7 +20,6 @@ export default function Portfolio() {
   const [claimedPosition, setClaimedPosition] = useState<any>(null);
   const { claimWinnings, isPending: isClaiming, isSuccess: claimSuccess } = useClaimWinnings();
 
-  // Show success modal when claim is successful
   useEffect(() => {
     if (claimSuccess && claimedPosition) {
       setShowClaimSuccess(true);
@@ -29,14 +28,17 @@ export default function Portfolio() {
 
   if (!isConnected) {
     return (
-      <div className="min-h-screen bg-gray-50 dark:bg-gray-950">
+      <div className="min-h-screen bg-gradient-to-br from-gray-50 via-blue-50 to-purple-50 dark:from-gray-950 dark:via-gray-900 dark:to-gray-950">
         <Navbar />
         <div className="pt-24 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-12">
-          <div className="text-center py-12">
-            <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-4">
+          <div className="text-center py-20">
+            <div className="w-20 h-20 bg-gradient-to-br from-blue-600 to-purple-600 rounded-full flex items-center justify-center mx-auto mb-6">
+              <Sparkles className="w-10 h-10 text-white" />
+            </div>
+            <h1 className="text-4xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent mb-4">
               Connect Your Wallet
             </h1>
-            <p className="text-gray-600 dark:text-gray-400">
+            <p className="text-gray-600 dark:text-gray-400 text-lg">
               Please connect your wallet to view your portfolio.
             </p>
           </div>
@@ -47,181 +49,206 @@ export default function Portfolio() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-950">
+    <div className="min-h-screen bg-gradient-to-br from-gray-50 via-blue-50 to-purple-50 dark:from-gray-950 dark:via-gray-900 dark:to-gray-950">
       <Navbar />
       <div className="pt-24 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-12">
+        {/* Header */}
         <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">
+          <h1 className="text-4xl font-black bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent mb-2">
             Portfolio
           </h1>
-          <p className="text-gray-600 dark:text-gray-400">
+          <p className="text-gray-600 dark:text-gray-400 text-lg">
             Track your positions and performance
           </p>
         </div>
 
-        {/* Stats Grid */}
+        {/* Stats Grid with Premium Design */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-          <div className="bg-white dark:bg-gray-800 rounded-xl p-6 border border-gray-200 dark:border-gray-700">
-            <div className="flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400 mb-2">
-              <DollarSign className="w-4 h-4" />
-              Total Value
-            </div>
-            <div className="text-3xl font-bold text-gray-900 dark:text-white">
-              ${totalValue.toFixed(2)}
-            </div>
-          </div>
-
-          <div className="bg-white dark:bg-gray-800 rounded-xl p-6 border border-gray-200 dark:border-gray-700">
-            <div className="flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400 mb-2">
-              {totalPnL >= 0 ? <TrendingUp className="w-4 h-4" /> : <TrendingDown className="w-4 h-4" />}
-              Unrealized P&L
-            </div>
-            <div className={`text-3xl font-bold ${totalPnL >= 0 ? 'text-green-600' : 'text-red-600'}`}>
-              {totalPnL >= 0 ? '+' : ''}{totalPnL.toFixed(2)} ({totalPnLPercent.toFixed(2)}%)
-            </div>
-          </div>
-
-          <div className="bg-white dark:bg-gray-800 rounded-xl p-6 border border-gray-200 dark:border-gray-700">
-            <div className="text-sm text-gray-500 dark:text-gray-400 mb-2">
-              Active Positions
-            </div>
-            <div className="text-3xl font-bold text-gray-900 dark:text-white">
-              {activePositions.length}
-            </div>
-            {claimablePositions.length > 0 && (
-              <div className="mt-2 text-sm text-green-600 dark:text-green-400">
-                {claimablePositions.length} claimable
+          {/* Total Value Card */}
+          <div className="group relative overflow-hidden bg-white/80 dark:bg-gray-800/80 backdrop-blur-xl rounded-2xl p-6 border border-gray-200 dark:border-gray-700 shadow-lg hover:shadow-2xl transition-all duration-300 hover:-translate-y-1">
+            <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-blue-500/20 to-cyan-500/20 rounded-full blur-3xl group-hover:scale-150 transition-transform duration-500"></div>
+            <div className="relative">
+              <div className="flex items-center gap-2 mb-3">
+                <div className="p-2 bg-gradient-to-br from-blue-500 to-cyan-600 rounded-lg shadow-lg">
+                  <DollarSign className="w-5 h-5 text-white" />
+                </div>
+                <div className="text-sm font-medium text-gray-600 dark:text-gray-400">
+                  Total Value
+                </div>
               </div>
-            )}
+              <div className="text-4xl font-black bg-gradient-to-br from-blue-600 to-cyan-600 bg-clip-text text-transparent">
+                ${totalValue.toFixed(2)}
+              </div>
+            </div>
+          </div>
+
+          {/* P&L Card */}
+          <div className="group relative overflow-hidden bg-white/80 dark:bg-gray-800/80 backdrop-blur-xl rounded-2xl p-6 border border-gray-200 dark:border-gray-700 shadow-lg hover:shadow-2xl transition-all duration-300 hover:-translate-y-1">
+            <div className={`absolute top-0 right-0 w-32 h-32 ${totalPnL >= 0 ? 'bg-gradient-to-br from-green-500/20 to-emerald-500/20' : 'bg-gradient-to-br from-red-500/20 to-orange-500/20'} rounded-full blur-3xl group-hover:scale-150 transition-transform duration-500`}></div>
+            <div className="relative">
+              <div className="flex items-center gap-2 mb-3">
+                <div className={`p-2 ${totalPnL >= 0 ? 'bg-gradient-to-br from-green-500 to-emerald-600' : 'bg-gradient-to-br from-red-500 to-orange-600'} rounded-lg shadow-lg`}>
+                  {totalPnL >= 0 ? <TrendingUp className="w-5 h-5 text-white" /> : <TrendingDown className="w-5 h-5 text-white" />}
+                </div>
+                <div className="text-sm font-medium text-gray-600 dark:text-gray-400">
+                  Unrealized P&L
+                </div>
+              </div>
+              <div className={`text-4xl font-black ${totalPnL >= 0 ? 'bg-gradient-to-br from-green-600 to-emerald-600' : 'bg-gradient-to-br from-red-600 to-orange-600'} bg-clip-text text-transparent`}>
+                {totalPnL >= 0 ? '+' : ''}{totalPnL.toFixed(2)} ({totalPnLPercent.toFixed(2)}%)
+              </div>
+            </div>
+          </div>
+
+          {/* Active Positions Card */}
+          <div className="group relative overflow-hidden bg-white/80 dark:bg-gray-800/80 backdrop-blur-xl rounded-2xl p-6 border border-gray-200 dark:border-gray-700 shadow-lg hover:shadow-2xl transition-all duration-300 hover:-translate-y-1">
+            <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-purple-500/20 to-pink-500/20 rounded-full blur-3xl group-hover:scale-150 transition-transform duration-500"></div>
+            <div className="relative">
+              <div className="flex items-center gap-2 mb-3">
+                <div className="p-2 bg-gradient-to-br from-purple-500 to-pink-600 rounded-lg shadow-lg">
+                  <Target className="w-5 h-5 text-white" />
+                </div>
+                <div className="text-sm font-medium text-gray-600 dark:text-gray-400">
+                  Active Positions
+                </div>
+              </div>
+              <div className="text-4xl font-black bg-gradient-to-br from-purple-600 to-pink-600 bg-clip-text text-transparent">
+                {activePositions.length}
+              </div>
+              {claimablePositions.length > 0 && (
+                <div className="mt-2 flex items-center gap-1">
+                  <Award className="w-4 h-4 text-green-600 dark:text-green-400" />
+                  <span className="text-sm font-bold text-green-600 dark:text-green-400">
+                    {claimablePositions.length} claimable
+                  </span>
+                </div>
+              )}
+            </div>
           </div>
         </div>
 
         {/* Positions List */}
         <div>
-          <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-6">
+          <h2 className="text-2xl font-black text-gray-900 dark:text-white mb-6">
             Your Positions
           </h2>
 
           {isLoading ? (
-            <div className="grid grid-cols-1 gap-4">
+            <div className="space-y-4">
               {[1, 2, 3].map((i) => (
-                <div key={i} className="bg-white dark:bg-gray-800 rounded-xl p-6 animate-pulse">
-                  <div className="h-6 bg-gray-200 dark:bg-gray-700 rounded mb-4"></div>
+                <div
+                  key={i}
+                  className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-xl rounded-2xl p-6 animate-pulse border border-gray-200 dark:border-gray-700"
+                >
+                  <div className="h-6 bg-gray-200 dark:bg-gray-700 rounded-lg mb-4"></div>
+                  <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded mb-2"></div>
                   <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-2/3"></div>
                 </div>
               ))}
             </div>
           ) : positions.length === 0 ? (
-            <div className="text-center py-12 bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700">
-              <p className="text-gray-500 dark:text-gray-400 text-lg mb-4">
+            <div className="text-center py-20 bg-white/80 dark:bg-gray-800/80 backdrop-blur-xl rounded-2xl border border-gray-200 dark:border-gray-700 shadow-lg">
+              <div className="w-16 h-16 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center mx-auto mb-4">
+                <Sparkles className="w-8 h-8 text-white" />
+              </div>
+              <p className="text-gray-600 dark:text-gray-300 text-xl font-semibold mb-2">
                 No positions yet
               </p>
-              <p className="text-gray-400 dark:text-gray-500">
+              <p className="text-gray-500 dark:text-gray-400">
                 Start trading to build your portfolio! 📈
               </p>
             </div>
           ) : (
-            <div className="grid grid-cols-1 gap-4">
-              {positions.map((position, index) => {
+            <div className="space-y-4">
+              {positions.map((position) => {
                 const token = STABLECOINS.baseSepolia.find(
                   (t) => t.address.toLowerCase() === position.paymentToken.toLowerCase()
                 );
-                const shares = Number(position.shares) / 1e18;
-                const currentValue = (shares * position.currentPrice) / 100;
-                const isWinning = position.unrealizedPnL >= 0;
+                const isWinning = position.unrealizedPnLPercent > 0;
+                const sharesNumber = Number(position.shares) / 1e18;
+                const currentValue = (sharesNumber * position.currentPrice) / 100;
 
                 return (
                   <div
-                    key={`${position.marketId}-${position.outcomeId}-${index}`}
-                    className="bg-white dark:bg-gray-800 rounded-xl p-6 border border-gray-200 dark:border-gray-700"
+                    key={`${position.marketId}-${position.outcomeId}`}
+                    className="group relative overflow-hidden bg-white/80 dark:bg-gray-800/80 backdrop-blur-xl rounded-xl p-4 border border-gray-200 dark:border-gray-700 shadow-lg hover:shadow-xl transition-all duration-300"
                   >
-                    <div className="flex items-start justify-between mb-4">
-                      <div className="flex-1">
-                        <h3 className="font-bold text-gray-900 dark:text-white mb-1">
-                          {position.marketTitle}
-                        </h3>
-                        <div className="flex items-center gap-2">
-                          <span className={`px-2 py-1 rounded text-xs font-medium ${
-                            position.outcomeName === 'Yes' 
-                              ? 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400'
-                              : 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400'
-                          }`}>
-                            {position.outcomeName}
-                          </span>
+                    <div className={`absolute top-0 right-0 w-64 h-64 ${isWinning ? 'bg-gradient-to-br from-green-500/10 to-emerald-500/10' : 'bg-gradient-to-br from-blue-500/10 to-purple-500/10'} rounded-full blur-3xl group-hover:scale-150 transition-transform duration-500`}></div>
+                    
+                    <div className="relative">
+                      <div className="flex items-start justify-between mb-3">
+                        <div className="flex-1">
+                          <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-2">
+                            {position.marketTitle}
+                          </h3>
+                          <div className="flex items-center gap-2">
+                            <span className={`px-2 py-0.5 rounded-full text-xs font-bold ${
+                              position.outcomeId === 0
+                                ? 'bg-gradient-to-r from-green-500 to-emerald-600 text-white shadow-lg shadow-green-500/50'
+                                : 'bg-gradient-to-r from-red-500 to-orange-600 text-white shadow-lg shadow-red-500/50'
+                            }`}>
+                              {position.outcomeId === 0 ? 'Yes' : 'No'}
+                            </span>
+                          </div>
+                        </div>
+                        <div className="text-right">
+                          <div className="text-2xl font-black text-gray-900 dark:text-white">
+                            {sharesNumber.toFixed(2)}
+                          </div>
+                          <div className="text-xs text-gray-500 dark:text-gray-400">shares</div>
                         </div>
                       </div>
-                      <div className="text-right">
-                        <div className="text-2xl font-bold text-gray-900 dark:text-white">
-                          {shares.toFixed(2)}
-                        </div>
-                        <div className="text-sm text-gray-500 dark:text-gray-400">
-                          shares
-                        </div>
-                      </div>
-                    </div>
 
-                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4">
-                      <div>
-                        <div className="text-xs text-gray-500 dark:text-gray-400 mb-1">
-                          Current Price
+                      <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-4">
+                        <div>
+                          <div className="text-xs text-gray-500 dark:text-gray-400 mb-1">Current Price</div>
+                          <div className="text-lg font-bold text-gray-900 dark:text-white">{position.currentPrice}¢</div>
                         </div>
-                        <div className="font-semibold text-gray-900 dark:text-white">
-                          {position.currentPrice}¢
+                        <div>
+                          <div className="text-xs text-gray-500 dark:text-gray-400 mb-1">Current Value</div>
+                          <div className="text-lg font-bold text-gray-900 dark:text-white">{currentValue.toFixed(2)} {token?.symbol}</div>
                         </div>
-                      </div>
-                      <div>
-                        <div className="text-xs text-gray-500 dark:text-gray-400 mb-1">
-                          Current Value
+                        <div>
+                          <div className="text-xs text-gray-500 dark:text-gray-400 mb-1">P&L</div>
+                          <div className={`text-lg font-bold ${position.unrealizedPnL >= 0 ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'}`}>
+                            {position.unrealizedPnL >= 0 ? '+' : ''}{position.unrealizedPnL.toFixed(2)}
+                          </div>
                         </div>
-                        <div className="font-semibold text-gray-900 dark:text-white">
-                          {currentValue.toFixed(2)} {token?.symbol}
-                        </div>
-                      </div>
-                      <div>
-                        <div className="text-xs text-gray-500 dark:text-gray-400 mb-1">
-                          P&L
-                        </div>
-                        <div className={`font-semibold ${isWinning ? 'text-green-600' : 'text-red-600'}`}>
-                          {isWinning ? '+' : ''}{position.unrealizedPnL.toFixed(2)}
+                        <div>
+                          <div className="text-xs text-gray-500 dark:text-gray-400 mb-1">P&L %</div>
+                          <div className={`text-lg font-bold ${position.unrealizedPnLPercent >= 0 ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'}`}>
+                            {position.unrealizedPnLPercent.toFixed(2)}%
+                          </div>
                         </div>
                       </div>
-                      <div>
-                        <div className="text-xs text-gray-500 dark:text-gray-400 mb-1">
-                          P&L %
-                        </div>
-                        <div className={`font-semibold ${isWinning ? 'text-green-600' : 'text-red-600'}`}>
-                          {position.unrealizedPnLPercent.toFixed(1)}%
-                        </div>
-                      </div>
-                    </div>
 
-                    {/* Action Buttons */}
-                    {!position.resolved ? (
-                      <button
-                        onClick={() => {
-                          setSelectedPosition(position);
-                          setShowSellModal(true);
-                        }}
-                        className="w-full px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg font-medium transition-colors"
-                      >
-                        Sell Shares
-                      </button>
-                    ) : position.outcomeId === position.winningOutcomeId ? (
-                      <button
-                        onClick={() => {
-                          setClaimedPosition(position);
-                          claimWinnings(position.marketId, position.outcomeId);
-                        }}
-                        disabled={isClaiming}
-                        className="w-full px-4 py-2 bg-green-600 hover:bg-green-700 disabled:bg-gray-400 text-white rounded-lg font-medium transition-colors"
-                      >
-                        {isClaiming ? 'Claiming...' : 'Claim Winnings 🎉'}
-                      </button>
-                    ) : (
-                      <div className="w-full px-4 py-2 bg-gray-100 dark:bg-gray-700 text-gray-500 dark:text-gray-400 rounded-lg font-medium text-center">
-                        Market Resolved - No Winnings
-                      </div>
-                    )}
+                      {!position.resolved ? (
+                        <button
+                          onClick={() => {
+                            setSelectedPosition(position);
+                            setShowSellModal(true);
+                          }}
+                          className="w-full px-4 py-2.5 bg-gradient-to-r from-red-600 to-orange-600 hover:from-red-700 hover:to-orange-700 text-white rounded-lg font-bold shadow-lg shadow-red-500/50 hover:shadow-xl hover:shadow-red-500/50 transition-all duration-300"
+                        >
+                          Sell Shares
+                        </button>
+                      ) : position.winningOutcomeId === position.outcomeId ? (
+                        <button
+                          onClick={async () => {
+                            setClaimedPosition(position);
+                            await claimWinnings(position.marketId, position.outcomeId);
+                          }}
+                          disabled={isClaiming}
+                          className="w-full px-4 py-2.5 bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white rounded-lg font-bold shadow-lg shadow-green-500/50 hover:shadow-xl hover:shadow-green-500/50 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
+                        >
+                          {isClaiming ? 'Claiming...' : 'Claim Winnings'}
+                        </button>
+                      ) : (
+                        <div className="w-full px-4 py-2.5 bg-gray-200 dark:bg-gray-700 text-gray-600 dark:text-gray-400 rounded-lg font-bold text-center">
+                          Market Resolved - No Winnings
+                        </div>
+                      )}
+                    </div>
                   </div>
                 );
               })}
@@ -230,8 +257,7 @@ export default function Portfolio() {
         </div>
       </div>
 
-      {/* Sell Modal */}
-      {selectedPosition && (
+      {showSellModal && selectedPosition && (
         <SellModal
           isOpen={showSellModal}
           onClose={() => {
@@ -242,8 +268,7 @@ export default function Portfolio() {
         />
       )}
 
-      {/* Claim Success Modal */}
-      {claimedPosition && (
+      {showClaimSuccess && claimedPosition && (
         <ClaimSuccessModal
           isOpen={showClaimSuccess}
           onClose={() => {
@@ -252,10 +277,8 @@ export default function Portfolio() {
           }}
           marketTitle={claimedPosition.marketTitle}
           shares={Number(claimedPosition.shares) / 1e18}
-          payout={Number(claimedPosition.shares) / 1e18}
-          tokenSymbol={STABLECOINS.baseSepolia.find(
-            (t) => t.address.toLowerCase() === claimedPosition.paymentToken.toLowerCase()
-          )?.symbol || 'USDC'}
+          payout={(Number(claimedPosition.shares) / 1e18 * claimedPosition.currentPrice) / 100}
+          tokenSymbol={STABLECOINS.baseSepolia.find(t => t.address.toLowerCase() === claimedPosition.paymentToken.toLowerCase())?.symbol || 'USDC'}
         />
       )}
 
