@@ -48,6 +48,7 @@ export default function Navbar({
             <SearchBar 
               searchQuery={searchQuery}
               onSearchChange={onSearchChange}
+              placeholder={t('nav.search')}
               showFilters={showFilters}
               onToggleFilters={onToggleFilters}
               statusFilter={statusFilter}
