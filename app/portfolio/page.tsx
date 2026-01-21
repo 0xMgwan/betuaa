@@ -12,6 +12,7 @@ import { useAllMarkets } from '@/hooks/useMarkets';
 import { STABLECOINS } from '@/lib/contracts';
 import { TrendingUp, TrendingDown, DollarSign, Sparkles, Award, Target, Star, Activity } from 'lucide-react';
 import CompactMarketCard from '@/components/CompactMarketCard';
+import BlockchainMarketModal from '@/components/BlockchainMarketModal';
 
 export default function Portfolio() {
   const { address, isConnected } = useAccount();
@@ -23,6 +24,7 @@ export default function Portfolio() {
   const [claimedPosition, setClaimedPosition] = useState<any>(null);
   const [activeTab, setActiveTab] = useState<'positions' | 'favorites' | 'activity'>('positions');
   const [favoriteIds, setFavoriteIds] = useState<number[]>([]);
+  const [selectedBlockchainMarket, setSelectedBlockchainMarket] = useState<any>(null);
   const { claimWinnings, isPending: isClaiming, isSuccess: claimSuccess } = useClaimWinnings();
 
   useEffect(() => {
@@ -422,6 +424,14 @@ export default function Portfolio() {
           shares={Number(claimedPosition.shares) / 1e18}
           payout={(Number(claimedPosition.shares) / 1e18 * claimedPosition.currentPrice) / 100}
           tokenSymbol={STABLECOINS.baseSepolia.find(t => t.address.toLowerCase() === claimedPosition.paymentToken.toLowerCase())?.symbol || 'USDC'}
+        />
+      )}
+
+      {selectedBlockchainMarket && (
+        <BlockchainMarketModal
+          isOpen={!!selectedBlockchainMarket}
+          onClose={() => setSelectedBlockchainMarket(null)}
+          market={selectedBlockchainMarket}
         />
       )}
 
