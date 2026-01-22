@@ -269,8 +269,8 @@ export default function CompactMarketCard({
 
       {/* Connect Wallet Prompt */}
       {showConnectPrompt && (
-        <div className="fixed inset-0 bg-black/60 dark:bg-black/80 flex items-center justify-center z-50 p-4 backdrop-blur-sm" onClick={() => setShowConnectPrompt(false)}>
-          <div className="bg-white dark:bg-gray-800 rounded-xl p-6 max-w-sm w-full border-2 border-gray-200 dark:border-gray-700 shadow-xl" onClick={(e) => e.stopPropagation()}>
+        <div className="fixed inset-0 bg-black/70 dark:bg-black/80 flex items-center justify-center z-[9999] p-4 backdrop-blur-md" onClick={() => setShowConnectPrompt(false)} style={{ willChange: 'opacity' }}>
+          <div className="bg-white dark:bg-gray-800 rounded-xl p-6 max-w-sm w-full border-2 border-gray-200 dark:border-gray-700 shadow-2xl" onClick={(e) => e.stopPropagation()} style={{ willChange: 'transform' }}>
             <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-2">Connect Wallet</h3>
             <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">
               Please connect your wallet to start trading on this market.

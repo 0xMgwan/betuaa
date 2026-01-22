@@ -126,12 +126,14 @@ export default function TradingModal({
 
   return (
     <div 
-      className="fixed inset-0 bg-black/60 dark:bg-black/80 flex items-center justify-center z-50 p-4 backdrop-blur-sm" 
+      className="fixed inset-0 bg-black/70 dark:bg-black/80 flex items-center justify-center z-[9999] p-4 backdrop-blur-md" 
       onClick={onClose}
+      style={{ willChange: 'opacity' }}
     >
       <div 
-        className="bg-white dark:bg-gray-800 rounded-2xl max-w-md w-full p-6 border-2 border-gray-200 dark:border-gray-700 shadow-xl"
+        className="bg-white dark:bg-gray-800 rounded-2xl max-w-md w-full p-6 border-2 border-gray-200 dark:border-gray-700 shadow-2xl"
         onClick={(e) => e.stopPropagation()}
+        style={{ willChange: 'transform' }}
       >
         {/* Header */}
         <div className="flex items-center justify-between mb-6">
