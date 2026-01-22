@@ -63,54 +63,54 @@ export default function ProfilePage() {
       
       <div className="pt-24 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-12">
         {/* Profile Header */}
-        <div className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-xl rounded-2xl p-8 border border-gray-200 dark:border-gray-700 shadow-xl mb-8">
-          <div className="flex flex-col md:flex-row items-start md:items-center gap-6">
+        <div className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-xl rounded-xl md:rounded-2xl p-4 md:p-8 border border-gray-200 dark:border-gray-700 shadow-xl mb-4 md:mb-8">
+          <div className="flex flex-col md:flex-row items-start md:items-center gap-3 md:gap-6">
             {/* Avatar */}
             <div className="relative">
-              <div className="w-24 h-24 rounded-full bg-gradient-to-br from-blue-500 via-purple-500 to-pink-500 flex items-center justify-center text-white text-3xl font-bold shadow-lg">
+              <div className="w-16 h-16 md:w-24 md:h-24 rounded-full bg-gradient-to-br from-blue-500 via-purple-500 to-pink-500 flex items-center justify-center text-white text-xl md:text-3xl font-bold shadow-lg">
                 {userData.username.slice(0, 2).toUpperCase()}
               </div>
               {userData.rank <= 10 && (
-                <div className="absolute -bottom-2 -right-2 w-10 h-10 bg-yellow-500 rounded-full flex items-center justify-center shadow-lg">
-                  <Trophy className="w-5 h-5 text-white" />
+                <div className="absolute -bottom-1 -right-1 md:-bottom-2 md:-right-2 w-7 h-7 md:w-10 md:h-10 bg-yellow-500 rounded-full flex items-center justify-center shadow-lg">
+                  <Trophy className="w-3 h-3 md:w-5 md:h-5 text-white" />
                 </div>
               )}
             </div>
 
             {/* User Info */}
             <div className="flex-1">
-              <div className="flex items-center gap-3 mb-2">
-                <h1 className="text-3xl font-black text-gray-900 dark:text-white">
+              <div className="flex items-center gap-2 md:gap-3 mb-1 md:mb-2">
+                <h1 className="text-xl md:text-3xl font-black text-gray-900 dark:text-white">
                   {userData.username}
                 </h1>
                 {isOwnProfile && (
-                  <span className="px-3 py-1 bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400 rounded-full text-sm font-medium">
+                  <span className="px-2 md:px-3 py-0.5 md:py-1 bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400 rounded-full text-xs md:text-sm font-medium">
                     You
                   </span>
                 )}
               </div>
               
-              <div className="flex flex-wrap items-center gap-4 text-sm text-gray-600 dark:text-gray-400 mb-4">
-                <div className="flex items-center gap-1.5">
-                  <Calendar className="w-4 h-4" />
+              <div className="flex flex-wrap items-center gap-2 md:gap-4 text-xs md:text-sm text-gray-600 dark:text-gray-400 mb-2 md:mb-4">
+                <div className="flex items-center gap-1 md:gap-1.5">
+                  <Calendar className="w-3 h-3 md:w-4 md:h-4" />
                   {t('profile.joined')} {userData.joinedDate.toLocaleDateString('en-US', { month: 'short', year: 'numeric' })}
                 </div>
-                <div className="flex items-center gap-1.5">
-                  <Trophy className="w-4 h-4" />
+                <div className="flex items-center gap-1 md:gap-1.5">
+                  <Trophy className="w-3 h-3 md:w-4 md:h-4" />
                   {t('profile.rank')} #{userData.rank}
                 </div>
-                <div className="flex items-center gap-1.5">
-                  <Users className="w-4 h-4" />
+                <div className="flex items-center gap-1 md:gap-1.5">
+                  <Users className="w-3 h-3 md:w-4 md:h-4" />
                   {userData.followers} {t('profile.followers')} · {userData.following} {t('profile.following')}
                 </div>
               </div>
 
               {/* Badges */}
-              <div className="flex flex-wrap gap-2">
+              <div className="flex flex-wrap gap-1.5 md:gap-2">
                 {userData.badges.map((badge, index) => (
                   <span
                     key={index}
-                    className="px-3 py-1 bg-gradient-to-r from-purple-500 to-pink-500 text-white rounded-full text-xs font-bold shadow-lg"
+                    className="px-2 md:px-3 py-0.5 md:py-1 bg-gradient-to-r from-purple-500 to-pink-500 text-white rounded-full text-[10px] md:text-xs font-bold shadow-lg"
                   >
                     🏆 {badge}
                   </span>
@@ -120,7 +120,7 @@ export default function ProfilePage() {
 
             {/* Follow Button (if not own profile) */}
             {!isOwnProfile && (
-              <button className="px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-bold transition-colors shadow-lg">
+              <button className="px-4 md:px-6 py-2 md:py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-sm md:text-base font-bold transition-colors shadow-lg">
                 Follow
               </button>
             )}
@@ -183,39 +183,39 @@ export default function ProfilePage() {
         </div>
 
         {/* Tab Navigation */}
-        <div className="flex gap-2 mb-6 border-b border-gray-200 dark:border-gray-700">
+        <div className="flex gap-1 md:gap-2 mb-3 md:mb-6 border-b border-gray-200 dark:border-gray-700 overflow-x-auto scrollbar-hide">
           <button
             onClick={() => setActiveTab('positions')}
-            className={`flex items-center gap-2 px-4 py-2 font-medium text-sm transition-colors ${
+            className={`flex items-center gap-1 md:gap-2 px-2 md:px-4 py-1.5 md:py-2 font-medium text-xs md:text-sm transition-colors whitespace-nowrap ${
               activeTab === 'positions'
                 ? 'text-blue-600 dark:text-blue-400 border-b-2 border-blue-600 dark:border-blue-400'
                 : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200'
             }`}
           >
-            <Target className="w-4 h-4" />
+            <Target className="w-3 h-3 md:w-4 md:h-4" />
             {t('profile.activePositions')} ({userData.activeTrades})
           </button>
           <button
             onClick={() => setActiveTab('activity')}
-            className={`flex items-center gap-2 px-4 py-2 font-medium text-sm transition-colors ${
+            className={`flex items-center gap-1 md:gap-2 px-2 md:px-4 py-1.5 md:py-2 font-medium text-xs md:text-sm transition-colors whitespace-nowrap ${
               activeTab === 'activity'
                 ? 'text-blue-600 dark:text-blue-400 border-b-2 border-blue-600 dark:border-blue-400'
                 : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200'
             }`}
           >
-            <TrendingUp className="w-4 h-4" />
+            <TrendingUp className="w-3 h-3 md:w-4 md:h-4" />
             {t('profile.activity')}
           </button>
           {userData.marketsCreated > 0 && (
             <button
               onClick={() => setActiveTab('created')}
-              className={`flex items-center gap-2 px-4 py-2 font-medium text-sm transition-colors ${
+              className={`flex items-center gap-1 md:gap-2 px-2 md:px-4 py-1.5 md:py-2 font-medium text-xs md:text-sm transition-colors whitespace-nowrap ${
                 activeTab === 'created'
                   ? 'text-blue-600 dark:text-blue-400 border-b-2 border-blue-600 dark:border-blue-400'
                   : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200'
               }`}
             >
-              <Award className="w-4 h-4" />
+              <Award className="w-3 h-3 md:w-4 md:h-4" />
               {t('profile.createdMarkets')} ({userData.marketsCreated})
             </button>
           )}
