@@ -105,13 +105,22 @@ export default function Navbar({
             <CustomConnectButton />
           </div>
 
-          <button
-            className="md:hidden p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
-            onClick={() => setIsMenuOpen(true)}
-            aria-label="Open menu"
-          >
-            <Menu className="h-6 w-6" />
-          </button>
+          <div className="md:hidden flex items-center gap-2">
+            <button
+              onClick={() => setIsCreateModalOpen(true)}
+              className="flex items-center gap-1.5 px-3 py-1.5 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-medium text-xs transition-colors"
+            >
+              <Plus className="h-3.5 w-3.5" />
+              Create
+            </button>
+            <button
+              className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+              onClick={() => setIsMenuOpen(true)}
+              aria-label="Open menu"
+            >
+              <Menu className="h-6 w-6" />
+            </button>
+          </div>
         </div>
       </div>
       <div className="md:hidden border-t border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-950">
@@ -163,6 +172,16 @@ export default function Navbar({
             </div>
 
             <div className="px-4 py-4 space-y-2">
+              <button
+                onClick={() => {
+                  setIsCreateModalOpen(true);
+                  setIsMenuOpen(false);
+                }}
+                className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg bg-blue-600 hover:bg-blue-700 text-white transition-colors"
+              >
+                <Plus className="h-4 w-4" />
+                <span className="text-sm font-medium">Create Market</span>
+              </button>
               <Link
                 href={address ? `/profile/${address}` : "#"}
                 className={`flex items-center gap-3 px-3 py-2.5 rounded-lg transition-colors ${address ? "hover:bg-gray-100 dark:hover:bg-white/10" : "opacity-50 cursor-not-allowed"}`}
