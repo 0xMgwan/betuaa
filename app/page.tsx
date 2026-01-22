@@ -16,9 +16,14 @@ import { BlockchainMarket, useAllMarkets } from "@/hooks/useMarkets";
 import { useActivityFeed } from "@/hooks/useActivityFeed";
 import MarketFilters from "@/components/MarketFilters";
 import { useTranslation } from "@/hooks/useTranslation";
+import TradingModal from "@/components/TradingModal";
+import { ConnectButton } from '@rainbow-me/rainbowkit';
+import { useAccount } from 'wagmi';
+import { STABLECOINS } from '@/lib/contracts';
 
 export default function Home() {
   const { t } = useTranslation();
+  const { isConnected } = useAccount();
   const [activeCategory, setActiveCategory] = useState("all");
   const [selectedMarket, setSelectedMarket] = useState<Market | null>(null);
   const [selectedBlockchainMarket, setSelectedBlockchainMarket] = useState<BlockchainMarket | null>(null);
@@ -31,6 +36,34 @@ export default function Home() {
   const [statusFilter, setStatusFilter] = useState<'all' | 'active' | 'closed' | 'resolved'>('all');
   const [sortBy, setSortBy] = useState<'volume' | 'closing' | 'created' | 'activity'>('volume');
   const [showFilters, setShowFilters] = useState(false);
+
+  // Centralized modal state
+  const [showConnectPrompt, setShowConnectPrompt] = useState(false);
+  const [showTradingModal, setShowTradingModal] = useState(false);
+  const [selectedTrade, setSelectedTrade] = useState<{ marketId: number; outcomeId: number; outcomeName: string; price: number; paymentToken: string } | null>(null);
+
+  // Lock body scroll when modals are open
+  useEffect(() => {
+    if (showConnectPrompt || showTradingModal || selectedBlockchainMarket) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = 'unset';
+    }
+    return () => {
+      document.body.style.overflow = 'unset';
+    };
+  }, [showConnectPrompt, showTradingModal, selectedBlockchainMarket]);
+
+  // Handle trade click from cards
+  const handleTradeClick = (marketId: number, outcomeId: number, outcomeName: string, price: number, paymentToken: string) => {
+    if (!isConnected) {
+      setShowConnectPrompt(true);
+      return;
+    }
+    
+    setSelectedTrade({ marketId, outcomeId, outcomeName, price, paymentToken });
+    setShowTradingModal(true);
+  };
 
   const displayedBlockchainMarkets = useMemo(() => {
     let markets = [...blockchainMarkets];
@@ -199,7 +232,7 @@ export default function Home() {
                                 trend="up"
                                 priceHistory={generatePriceHistory(50, 50)}
                                 onClick={() => setSelectedBlockchainMarket(market)}
-                                onTrade={() => setSelectedBlockchainMarket(market)}
+                                onTradeClick={handleTradeClick}
                                 isBlockchain={true}
                                 status={market.resolved ? 'resolved' : isActive ? 'active' : 'closed'}
                                 description={market.description}
@@ -231,7 +264,7 @@ export default function Home() {
                             trend="up"
                             priceHistory={generatePriceHistory(50, 50)}
                             onClick={() => setSelectedBlockchainMarket(market)}
-                            onTrade={() => setSelectedBlockchainMarket(market)}
+                            onTradeClick={handleTradeClick}
                             isBlockchain={true}
                             status={market.resolved ? 'resolved' : isActive ? 'active' : 'closed'}
                             description={market.description}
@@ -262,7 +295,7 @@ export default function Home() {
                               trend="up"
                               priceHistory={generatePriceHistory(50, 50)}
                               onClick={() => setSelectedBlockchainMarket(market)}
-                              onTrade={() => setSelectedBlockchainMarket(market)}
+                              onTradeClick={handleTradeClick}
                               isBlockchain={true}
                               status={market.resolved ? 'resolved' : isActive ? 'active' : 'closed'}
                               description={market.description}
@@ -357,6 +390,45 @@ export default function Home() {
           isOpen={!!selectedBlockchainMarket}
           onClose={() => setSelectedBlockchainMarket(null)}
           market={selectedBlockchainMarket}
+        />
+      )}
+
+      {/* Centralized Connect Wallet Prompt */}
+      {showConnectPrompt && (
+        <div className="fixed inset-0 bg-black/70 dark:bg-black/80 flex items-center justify-center z-[9999] p-4 backdrop-blur-md" onClick={() => setShowConnectPrompt(false)} style={{ willChange: 'opacity' }}>
+          <div className="bg-white dark:bg-gray-800 rounded-xl p-6 max-w-sm w-full border-2 border-gray-200 dark:border-gray-700 shadow-2xl" onClick={(e) => e.stopPropagation()} style={{ willChange: 'transform' }}>
+            <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-2">Connect Wallet</h3>
+            <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">
+              Please connect your wallet to start trading on this market.
+            </p>
+            <div className="flex flex-col gap-2">
+              <ConnectButton />
+              <button
+                onClick={() => setShowConnectPrompt(false)}
+                className="px-4 py-2 bg-gray-200 dark:bg-gray-700 text-gray-900 dark:text-white rounded-lg hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors"
+              >
+                Cancel
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Centralized Trading Modal */}
+      {selectedTrade && (
+        <TradingModal
+          isOpen={showTradingModal}
+          onClose={() => {
+            setShowTradingModal(false);
+            setSelectedTrade(null);
+          }}
+          marketId={selectedTrade.marketId}
+          outcomeId={selectedTrade.outcomeId}
+          outcomeName={selectedTrade.outcomeName}
+          currentPrice={selectedTrade.price}
+          paymentToken={selectedTrade.paymentToken}
+          tokenSymbol={STABLECOINS.baseSepolia.find(t => t.address.toLowerCase() === selectedTrade.paymentToken.toLowerCase())?.symbol || 'USDC'}
+          tokenDecimals={STABLECOINS.baseSepolia.find(t => t.address.toLowerCase() === selectedTrade.paymentToken.toLowerCase())?.decimals || 6}
         />
       )}
     </div>
