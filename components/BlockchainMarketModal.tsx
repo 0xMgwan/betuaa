@@ -101,7 +101,7 @@ export default function BlockchainMarketModal({
           />
 
           {/* Trading Section */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-2 md:gap-3">
+          <div className="grid grid-cols-2 gap-2 md:gap-3">
             {/* Yes Option */}
             <div className="bg-green-50 dark:bg-green-900/20 rounded-lg p-3 md:p-4 border border-green-200 dark:border-green-800">
               <div className="mb-2 md:mb-3">
