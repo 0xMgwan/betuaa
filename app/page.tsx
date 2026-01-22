@@ -155,27 +155,30 @@ export default function Home() {
         onStatusFilterChange={setStatusFilter}
         sortBy={sortBy}
         onSortChange={setSortBy}
+        activeCategory={activeCategory}
+        onCategoryChange={setActiveCategory}
       />
-      <div className="pt-16">
-        <CategoryTabs 
-          activeCategory={activeCategory}
-          onCategoryChange={setActiveCategory}
-        />
+      <div className="md:pt-16">
+        <div className="hidden md:block">
+          <CategoryTabs 
+            activeCategory={activeCategory}
+            onCategoryChange={setActiveCategory}
+          />
+        </div>
         
-        <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 py-4 md:py-8">
-          <FeaturedMarket />
+        <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 pt-[180px] md:pt-0 pb-3 md:pb-8">
+          <div className="mb-4 md:mb-0 hidden md:block">
+            <FeaturedMarket />
+          </div>
           
           {/* Main Content Grid */}
-          <div className="mt-12 grid grid-cols-1 lg:grid-cols-3 gap-8">
+          <div className="mt-0 md:mt-12 grid grid-cols-1 lg:grid-cols-3 gap-4 md:gap-8">
             {/* Markets Section */}
             <div className="lg:col-span-2">
               {/* Blockchain Markets - using same card format */}
               {displayedBlockchainMarkets.length > 0 && (
-                <div className="mb-8">
-                  <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-4">
-                    Live Markets
-                  </h2>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
+                <div className="mb-0 md:mb-8">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3 md:gap-6">
                     {displayedBlockchainMarkets.map((market) => {
                       const closingDate = new Date(Number(market.closingDate) * 1000);
                       const isActive = closingDate > new Date() && !market.resolved;
@@ -204,18 +207,18 @@ export default function Home() {
                 </div>
               )}
 
-              <div className="mt-8">
+              <div className="mt-4 md:mt-8">
                 {/* Results Count */}
-                <div className="mb-4 flex items-center justify-between">
-                  <p className="text-sm text-gray-600 dark:text-gray-400">
+                <div className="mb-3 md:mb-4 flex items-center justify-between">
+                  <p className="text-xs md:text-sm text-gray-600 dark:text-gray-400">
                     {displayedBlockchainMarkets.length + marketsWithHistory.length} {(displayedBlockchainMarkets.length + marketsWithHistory.length) === 1 ? 'market' : 'markets'} found
                   </p>
                 </div>
 
                 {/* Markets Grid or Empty State */}
                 {displayedBlockchainMarkets.length === 0 && marketsWithHistory.length === 0 ? (
-                  <div className="text-center py-12 bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700">
-                    <p className="text-gray-600 dark:text-gray-400 text-lg mb-2">
+                  <div className="text-center py-8 md:py-12 bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700">
+                    <p className="text-gray-600 dark:text-gray-400 text-base md:text-lg mb-2">
                       No markets found
                     </p>
                     <p className="text-gray-500 dark:text-gray-500 text-sm">
@@ -224,7 +227,7 @@ export default function Home() {
                   </div>
                 ) : (
                   marketsWithHistory.length > 0 &&
-                  <div key={renderKey} className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div key={renderKey} className="grid grid-cols-1 md:grid-cols-2 gap-3 md:gap-6">
                     {marketsWithHistory.map((market) => (
                       <CompactMarketCard
                         key={`${activeCategory}-${market.id}`}

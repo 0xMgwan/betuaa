@@ -25,8 +25,8 @@ export default function CategoryTabs({ activeCategory, onCategoryChange }: Categ
   
   return (
     <div className="border-b border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-950">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex items-center gap-1 overflow-x-auto scrollbar-hide py-3 -mx-4 px-4 sm:mx-0 sm:px-0 snap-x snap-mandatory touch-pan-x">
+      <div className="max-w-7xl mx-auto">
+        <div className="flex items-center gap-1.5 overflow-x-auto scrollbar-hide py-2 md:py-3 px-4 sm:px-6 lg:px-8 snap-x snap-mandatory touch-pan-x">
           {categories.map((category) => {
             const Icon = category.icon;
             const isActive = activeCategory === category.id;
@@ -35,7 +35,7 @@ export default function CategoryTabs({ activeCategory, onCategoryChange }: Categ
                 key={category.id}
                 onClick={() => onCategoryChange(category.id)}
                 className={`
-                  flex items-center gap-2 px-4 py-2.5 md:py-2 rounded-lg text-sm font-semibold whitespace-nowrap transition-all snap-start
+                  flex items-center gap-2 px-3 py-2 md:px-4 md:py-2.5 rounded-lg text-xs md:text-sm font-semibold whitespace-nowrap transition-all snap-start
                   ${
                     isActive
                       ? "bg-blue-500 text-white shadow-md"
@@ -43,7 +43,7 @@ export default function CategoryTabs({ activeCategory, onCategoryChange }: Categ
                   }
                 `}
               >
-                <Icon className="h-4 w-4" />
+                <Icon className="h-3.5 w-3.5 md:h-4 md:w-4" />
                 {t(`categories.${category.id}` as any)}
               </button>
             );
