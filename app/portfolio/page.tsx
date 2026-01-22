@@ -75,50 +75,50 @@ export default function Portfolio() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 via-blue-50 to-purple-50 dark:from-gray-950 dark:via-gray-900 dark:to-gray-950">
       <Navbar />
-      <div className="pt-24 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-12">
+      <div className="pt-32 md:pt-24 max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 pb-6 md:pb-12">
         {/* Header */}
-        <div className="mb-8">
-          <h1 className="text-4xl font-black bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent mb-2">
+        <div className="mb-4 md:mb-8">
+          <h1 className="text-xl md:text-4xl font-black bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent mb-1 md:mb-2">
             {t('portfolio.title')}
           </h1>
-          <p className="text-gray-600 dark:text-gray-400 text-lg">
+          <p className="text-xs md:text-lg text-gray-600 dark:text-gray-400">
             {t('portfolio.trackPositions')}
           </p>
         </div>
 
         {/* Tab Navigation */}
-        <div className="flex gap-2 mb-6 border-b border-gray-200 dark:border-gray-700">
+        <div className="flex gap-1 md:gap-2 mb-3 md:mb-6 border-b border-gray-200 dark:border-gray-700 overflow-x-auto scrollbar-hide">
           <button
             onClick={() => setActiveTab('positions')}
-            className={`flex items-center gap-2 px-4 py-2 font-medium text-sm transition-colors ${
+            className={`flex items-center gap-1 md:gap-2 px-2 md:px-4 py-1.5 md:py-2 font-medium text-xs md:text-sm transition-colors whitespace-nowrap ${
               activeTab === 'positions'
                 ? 'text-blue-600 dark:text-blue-400 border-b-2 border-blue-600 dark:border-blue-400'
                 : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200'
             }`}
           >
-            <Target className="w-4 h-4" />
+            <Target className="w-3 h-3 md:w-4 md:h-4" />
             {t('portfolio.myPositions')}
           </button>
           <button
             onClick={() => setActiveTab('favorites')}
-            className={`flex items-center gap-2 px-4 py-2 font-medium text-sm transition-colors ${
+            className={`flex items-center gap-1 md:gap-2 px-2 md:px-4 py-1.5 md:py-2 font-medium text-xs md:text-sm transition-colors whitespace-nowrap ${
               activeTab === 'favorites'
                 ? 'text-blue-600 dark:text-blue-400 border-b-2 border-blue-600 dark:border-blue-400'
                 : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200'
             }`}
           >
-            <Star className="w-4 h-4" />
+            <Star className="w-3 h-3 md:w-4 md:h-4" />
             Favorites ({favoriteIds.length})
           </button>
           <button
             onClick={() => setActiveTab('activity')}
-            className={`flex items-center gap-2 px-4 py-2 font-medium text-sm transition-colors ${
+            className={`flex items-center gap-1 md:gap-2 px-2 md:px-4 py-1.5 md:py-2 font-medium text-xs md:text-sm transition-colors whitespace-nowrap ${
               activeTab === 'activity'
                 ? 'text-blue-600 dark:text-blue-400 border-b-2 border-blue-600 dark:border-blue-400'
                 : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200'
             }`}
           >
-            <Activity className="w-4 h-4" />
+            <Activity className="w-3 h-3 md:w-4 md:h-4" />
             {t('portfolio.activity')}
           </button>
         </div>
@@ -127,62 +127,62 @@ export default function Portfolio() {
         {activeTab === 'positions' && (
           <>
             {/* Stats Grid with Premium Design */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-3 md:gap-6 mb-4 md:mb-8">
           {/* Total Value Card */}
-          <div className="group relative overflow-hidden bg-white/80 dark:bg-gray-800/80 backdrop-blur-xl rounded-2xl p-6 border border-gray-200 dark:border-gray-700 shadow-lg hover:shadow-2xl transition-all duration-300 hover:-translate-y-1">
+          <div className="group relative overflow-hidden bg-white/80 dark:bg-gray-800/80 backdrop-blur-xl rounded-xl md:rounded-2xl p-4 md:p-6 border border-gray-200 dark:border-gray-700 shadow-lg hover:shadow-2xl transition-all duration-300 hover:-translate-y-1">
             <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-blue-500/20 to-cyan-500/20 rounded-full blur-3xl group-hover:scale-150 transition-transform duration-500"></div>
             <div className="relative">
-              <div className="flex items-center gap-2 mb-3">
-                <div className="p-2 bg-gradient-to-br from-blue-500 to-cyan-600 rounded-lg shadow-lg">
-                  <DollarSign className="w-5 h-5 text-white" />
+              <div className="flex items-center gap-1.5 md:gap-2 mb-2 md:mb-3">
+                <div className="p-1.5 md:p-2 bg-gradient-to-br from-blue-500 to-cyan-600 rounded-lg shadow-lg">
+                  <DollarSign className="w-4 h-4 md:w-5 md:h-5 text-white" />
                 </div>
-                <div className="text-sm font-medium text-gray-600 dark:text-gray-400">
+                <div className="text-xs md:text-sm font-medium text-gray-600 dark:text-gray-400">
                   {t('portfolio.totalValue')}
                 </div>
               </div>
-              <div className="text-4xl font-black bg-gradient-to-br from-blue-600 to-cyan-600 bg-clip-text text-transparent">
+              <div className="text-2xl md:text-4xl font-black bg-gradient-to-br from-blue-600 to-cyan-600 bg-clip-text text-transparent">
                 ${totalValue.toFixed(2)}
               </div>
             </div>
           </div>
 
-          {/* P&L Card */}
-          <div className="group relative overflow-hidden bg-white/80 dark:bg-gray-800/80 backdrop-blur-xl rounded-2xl p-6 border border-gray-200 dark:border-gray-700 shadow-lg hover:shadow-2xl transition-all duration-300 hover:-translate-y-1">
-            <div className={`absolute top-0 right-0 w-32 h-32 ${totalPnL >= 0 ? 'bg-gradient-to-br from-green-500/20 to-emerald-500/20' : 'bg-gradient-to-br from-red-500/20 to-orange-500/20'} rounded-full blur-3xl group-hover:scale-150 transition-transform duration-500`}></div>
-            <div className="relative">
-              <div className="flex items-center gap-2 mb-3">
-                <div className={`p-2 ${totalPnL >= 0 ? 'bg-gradient-to-br from-green-500 to-emerald-600' : 'bg-gradient-to-br from-red-500 to-orange-600'} rounded-lg shadow-lg`}>
-                  {totalPnL >= 0 ? <TrendingUp className="w-5 h-5 text-white" /> : <TrendingDown className="w-5 h-5 text-white" />}
-                </div>
-                <div className="text-sm font-medium text-gray-600 dark:text-gray-400">
-                  {t('portfolio.unrealizedPL')}
+              {/* P&L Card */}
+              <div className="group relative overflow-hidden bg-white/80 dark:bg-gray-800/80 backdrop-blur-xl rounded-xl md:rounded-2xl p-4 md:p-6 border border-gray-200 dark:border-gray-700 shadow-lg hover:shadow-2xl transition-all duration-300 hover:-translate-y-1">
+                <div className={`absolute top-0 right-0 w-32 h-32 ${totalPnL >= 0 ? 'bg-gradient-to-br from-green-500/20 to-emerald-500/20' : 'bg-gradient-to-br from-red-500/20 to-orange-500/20'} rounded-full blur-3xl group-hover:scale-150 transition-transform duration-500`}></div>
+                <div className="relative">
+                  <div className="flex items-center gap-1.5 md:gap-2 mb-2 md:mb-3">
+                    <div className={`p-1.5 md:p-2 ${totalPnL >= 0 ? 'bg-gradient-to-br from-green-500 to-emerald-600' : 'bg-gradient-to-br from-red-500 to-orange-600'} rounded-lg shadow-lg`}>
+                      {totalPnL >= 0 ? <TrendingUp className="w-4 h-4 md:w-5 md:h-5 text-white" /> : <TrendingDown className="w-4 h-4 md:w-5 md:h-5 text-white" />}
+                    </div>
+                    <div className="text-xs md:text-sm font-medium text-gray-600 dark:text-gray-400">
+                      {t('portfolio.unrealizedPL')}
+                    </div>
+                  </div>
+                  <div className={`text-2xl md:text-4xl font-black ${totalPnL >= 0 ? 'bg-gradient-to-br from-green-600 to-emerald-600' : 'bg-gradient-to-br from-red-600 to-orange-600'} bg-clip-text text-transparent`}>
+                    {totalPnL >= 0 ? '+' : ''}{totalPnL.toFixed(2)} ({totalPnLPercent.toFixed(2)}%)
+                  </div>
                 </div>
               </div>
-              <div className={`text-4xl font-black ${totalPnL >= 0 ? 'bg-gradient-to-br from-green-600 to-emerald-600' : 'bg-gradient-to-br from-red-600 to-orange-600'} bg-clip-text text-transparent`}>
-                {totalPnL >= 0 ? '+' : ''}{totalPnL.toFixed(2)} ({totalPnLPercent.toFixed(2)}%)
-              </div>
-            </div>
-          </div>
 
           {/* Active Positions Card */}
-          <div className="group relative overflow-hidden bg-white/80 dark:bg-gray-800/80 backdrop-blur-xl rounded-2xl p-6 border border-gray-200 dark:border-gray-700 shadow-lg hover:shadow-2xl transition-all duration-300 hover:-translate-y-1">
+          <div className="group relative overflow-hidden bg-white/80 dark:bg-gray-800/80 backdrop-blur-xl rounded-xl md:rounded-2xl p-4 md:p-6 border border-gray-200 dark:border-gray-700 shadow-lg hover:shadow-2xl transition-all duration-300 hover:-translate-y-1">
             <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-purple-500/20 to-pink-500/20 rounded-full blur-3xl group-hover:scale-150 transition-transform duration-500"></div>
             <div className="relative">
-              <div className="flex items-center gap-2 mb-3">
-                <div className="p-2 bg-gradient-to-br from-purple-500 to-pink-600 rounded-lg shadow-lg">
-                  <Target className="w-5 h-5 text-white" />
+              <div className="flex items-center gap-1.5 md:gap-2 mb-2 md:mb-3">
+                <div className="p-1.5 md:p-2 bg-gradient-to-br from-purple-500 to-pink-600 rounded-lg shadow-lg">
+                  <Target className="w-4 h-4 md:w-5 md:h-5 text-white" />
                 </div>
-                <div className="text-sm font-medium text-gray-600 dark:text-gray-400">
+                <div className="text-xs md:text-sm font-medium text-gray-600 dark:text-gray-400">
                   {t('portfolio.activePositions')}
                 </div>
               </div>
-              <div className="text-4xl font-black bg-gradient-to-br from-purple-600 to-pink-600 bg-clip-text text-transparent">
+              <div className="text-2xl md:text-4xl font-black bg-gradient-to-br from-purple-600 to-pink-600 bg-clip-text text-transparent">
                 {activePositions.length}
               </div>
               {claimablePositions.length > 0 && (
                 <div className="mt-2 flex items-center gap-1">
-                  <Award className="w-4 h-4 text-green-600 dark:text-green-400" />
-                  <span className="text-sm font-bold text-green-600 dark:text-green-400">
+                  <Award className="w-3 h-3 md:w-4 md:h-4 text-green-600 dark:text-green-400" />
+                  <span className="text-xs md:text-sm font-bold text-green-600 dark:text-green-400">
                     {claimablePositions.length} {t('portfolio.claimable')}
                   </span>
                 </div>
@@ -193,7 +193,7 @@ export default function Portfolio() {
 
         {/* Positions List */}
         <div>
-          <h2 className="text-2xl font-black text-gray-900 dark:text-white mb-6">
+          <h2 className="text-lg md:text-2xl font-black text-gray-900 dark:text-white mb-3 md:mb-6">
             Your Positions
           </h2>
 
@@ -223,7 +223,7 @@ export default function Portfolio() {
               </p>
             </div>
           ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            <div className="grid grid-cols-1 gap-3 md:gap-4">
               {positions.map((position) => {
                 const token = STABLECOINS.baseSepolia.find(
                   (t) => t.address.toLowerCase() === position.paymentToken.toLowerCase()
