@@ -218,7 +218,7 @@ export default function Home() {
                       const isActive = closingDate > new Date() && !market.resolved;
                       
                       return (
-                        <div key={market.id} onClick={() => setSelectedBlockchainMarket(market)}>
+                        <div key={market.id}>
                           <CompactMarketCard
                             id={market.id}
                             question={market.title}
@@ -248,7 +248,7 @@ export default function Home() {
                         const isActive = closingDate > new Date() && !market.resolved;
                         
                         return (
-                          <div key={market.id} onClick={() => setSelectedBlockchainMarket(market)}>
+                          <div key={market.id}>
                             <CompactMarketCard
                               id={market.id}
                               question={market.title}
