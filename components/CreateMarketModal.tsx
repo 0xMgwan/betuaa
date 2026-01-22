@@ -1,13 +1,14 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { X, Sparkles, Calendar, DollarSign, Tag, FileText, TrendingUp } from 'lucide-react';
+import { X, Sparkles, Calendar, DollarSign, Tag, FileText, TrendingUp, ChevronDown } from 'lucide-react';
 import { STABLECOINS } from '@/lib/contracts';
 import { useCreateMarket } from '@/hooks/usePredictionMarket';
 import { useApproveToken } from '@/hooks/useERC20';
 import { CONTRACTS } from '@/lib/contracts';
 import { parseUnits } from 'viem';
 import { useTranslation } from '@/hooks/useTranslation';
+import Image from 'next/image';
 
 const CATEGORIES = [
   { value: 'crypto', label: 'Crypto', icon: '₿', color: 'from-orange-500 to-yellow-500' },
@@ -32,6 +33,7 @@ export default function CreateMarketModal({ isOpen, onClose }: CreateMarketModal
   const [selectedToken, setSelectedToken] = useState<string>(STABLECOINS.baseSepolia[0].address);
   const [category, setCategory] = useState('crypto');
   const [step, setStep] = useState<'form' | 'approve' | 'create'>('form');
+  const [isTokenDropdownOpen, setIsTokenDropdownOpen] = useState(false);
 
   const { createMarket, isPending: isCreating, isSuccess } = useCreateMarket();
   const { approve, isPending: isApproving, isSuccess: isApproved } = useApproveToken();
@@ -232,17 +234,66 @@ export default function CreateMarketModal({ isOpen, onClose }: CreateMarketModal
               <DollarSign className="w-4 h-4" />
               {t('createMarket.paymentToken')}
             </label>
-            <select
-              value={selectedToken}
-              onChange={(e) => setSelectedToken(e.target.value)}
-              className="w-full px-4 py-3 md:py-3 text-base border border-gray-300 dark:border-gray-600 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white transition-all"
-            >
-              {STABLECOINS.baseSepolia.map((token) => (
-                <option key={token.address} value={token.address}>
-                  {token.icon} {token.symbol} - {token.name}
-                </option>
-              ))}
-            </select>
+            <div className="relative">
+              <button
+                type="button"
+                onClick={() => setIsTokenDropdownOpen(!isTokenDropdownOpen)}
+                className="w-full px-4 py-3 md:py-3 text-base border border-gray-300 dark:border-gray-600 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white transition-all flex items-center justify-between"
+              >
+                <div className="flex items-center gap-3">
+                  {selectedStablecoin?.icon.startsWith('/') ? (
+                    <Image 
+                      src={selectedStablecoin.icon} 
+                      alt={selectedStablecoin.symbol}
+                      width={24}
+                      height={24}
+                      className="rounded-full"
+                    />
+                  ) : (
+                    <span className="text-xl">{selectedStablecoin?.icon}</span>
+                  )}
+                  <span>{selectedStablecoin?.symbol} - {selectedStablecoin?.name}</span>
+                </div>
+                <ChevronDown className={`w-5 h-5 transition-transform ${isTokenDropdownOpen ? 'rotate-180' : ''}`} />
+              </button>
+              
+              {isTokenDropdownOpen && (
+                <div className="absolute z-10 w-full mt-2 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-xl shadow-lg max-h-60 overflow-y-auto">
+                  {STABLECOINS.baseSepolia.map((token) => (
+                    <button
+                      key={token.address}
+                      type="button"
+                      onClick={() => {
+                        setSelectedToken(token.address);
+                        setIsTokenDropdownOpen(false);
+                      }}
+                      className={`w-full px-4 py-3 flex items-center gap-3 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors ${
+                        selectedToken === token.address ? 'bg-blue-50 dark:bg-blue-900/20' : ''
+                      }`}
+                    >
+                      {token.icon.startsWith('/') ? (
+                        <Image 
+                          src={token.icon} 
+                          alt={token.symbol}
+                          width={24}
+                          height={24}
+                          className="rounded-full"
+                        />
+                      ) : (
+                        <span className="text-xl">{token.icon}</span>
+                      )}
+                      <div className="flex items-center gap-2">
+                        <span className="font-medium">{token.symbol}</span>
+                        <span className="text-gray-600 dark:text-gray-400">- {token.name}</span>
+                      </div>
+                      {selectedToken === token.address && (
+                        <span className="ml-auto text-blue-600 dark:text-blue-400">✓</span>
+                      )}
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
             <p className="mt-2 text-sm text-gray-500 dark:text-gray-400">
               Users will trade using {selectedStablecoin?.symbol} for this market
             </p>
