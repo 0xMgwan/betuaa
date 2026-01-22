@@ -126,7 +126,7 @@ export default function TradingModal({
 
   return (
     <div className="fixed inset-0 bg-black/50 dark:bg-black/70 flex items-center justify-center z-50 p-4">
-      <div className="bg-white dark:bg-gray-800 rounded-2xl max-w-md w-full p-6">
+      <div className="bg-white dark:bg-gray-800 rounded-2xl max-w-md w-full p-6 border-2 border-gray-200 dark:border-gray-700 shadow-xl">
         {/* Header */}
         <div className="flex items-center justify-between mb-6">
           <h2 className="text-xl font-bold text-gray-900 dark:text-white">
