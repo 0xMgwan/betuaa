@@ -4,7 +4,7 @@ import { TrendingUp, TrendingDown, Clock } from "lucide-react";
 import { Card } from "./ui/card";
 import { extractCategory, getCategoryInfo } from '@/lib/categoryUtils';
 import { useAccount } from 'wagmi';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { ConnectButton } from '@rainbow-me/rainbowkit';
 import TradingModal from './TradingModal';
 import { STABLECOINS } from '@/lib/contracts';
@@ -48,6 +48,18 @@ export default function CompactMarketCard({
   const [showConnectPrompt, setShowConnectPrompt] = useState(false);
   const [showTradingModal, setShowTradingModal] = useState(false);
   const [selectedOutcome, setSelectedOutcome] = useState<{ id: number; name: string; price: number } | null>(null);
+
+  // Lock body scroll when modals are open
+  useEffect(() => {
+    if (showConnectPrompt || showTradingModal) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = 'unset';
+    }
+    return () => {
+      document.body.style.overflow = 'unset';
+    };
+  }, [showConnectPrompt, showTradingModal]);
 
   const handleTradeClick = (e: React.MouseEvent, outcomeId: number, outcomeName: string, price: number) => {
     e.stopPropagation();
@@ -232,9 +244,10 @@ export default function CompactMarketCard({
 
       <div className="flex items-center gap-1.5 mb-2">
         <button
+          type="button"
           onClick={(e) => handleTradeClick(e, 0, 'Yes', yesPrice)}
           disabled={status !== 'active'}
-          className="flex-1 bg-green-100 dark:bg-green-900/30 rounded-lg px-2 md:px-2.5 py-1.5 hover:bg-green-200 dark:hover:bg-green-900/50 active:scale-95 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+          className="flex-1 bg-green-100 dark:bg-green-900/30 rounded-lg px-2 md:px-2.5 py-1.5 hover:bg-green-200 dark:hover:bg-green-900/50 active:scale-95 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
         >
           <div className="text-[10px] md:text-xs text-gray-600 dark:text-gray-400">Yes</div>
           <div className="text-sm md:text-base font-bold text-green-600">
@@ -242,9 +255,10 @@ export default function CompactMarketCard({
           </div>
         </button>
         <button
+          type="button"
           onClick={(e) => handleTradeClick(e, 1, 'No', noPrice)}
           disabled={status !== 'active'}
-          className="flex-1 bg-red-100 dark:bg-red-900/30 rounded-lg px-2 md:px-2.5 py-1.5 hover:bg-red-200 dark:hover:bg-red-900/50 active:scale-95 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+          className="flex-1 bg-red-100 dark:bg-red-900/30 rounded-lg px-2 md:px-2.5 py-1.5 hover:bg-red-200 dark:hover:bg-red-900/50 active:scale-95 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
         >
           <div className="text-[10px] md:text-xs text-gray-600 dark:text-gray-400">No</div>
           <div className="text-sm md:text-base font-bold text-red-600">
