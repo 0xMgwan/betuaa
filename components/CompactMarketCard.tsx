@@ -3,6 +3,9 @@
 import { TrendingUp, TrendingDown, Clock } from "lucide-react";
 import { Card } from "./ui/card";
 import { extractCategory, getCategoryInfo } from '@/lib/categoryUtils';
+import { useAccount } from 'wagmi';
+import { useState } from 'react';
+import { ConnectButton } from '@rainbow-me/rainbowkit';
 
 interface CompactMarketCardProps {
   id: number;
@@ -18,6 +21,7 @@ interface CompactMarketCardProps {
   isBlockchain?: boolean;
   status?: 'active' | 'closed' | 'resolved';
   description?: string;
+  onTrade?: (outcomeId: number, outcomeName: string, price: number) => void;
 }
 
 export default function CompactMarketCard({
@@ -33,7 +37,27 @@ export default function CompactMarketCard({
   isBlockchain = false,
   status = 'active',
   description,
+  onTrade,
 }: CompactMarketCardProps) {
+  const { isConnected } = useAccount();
+  const [showConnectPrompt, setShowConnectPrompt] = useState(false);
+
+  const handleTradeClick = (e: React.MouseEvent, outcomeId: number, outcomeName: string, price: number) => {
+    e.stopPropagation();
+    
+    if (!isConnected) {
+      setShowConnectPrompt(true);
+      return;
+    }
+    
+    if (status !== 'active') {
+      return;
+    }
+    
+    if (onTrade) {
+      onTrade(outcomeId, outcomeName, price);
+    }
+  };
   // Extract category from description if available (for blockchain markets)
   const actualCategory = description ? getCategoryInfo(extractCategory(description)).label : category;
   
@@ -195,19 +219,48 @@ export default function CompactMarketCard({
       </div>
 
       <div className="flex items-center gap-1.5 mb-2">
-        <div className="flex-1 bg-green-100 dark:bg-green-900/30 rounded-lg px-2 md:px-2.5 py-1.5 group-hover:bg-green-200 dark:group-hover:bg-green-900/50 transition-colors">
+        <button
+          onClick={(e) => handleTradeClick(e, 0, 'Yes', yesPrice)}
+          disabled={status !== 'active'}
+          className="flex-1 bg-green-100 dark:bg-green-900/30 rounded-lg px-2 md:px-2.5 py-1.5 hover:bg-green-200 dark:hover:bg-green-900/50 active:scale-95 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+        >
           <div className="text-[10px] md:text-xs text-gray-600 dark:text-gray-400">Yes</div>
           <div className="text-sm md:text-base font-bold text-green-600">
             {(yesPrice * 100).toFixed(0)}¢
           </div>
-        </div>
-        <div className="flex-1 bg-red-100 dark:bg-red-900/30 rounded-lg px-2 md:px-2.5 py-1.5 group-hover:bg-red-200 dark:group-hover:bg-red-900/50 transition-colors">
+        </button>
+        <button
+          onClick={(e) => handleTradeClick(e, 1, 'No', noPrice)}
+          disabled={status !== 'active'}
+          className="flex-1 bg-red-100 dark:bg-red-900/30 rounded-lg px-2 md:px-2.5 py-1.5 hover:bg-red-200 dark:hover:bg-red-900/50 active:scale-95 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+        >
           <div className="text-[10px] md:text-xs text-gray-600 dark:text-gray-400">No</div>
           <div className="text-sm md:text-base font-bold text-red-600">
             {(noPrice * 100).toFixed(0)}¢
           </div>
-        </div>
+        </button>
       </div>
+
+      {/* Connect Wallet Prompt */}
+      {showConnectPrompt && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4" onClick={() => setShowConnectPrompt(false)}>
+          <div className="bg-white dark:bg-gray-800 rounded-xl p-6 max-w-sm w-full" onClick={(e) => e.stopPropagation()}>
+            <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-2">Connect Wallet</h3>
+            <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">
+              Please connect your wallet to start trading on this market.
+            </p>
+            <div className="flex flex-col gap-2">
+              <ConnectButton />
+              <button
+                onClick={() => setShowConnectPrompt(false)}
+                className="px-4 py-2 bg-gray-200 dark:bg-gray-700 text-gray-900 dark:text-white rounded-lg hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors"
+              >
+                Cancel
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       <div className="text-[10px] md:text-xs text-gray-600 dark:text-gray-400">
         Volume: <span className="font-semibold">{volume}</span>

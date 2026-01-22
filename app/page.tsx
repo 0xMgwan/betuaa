@@ -199,6 +199,7 @@ export default function Home() {
                                 trend="up"
                                 priceHistory={generatePriceHistory(50, 50)}
                                 onClick={() => setSelectedBlockchainMarket(market)}
+                                onTrade={() => setSelectedBlockchainMarket(market)}
                                 isBlockchain={true}
                                 status={market.resolved ? 'resolved' : isActive ? 'active' : 'closed'}
                                 description={market.description}
@@ -229,6 +230,7 @@ export default function Home() {
                             trend="up"
                             priceHistory={generatePriceHistory(50, 50)}
                             onClick={() => setSelectedBlockchainMarket(market)}
+                            onTrade={() => setSelectedBlockchainMarket(market)}
                             isBlockchain={true}
                             status={market.resolved ? 'resolved' : isActive ? 'active' : 'closed'}
                             description={market.description}
@@ -258,6 +260,7 @@ export default function Home() {
                               trend="up"
                               priceHistory={generatePriceHistory(50, 50)}
                               onClick={() => setSelectedBlockchainMarket(market)}
+                              onTrade={() => setSelectedBlockchainMarket(market)}
                               isBlockchain={true}
                               status={market.resolved ? 'resolved' : isActive ? 'active' : 'closed'}
                               description={market.description}
