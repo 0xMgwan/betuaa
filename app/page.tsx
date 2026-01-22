@@ -178,7 +178,40 @@ export default function Home() {
               {/* Blockchain Markets - using same card format */}
               {displayedBlockchainMarkets.length > 0 && (
                 <div className="mb-0 md:mb-8">
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3 md:gap-6">
+                  {/* First 3 markets - horizontal scroll on mobile */}
+                  {displayedBlockchainMarkets.length > 0 && (
+                    <div className="mb-3 md:mb-6 overflow-x-auto scrollbar-hide md:hidden">
+                      <div className="flex gap-3 pb-2">
+                        {displayedBlockchainMarkets.slice(0, 3).map((market) => {
+                          const closingDate = new Date(Number(market.closingDate) * 1000);
+                          const isActive = closingDate > new Date() && !market.resolved;
+                          
+                          return (
+                            <div key={market.id} className="flex-shrink-0 w-[85vw]">
+                              <CompactMarketCard
+                                id={market.id}
+                                question={market.title}
+                                category="CRYPTO"
+                                yesPrice={0.50}
+                                noPrice={0.50}
+                                volume={`$${(Number(market.totalVolume) / 1e6).toFixed(2)}M`}
+                                endDate={closingDate.toLocaleDateString()}
+                                trend="up"
+                                priceHistory={generatePriceHistory(50, 50)}
+                                onClick={() => setSelectedBlockchainMarket(market)}
+                                isBlockchain={true}
+                                status={market.resolved ? 'resolved' : isActive ? 'active' : 'closed'}
+                                description={market.description}
+                              />
+                            </div>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  )}
+                  
+                  {/* Desktop grid - all markets */}
+                  <div className="hidden md:grid grid-cols-2 gap-6">
                     {displayedBlockchainMarkets.map((market) => {
                       const closingDate = new Date(Number(market.closingDate) * 1000);
                       const isActive = closingDate > new Date() && !market.resolved;
@@ -204,6 +237,36 @@ export default function Home() {
                       );
                     })}
                   </div>
+                  
+                  {/* Remaining markets on mobile - vertical list */}
+                  {displayedBlockchainMarkets.length > 3 && (
+                    <div className="md:hidden grid grid-cols-1 gap-3">
+                      {displayedBlockchainMarkets.slice(3).map((market) => {
+                        const closingDate = new Date(Number(market.closingDate) * 1000);
+                        const isActive = closingDate > new Date() && !market.resolved;
+                        
+                        return (
+                          <div key={market.id} onClick={() => setSelectedBlockchainMarket(market)}>
+                            <CompactMarketCard
+                              id={market.id}
+                              question={market.title}
+                              category="CRYPTO"
+                              yesPrice={0.50}
+                              noPrice={0.50}
+                              volume={`$${(Number(market.totalVolume) / 1e6).toFixed(2)}M`}
+                              endDate={closingDate.toLocaleDateString()}
+                              trend="up"
+                              priceHistory={generatePriceHistory(50, 50)}
+                              onClick={() => setSelectedBlockchainMarket(market)}
+                              isBlockchain={true}
+                              status={market.resolved ? 'resolved' : isActive ? 'active' : 'closed'}
+                              description={market.description}
+                            />
+                          </div>
+                        );
+                      })}
+                    </div>
+                  )}
                 </div>
               )}
 
