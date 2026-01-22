@@ -128,55 +128,55 @@ export default function ProfilePage() {
         </div>
 
         {/* Stats Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-2 md:gap-6 mb-4 md:mb-8">
           {/* Total Volume */}
-          <div className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-xl rounded-xl p-6 border border-gray-200 dark:border-gray-700 shadow-lg">
-            <div className="flex items-center gap-3 mb-2">
-              <div className="p-2 bg-gradient-to-br from-blue-500 to-cyan-600 rounded-lg">
-                <DollarSign className="w-5 h-5 text-white" />
+          <div className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-xl rounded-lg md:rounded-xl p-3 md:p-6 border border-gray-200 dark:border-gray-700 shadow-lg">
+            <div className="flex flex-col md:flex-row items-start md:items-center gap-1 md:gap-3 mb-1 md:mb-2">
+              <div className="p-1 md:p-2 bg-gradient-to-br from-blue-500 to-cyan-600 rounded-lg">
+                <DollarSign className="w-3 h-3 md:w-5 md:h-5 text-white" />
               </div>
-              <span className="text-sm font-medium text-gray-600 dark:text-gray-400">{t('profile.totalVolume')}</span>
+              <span className="text-[10px] md:text-sm font-medium text-gray-600 dark:text-gray-400">{t('profile.totalVolume')}</span>
             </div>
-            <p className="text-3xl font-black text-gray-900 dark:text-white font-mono">
+            <p className="text-sm md:text-3xl font-black text-gray-900 dark:text-white font-mono">
               ${userData.totalVolume.toLocaleString()}
             </p>
           </div>
 
           {/* Total Profit */}
-          <div className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-xl rounded-xl p-6 border border-gray-200 dark:border-gray-700 shadow-lg">
-            <div className="flex items-center gap-3 mb-2">
-              <div className="p-2 bg-gradient-to-br from-green-500 to-emerald-600 rounded-lg">
-                <TrendingUp className="w-5 h-5 text-white" />
+          <div className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-xl rounded-lg md:rounded-xl p-3 md:p-6 border border-gray-200 dark:border-gray-700 shadow-lg">
+            <div className="flex flex-col md:flex-row items-start md:items-center gap-1 md:gap-3 mb-1 md:mb-2">
+              <div className="p-1 md:p-2 bg-gradient-to-br from-green-500 to-emerald-600 rounded-lg">
+                <TrendingUp className="w-3 h-3 md:w-5 md:h-5 text-white" />
               </div>
-              <span className="text-sm font-medium text-gray-600 dark:text-gray-400">{t('profile.totalProfit')}</span>
+              <span className="text-[10px] md:text-sm font-medium text-gray-600 dark:text-gray-400">{t('profile.totalProfit')}</span>
             </div>
-            <p className="text-3xl font-black text-green-600 dark:text-green-400 font-mono">
+            <p className="text-sm md:text-3xl font-black text-green-600 dark:text-green-400 font-mono">
               +${userData.totalProfit.toLocaleString()}
             </p>
           </div>
 
           {/* Win Rate */}
-          <div className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-xl rounded-xl p-6 border border-gray-200 dark:border-gray-700 shadow-lg">
-            <div className="flex items-center gap-3 mb-2">
-              <div className="p-2 bg-gradient-to-br from-purple-500 to-pink-600 rounded-lg">
-                <Award className="w-5 h-5 text-white" />
+          <div className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-xl rounded-lg md:rounded-xl p-3 md:p-6 border border-gray-200 dark:border-gray-700 shadow-lg">
+            <div className="flex flex-col md:flex-row items-start md:items-center gap-1 md:gap-3 mb-1 md:mb-2">
+              <div className="p-1 md:p-2 bg-gradient-to-br from-purple-500 to-pink-600 rounded-lg">
+                <Award className="w-3 h-3 md:w-5 md:h-5 text-white" />
               </div>
-              <span className="text-sm font-medium text-gray-600 dark:text-gray-400">{t('profile.winRate')}</span>
+              <span className="text-[10px] md:text-sm font-medium text-gray-600 dark:text-gray-400">{t('profile.winRate')}</span>
             </div>
-            <p className="text-3xl font-black text-purple-600 dark:text-purple-400 font-mono">
+            <p className="text-sm md:text-3xl font-black text-purple-600 dark:text-purple-400 font-mono">
               {userData.winRate}%
             </p>
           </div>
 
           {/* Total Trades */}
-          <div className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-xl rounded-xl p-6 border border-gray-200 dark:border-gray-700 shadow-lg">
-            <div className="flex items-center gap-3 mb-2">
-              <div className="p-2 bg-gradient-to-br from-orange-500 to-red-600 rounded-lg">
-                <BarChart3 className="w-5 h-5 text-white" />
+          <div className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-xl rounded-lg md:rounded-xl p-3 md:p-6 border border-gray-200 dark:border-gray-700 shadow-lg">
+            <div className="flex flex-col md:flex-row items-start md:items-center gap-1 md:gap-3 mb-1 md:mb-2">
+              <div className="p-1 md:p-2 bg-gradient-to-br from-orange-500 to-red-600 rounded-lg">
+                <BarChart3 className="w-3 h-3 md:w-5 md:h-5 text-white" />
               </div>
-              <span className="text-sm font-medium text-gray-600 dark:text-gray-400">Total Trades</span>
+              <span className="text-[10px] md:text-sm font-medium text-gray-600 dark:text-gray-400">Total Trades</span>
             </div>
-            <p className="text-3xl font-black text-gray-900 dark:text-white font-mono">
+            <p className="text-sm md:text-3xl font-black text-gray-900 dark:text-white font-mono">
               {userData.totalTrades}
             </p>
           </div>
