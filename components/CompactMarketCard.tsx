@@ -6,6 +6,8 @@ import { extractCategory, getCategoryInfo } from '@/lib/categoryUtils';
 import { useAccount } from 'wagmi';
 import { useState } from 'react';
 import { ConnectButton } from '@rainbow-me/rainbowkit';
+import TradingModal from './TradingModal';
+import { STABLECOINS } from '@/lib/contracts';
 
 interface CompactMarketCardProps {
   id: number;
@@ -22,9 +24,11 @@ interface CompactMarketCardProps {
   status?: 'active' | 'closed' | 'resolved';
   description?: string;
   onTrade?: (outcomeId: number, outcomeName: string, price: number) => void;
+  paymentToken?: string;
 }
 
 export default function CompactMarketCard({
+  id,
   question,
   category,
   yesPrice,
@@ -38,9 +42,12 @@ export default function CompactMarketCard({
   status = 'active',
   description,
   onTrade,
+  paymentToken,
 }: CompactMarketCardProps) {
   const { isConnected } = useAccount();
   const [showConnectPrompt, setShowConnectPrompt] = useState(false);
+  const [showTradingModal, setShowTradingModal] = useState(false);
+  const [selectedOutcome, setSelectedOutcome] = useState<{ id: number; name: string; price: number } | null>(null);
 
   const handleTradeClick = (e: React.MouseEvent, outcomeId: number, outcomeName: string, price: number) => {
     e.stopPropagation();
@@ -54,10 +61,15 @@ export default function CompactMarketCard({
       return;
     }
     
-    if (onTrade) {
-      onTrade(outcomeId, outcomeName, price);
-    }
+    // Open trading modal directly
+    setSelectedOutcome({ id: outcomeId, name: outcomeName, price });
+    setShowTradingModal(true);
   };
+
+  // Get token info
+  const token = paymentToken ? STABLECOINS.baseSepolia.find(
+    (t) => t.address.toLowerCase() === paymentToken.toLowerCase()
+  ) : null;
   // Extract category from description if available (for blockchain markets)
   const actualCategory = description ? getCategoryInfo(extractCategory(description)).label : category;
   
@@ -260,6 +272,24 @@ export default function CompactMarketCard({
             </div>
           </div>
         </div>
+      )}
+
+      {/* Trading Modal */}
+      {selectedOutcome && paymentToken && (
+        <TradingModal
+          isOpen={showTradingModal}
+          onClose={() => {
+            setShowTradingModal(false);
+            setSelectedOutcome(null);
+          }}
+          marketId={id}
+          outcomeId={selectedOutcome.id}
+          outcomeName={selectedOutcome.name}
+          currentPrice={selectedOutcome.price}
+          paymentToken={paymentToken}
+          tokenSymbol={token?.symbol || 'USDC'}
+          tokenDecimals={token?.decimals || 6}
+        />
       )}
 
       <div className="text-[10px] md:text-xs text-gray-600 dark:text-gray-400">
