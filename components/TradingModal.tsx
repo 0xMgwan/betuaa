@@ -125,8 +125,14 @@ export default function TradingModal({
   const balanceFormatted = balance ? formatUnits(balance as bigint, tokenDecimals) : '0';
 
   return (
-    <div className="fixed inset-0 bg-black/50 dark:bg-black/70 flex items-center justify-center z-50 p-4">
-      <div className="bg-white dark:bg-gray-800 rounded-2xl max-w-md w-full p-6 border-2 border-gray-200 dark:border-gray-700 shadow-xl">
+    <div 
+      className="fixed inset-0 bg-black/60 dark:bg-black/80 flex items-center justify-center z-50 p-4 backdrop-blur-sm" 
+      onClick={onClose}
+    >
+      <div 
+        className="bg-white dark:bg-gray-800 rounded-2xl max-w-md w-full p-6 border-2 border-gray-200 dark:border-gray-700 shadow-xl"
+        onClick={(e) => e.stopPropagation()}
+      >
         {/* Header */}
         <div className="flex items-center justify-between mb-6">
           <h2 className="text-xl font-bold text-gray-900 dark:text-white">
