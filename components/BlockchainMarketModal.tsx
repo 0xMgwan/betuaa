@@ -49,20 +49,20 @@ export default function BlockchainMarketModal({
     <div className="fixed inset-0 bg-black/50 dark:bg-black/70 flex items-center justify-center z-50 p-0 md:p-4">
       <div className="bg-white dark:bg-gray-800 rounded-none md:rounded-2xl max-w-4xl w-full h-full md:h-auto md:max-h-[90vh] overflow-y-auto">
         {/* Header */}
-        <div className="sticky top-0 bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 p-6 flex items-start justify-between">
+        <div className="sticky top-0 bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 p-3 md:p-6 flex items-start justify-between">
           <div className="flex-1">
-            <div className="flex items-center gap-3 mb-2">
-              <span className="px-3 py-1 bg-blue-100 dark:bg-blue-900/30 text-blue-800 dark:text-blue-400 text-sm font-medium rounded-full">
+            <div className="flex items-center gap-2 mb-1.5">
+              <span className="px-2 py-0.5 bg-blue-100 dark:bg-blue-900/30 text-blue-800 dark:text-blue-400 text-xs font-medium rounded-full">
                 Crypto
               </span>
-              <span className="text-gray-500 dark:text-gray-400 text-sm">
+              <span className="text-gray-500 dark:text-gray-400 text-xs">
                 {formatDistanceToNow(closingDate, { addSuffix: true })}
               </span>
             </div>
-            <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">
+            <h2 className="text-lg md:text-2xl font-bold text-gray-900 dark:text-white mb-1 md:mb-2">
               {market.title}
             </h2>
-            <p className="text-gray-600 dark:text-gray-400">
+            <p className="text-xs md:text-base text-gray-600 dark:text-gray-400">
               {cleanDescription(market.description)}
             </p>
           </div>
@@ -86,7 +86,7 @@ export default function BlockchainMarketModal({
         </div>
 
         {/* Content */}
-        <div className="p-4 space-y-4">
+        <div className="p-3 md:p-4 space-y-3 md:space-y-4">
           {/* Market Analytics - Moved to Top */}
           <MarketAnalytics
             marketId={market.id}
@@ -101,14 +101,14 @@ export default function BlockchainMarketModal({
           />
 
           {/* Trading Section */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-2 md:gap-3">
             {/* Yes Option */}
-            <div className="bg-green-50 dark:bg-green-900/20 rounded-lg p-4 border border-green-200 dark:border-green-800">
-              <div className="mb-3">
-                <div className="text-xs text-gray-600 dark:text-gray-400 mb-1">
+            <div className="bg-green-50 dark:bg-green-900/20 rounded-lg p-3 md:p-4 border border-green-200 dark:border-green-800">
+              <div className="mb-2 md:mb-3">
+                <div className="text-[10px] md:text-xs text-gray-600 dark:text-gray-400 mb-0.5 md:mb-1">
                   Buy {yesOutcome?.name || 'Yes'}
                 </div>
-                <div className="text-3xl font-bold text-green-600 dark:text-green-400">
+                <div className="text-2xl md:text-3xl font-bold text-green-600 dark:text-green-400">
                   {yesOutcome?.price || 50}¢
                 </div>
               </div>
@@ -118,19 +118,19 @@ export default function BlockchainMarketModal({
                   setSelectedOutcome({ id: 0, name: yesOutcome?.name || 'Yes', price: yesOutcome?.price || 50 });
                   setShowTradingModal(true);
                 }}
-                className="w-full px-4 py-2.5 bg-green-600 hover:bg-green-700 disabled:bg-gray-400 text-white rounded-lg font-semibold text-sm transition-colors"
+                className="w-full px-3 md:px-4 py-2 md:py-2.5 bg-green-600 hover:bg-green-700 disabled:bg-gray-400 text-white rounded-lg font-semibold text-xs md:text-sm transition-colors"
               >
                 {isActive ? `Buy ${yesOutcome?.name || 'Yes'}` : 'Market Closed'}
               </button>
             </div>
 
             {/* No Option */}
-            <div className="bg-red-50 dark:bg-red-900/20 rounded-lg p-4 border border-red-200 dark:border-red-800">
-              <div className="mb-3">
-                <div className="text-xs text-gray-600 dark:text-gray-400 mb-1">
+            <div className="bg-red-50 dark:bg-red-900/20 rounded-lg p-3 md:p-4 border border-red-200 dark:border-red-800">
+              <div className="mb-2 md:mb-3">
+                <div className="text-[10px] md:text-xs text-gray-600 dark:text-gray-400 mb-0.5 md:mb-1">
                   Buy {noOutcome?.name || 'No'}
                 </div>
-                <div className="text-3xl font-bold text-red-600 dark:text-red-400">
+                <div className="text-2xl md:text-3xl font-bold text-red-600 dark:text-red-400">
                   {noOutcome?.price || 50}¢
                 </div>
               </div>
@@ -140,7 +140,7 @@ export default function BlockchainMarketModal({
                   setSelectedOutcome({ id: 1, name: noOutcome?.name || 'No', price: noOutcome?.price || 50 });
                   setShowTradingModal(true);
                 }}
-                className="w-full px-4 py-2.5 bg-red-600 hover:bg-red-700 disabled:bg-gray-400 text-white rounded-lg font-semibold text-sm transition-colors"
+                className="w-full px-3 md:px-4 py-2 md:py-2.5 bg-red-600 hover:bg-red-700 disabled:bg-gray-400 text-white rounded-lg font-semibold text-xs md:text-sm transition-colors"
               >
                 {isActive ? `Buy ${noOutcome?.name || 'No'}` : 'Market Closed'}
               </button>
@@ -166,11 +166,11 @@ export default function BlockchainMarketModal({
           )}
 
           {/* Market Information */}
-          <div className="bg-gray-50 dark:bg-gray-900 rounded-lg p-4">
-            <h3 className="font-semibold text-gray-900 dark:text-white mb-3 text-sm">
+          <div className="bg-gray-50 dark:bg-gray-900 rounded-lg p-3 md:p-4">
+            <h3 className="font-semibold text-gray-900 dark:text-white mb-2 md:mb-3 text-xs md:text-sm">
               Market Information
             </h3>
-            <div className="space-y-2 text-xs">
+            <div className="space-y-1.5 md:space-y-2 text-[10px] md:text-xs">
               <div className="flex justify-between">
                 <span className="text-gray-600 dark:text-gray-400">Market ID:</span>
                 <span className="font-medium text-gray-900 dark:text-white">#{market.id}</span>
@@ -203,11 +203,11 @@ export default function BlockchainMarketModal({
           </div>
 
           {/* Rules Summary */}
-          <div className="bg-gray-50 dark:bg-gray-900 rounded-xl p-6">
-            <h3 className="font-semibold text-gray-900 dark:text-white mb-3">
+          <div className="bg-gray-50 dark:bg-gray-900 rounded-xl p-3 md:p-6">
+            <h3 className="font-semibold text-gray-900 dark:text-white mb-2 md:mb-3 text-xs md:text-base">
               Rules Summary
             </h3>
-            <p className="text-gray-600 dark:text-gray-400 text-sm">
+            <p className="text-gray-600 dark:text-gray-400 text-[10px] md:text-sm">
               This market will resolve based on the outcome specified in the description. 
               Trading is available until {closingDate.toLocaleDateString()}. 
               After resolution, winning shares can be redeemed for {token?.symbol || 'tokens'}.

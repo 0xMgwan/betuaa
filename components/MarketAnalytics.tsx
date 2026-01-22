@@ -133,44 +133,44 @@ export default function MarketAnalytics({
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-3 md:space-y-6">
       {/* Stats Overview */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-        <div className="bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl p-3 text-white">
-          <div className="flex items-center gap-1.5 mb-1.5">
-            <DollarSign className="w-4 h-4" />
-            <span className="text-xs font-medium opacity-90">Total Volume</span>
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-2 md:gap-3">
+        <div className="bg-gradient-to-br from-blue-500 to-blue-600 rounded-lg md:rounded-xl p-2 md:p-3 text-white">
+          <div className="flex items-center gap-1 md:gap-1.5 mb-1 md:mb-1.5">
+            <DollarSign className="w-3 h-3 md:w-4 md:h-4" />
+            <span className="text-[10px] md:text-xs font-medium opacity-90">Total Volume</span>
           </div>
-          <p className="text-xl font-bold font-mono">{(totalVolume / 1e6).toFixed(2)} {tokenSymbol}</p>
+          <p className="text-sm md:text-xl font-bold font-mono">{(totalVolume / 1e6).toFixed(2)} {tokenSymbol}</p>
         </div>
 
-        <div className="bg-gradient-to-br from-purple-500 to-purple-600 rounded-xl p-3 text-white">
-          <div className="flex items-center gap-1.5 mb-1.5">
-            <Users className="w-4 h-4" />
-            <span className="text-xs font-medium opacity-90">Traders</span>
+        <div className="bg-gradient-to-br from-purple-500 to-purple-600 rounded-lg md:rounded-xl p-2 md:p-3 text-white">
+          <div className="flex items-center gap-1 md:gap-1.5 mb-1 md:mb-1.5">
+            <Users className="w-3 h-3 md:w-4 md:h-4" />
+            <span className="text-[10px] md:text-xs font-medium opacity-90">Traders</span>
           </div>
-          <p className="text-xl font-bold font-mono">{participantCount}</p>
+          <p className="text-sm md:text-xl font-bold font-mono">{participantCount}</p>
         </div>
 
-        <div className="bg-gradient-to-br from-green-500 to-green-600 rounded-xl p-3 text-white">
-          <div className="flex items-center gap-1.5 mb-1.5">
-            <TrendingUp className="w-4 h-4" />
-            <span className="text-xs font-medium opacity-90">Yes Price</span>
+        <div className="bg-gradient-to-br from-green-500 to-green-600 rounded-lg md:rounded-xl p-2 md:p-3 text-white">
+          <div className="flex items-center gap-1 md:gap-1.5 mb-1 md:mb-1.5">
+            <TrendingUp className="w-3 h-3 md:w-4 md:h-4" />
+            <span className="text-[10px] md:text-xs font-medium opacity-90">Yes Price</span>
           </div>
-          <p className="text-xl font-bold font-mono">{yesPrice}¢</p>
+          <p className="text-sm md:text-xl font-bold font-mono">{yesPrice}¢</p>
         </div>
 
-        <div className="bg-gradient-to-br from-orange-500 to-orange-600 rounded-xl p-3 text-white">
-          <div className="flex items-center gap-1.5 mb-1.5">
-            <Activity className="w-4 h-4" />
-            <span className="text-xs font-medium opacity-90">Liquidity</span>
+        <div className="bg-gradient-to-br from-orange-500 to-orange-600 rounded-lg md:rounded-xl p-2 md:p-3 text-white">
+          <div className="flex items-center gap-1 md:gap-1.5 mb-1 md:mb-1.5">
+            <Activity className="w-3 h-3 md:w-4 md:h-4" />
+            <span className="text-[10px] md:text-xs font-medium opacity-90">Liquidity</span>
           </div>
-          <p className="text-xl font-bold font-mono">${(totalVolume / 1e6 * 0.3).toFixed(1)}K</p>
+          <p className="text-sm md:text-xl font-bold font-mono">${(totalVolume / 1e6 * 0.3).toFixed(1)}K</p>
         </div>
       </div>
 
       {/* Tab Navigation */}
-      <div className="flex gap-2 border-b border-gray-200 dark:border-gray-700">
+      <div className="flex gap-1 md:gap-2 border-b border-gray-200 dark:border-gray-700 overflow-x-auto scrollbar-hide">
         {[
           { id: 'overview', label: 'Overview', icon: BarChart3 },
           { id: 'depth', label: 'Market Depth', icon: Activity },
@@ -180,24 +180,24 @@ export default function MarketAnalytics({
           <button
             key={tab.id}
             onClick={() => setActiveTab(tab.id as any)}
-            className={`flex items-center gap-2 px-4 py-2 font-medium text-sm transition-colors ${
+            className={`flex items-center gap-1 md:gap-2 px-2 md:px-4 py-1.5 md:py-2 font-medium text-xs md:text-sm transition-colors whitespace-nowrap ${
               activeTab === tab.id
                 ? 'text-blue-600 dark:text-blue-400 border-b-2 border-blue-600 dark:border-blue-400'
                 : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200'
             }`}
           >
-            <tab.icon className="w-4 h-4" />
+            <tab.icon className="w-3 h-3 md:w-4 md:h-4" />
             {tab.label}
           </button>
         ))}
       </div>
 
       {/* Tab Content */}
-      <div className="bg-white dark:bg-gray-800 rounded-xl p-4 border border-gray-200 dark:border-gray-700">
+      <div className="bg-white dark:bg-gray-800 rounded-lg md:rounded-xl p-2 md:p-4 border border-gray-200 dark:border-gray-700">
         {activeTab === 'overview' && (
           <div>
-            <div className="flex items-center justify-between mb-3">
-              <h3 className="text-base font-bold text-gray-900 dark:text-white">Price History</h3>
+            <div className="flex items-center justify-between mb-2 md:mb-3">
+              <h3 className="text-sm md:text-base font-bold text-gray-900 dark:text-white">Price History</h3>
               <div className="flex items-center gap-3 text-xs font-medium">
                 <span className="flex items-center gap-1.5">
                   <span className="w-2 h-2 bg-green-500 rounded-full"></span>
@@ -214,15 +214,15 @@ export default function MarketAnalytics({
                 <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
               </div>
             ) : (
-              <PriceChart data={priceHistory} height={260} />
+              <PriceChart data={priceHistory} height={180} />
             )}
           </div>
         )}
 
         {activeTab === 'depth' && (
           <div>
-            <h3 className="text-base font-bold text-gray-900 dark:text-white mb-3">Market Depth</h3>
-            <ResponsiveContainer width="100%" height={260}>
+            <h3 className="text-sm md:text-base font-bold text-gray-900 dark:text-white mb-2 md:mb-3">Market Depth</h3>
+            <ResponsiveContainer width="100%" height={180}>
               <AreaChart data={depthData}>
                 <defs>
                   <linearGradient id="yesBids" x1="0" y1="0" x2="0" y2="1">
@@ -257,8 +257,8 @@ export default function MarketAnalytics({
 
         {activeTab === 'volume' && (
           <div>
-            <h3 className="text-base font-bold text-gray-900 dark:text-white mb-3">Volume Over Time</h3>
-            <ResponsiveContainer width="100%" height={260}>
+            <h3 className="text-sm md:text-base font-bold text-gray-900 dark:text-white mb-2 md:mb-3">Volume Over Time</h3>
+            <ResponsiveContainer width="100%" height={180}>
               <BarChart data={volumeData}>
                 <CartesianGrid strokeDasharray="3 3" className="stroke-gray-200 dark:stroke-gray-700" opacity={0.3} />
                 <XAxis 
@@ -282,8 +282,8 @@ export default function MarketAnalytics({
         {activeTab === 'traders' && (
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
-              <h3 className="text-base font-bold text-gray-900 dark:text-white mb-3">Trader Distribution</h3>
-              <ResponsiveContainer width="100%" height={220}>
+              <h3 className="text-sm md:text-base font-bold text-gray-900 dark:text-white mb-2 md:mb-3">Trader Distribution</h3>
+              <ResponsiveContainer width="100%" height={160}>
                 <RePieChart>
                   <Pie
                     data={traderDistribution}
@@ -304,7 +304,7 @@ export default function MarketAnalytics({
               </ResponsiveContainer>
             </div>
             <div>
-              <h3 className="text-base font-bold text-gray-900 dark:text-white mb-3">Trading Insights</h3>
+              <h3 className="text-sm md:text-base font-bold text-gray-900 dark:text-white mb-2 md:mb-3">Trading Insights</h3>
               <div className="space-y-2">
                 <div className="p-2.5 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
                   <p className="text-xs font-medium text-blue-900 dark:text-blue-300 mb-1">Average Trade Size</p>
