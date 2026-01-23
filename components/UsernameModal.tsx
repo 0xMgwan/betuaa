@@ -42,7 +42,7 @@ export default function UsernameModal({ isOpen, onClose, onSubmit }: UsernameMod
 
   return (
     <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-      <Card className="w-full max-w-sm p-5 relative">
+      <Card className="w-full max-w-[340px] p-4 md:p-5 relative">
         {/* Removed close button - user must set username */}
 
         <div className="flex items-center gap-3 mb-4">

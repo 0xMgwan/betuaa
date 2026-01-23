@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import { Moon, Sun, Menu, X, Plus, Trophy, Wallet, BarChart3, User, Languages, LogOut, Mail } from "lucide-react";
 import { ConnectButton } from "@rainbow-me/rainbowkit";
@@ -8,6 +8,7 @@ import { useAccount } from "wagmi";
 import CustomConnectButton from "./CustomConnectButton";
 import SearchBar from "./SearchBar";
 import CreateMarketModal from "./CreateMarketModal";
+import UsernameModal from "./UsernameModal";
 import { useTheme } from "./ThemeProvider";
 import Logo from "./Logo";
 import { useTranslation } from "@/hooks/useTranslation";
@@ -45,9 +46,19 @@ export default function Navbar({
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const { address, isConnected } = useAccount();
-  const { username } = useUsername();
+  const { username, hasUsername, isLoading, saveUsername } = useUsername();
   const { language, setLanguage } = useLanguage();
   const shortAddress = address ? `${address.slice(0, 6)}...${address.slice(-4)}` : "Guest";
+  const [showUsernameModal, setShowUsernameModal] = useState(false);
+  const [hasChecked, setHasChecked] = useState(false);
+
+  // Show username modal when wallet connects without username (only once)
+  useEffect(() => {
+    if (!isLoading && isConnected && !hasUsername && !hasChecked) {
+      setShowUsernameModal(true);
+      setHasChecked(true);
+    }
+  }, [isConnected, hasUsername, isLoading, hasChecked]);
 
   return (
     <nav className="fixed top-0 left-0 right-0 z-50 bg-white dark:bg-gray-950 border-b border-gray-200 dark:border-gray-800">
@@ -348,6 +359,15 @@ export default function Navbar({
       <CreateMarketModal
         isOpen={isCreateModalOpen}
         onClose={() => setIsCreateModalOpen(false)}
+      />
+
+      <UsernameModal
+        isOpen={showUsernameModal}
+        onClose={() => setShowUsernameModal(false)}
+        onSubmit={(newUsername) => {
+          saveUsername(newUsername);
+          setShowUsernameModal(false);
+        }}
       />
     </nav>
   );
