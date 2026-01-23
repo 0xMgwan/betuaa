@@ -2,10 +2,11 @@
 
 import { Home, Search, TrendingUp, Wallet } from "lucide-react";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 
 export default function MobileBottomNav() {
   const pathname = usePathname();
+  const router = useRouter();
 
   const navItems = [
     {
@@ -17,28 +18,52 @@ export default function MobileBottomNav() {
     {
       name: "Search",
       icon: Search,
-      href: "#search",
+      href: "/",
       active: false,
       onClick: () => {
-        // Scroll to top and focus search
-        window.scrollTo({ top: 0, behavior: "smooth" });
-        setTimeout(() => {
-          const searchInput = document.querySelector('input[type="text"]') as HTMLInputElement;
-          searchInput?.focus();
-        }, 300);
+        // If not on home page, redirect to home first
+        if (pathname !== "/") {
+          router.push("/");
+          setTimeout(() => {
+            window.scrollTo({ top: 0, behavior: "smooth" });
+            setTimeout(() => {
+              const searchInput = document.querySelector('input[type="text"]') as HTMLInputElement;
+              searchInput?.focus();
+            }, 300);
+          }, 100);
+        } else {
+          // Already on home page, just scroll and focus
+          window.scrollTo({ top: 0, behavior: "smooth" });
+          setTimeout(() => {
+            const searchInput = document.querySelector('input[type="text"]') as HTMLInputElement;
+            searchInput?.focus();
+          }, 300);
+        }
       },
     },
     {
       name: "Trending",
       icon: TrendingUp,
-      href: "#trending",
+      href: "/",
       active: false,
       onClick: () => {
-        // Scroll to trending section or filter by trending
-        const categoryButton = document.querySelector('[data-category="trending"]') as HTMLButtonElement;
-        if (categoryButton) {
-          categoryButton.click();
-          window.scrollTo({ top: 0, behavior: "smooth" });
+        // If not on home page, redirect to home first
+        if (pathname !== "/") {
+          router.push("/?category=trending");
+          setTimeout(() => {
+            window.scrollTo({ top: 0, behavior: "smooth" });
+            setTimeout(() => {
+              const categoryButton = document.querySelector('[data-category="trending"]') as HTMLButtonElement;
+              categoryButton?.click();
+            }, 300);
+          }, 100);
+        } else {
+          // Already on home page, just click trending
+          const categoryButton = document.querySelector('[data-category="trending"]') as HTMLButtonElement;
+          if (categoryButton) {
+            categoryButton.click();
+            window.scrollTo({ top: 0, behavior: "smooth" });
+          }
         }
       },
     },
