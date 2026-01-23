@@ -1,7 +1,9 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { X, Sparkles, Calendar, DollarSign, Tag, FileText, TrendingUp, ChevronDown } from 'lucide-react';
+import { X, Sparkles, Calendar, DollarSign, Tag, FileText, TrendingUp, ChevronDown, Wallet } from 'lucide-react';
+import { useAccount } from 'wagmi';
+import { ConnectButton } from '@rainbow-me/rainbowkit';
 import { STABLECOINS } from '@/lib/contracts';
 import { useCreateMarket } from '@/hooks/usePredictionMarket';
 import { useApproveToken } from '@/hooks/useERC20';
@@ -26,6 +28,7 @@ interface CreateMarketModalProps {
 
 export default function CreateMarketModal({ isOpen, onClose }: CreateMarketModalProps) {
   const { t } = useTranslation();
+  const { isConnected } = useAccount();
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
   const [closingDate, setClosingDate] = useState('');
@@ -326,13 +329,30 @@ export default function CreateMarketModal({ isOpen, onClose }: CreateMarketModal
             >
               Cancel
             </button>
-            <button
-              type="submit"
-              disabled={isApproving || isCreating}
-              className="flex-1 px-4 md:px-6 py-2 md:py-3 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 disabled:from-gray-400 disabled:to-gray-500 text-white rounded-lg md:rounded-xl text-sm md:text-base font-bold transition-all shadow-lg hover:shadow-xl disabled:shadow-none"
-            >
-              {isApproving ? 'Approving...' : isCreating ? 'Creating...' : 'Create Market'}
-            </button>
+            {!isConnected ? (
+              <div className="flex-1">
+                <ConnectButton.Custom>
+                  {({ openConnectModal }) => (
+                    <button
+                      type="button"
+                      onClick={openConnectModal}
+                      className="w-full px-4 md:px-6 py-2 md:py-3 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white rounded-lg md:rounded-xl text-sm md:text-base font-bold transition-all shadow-lg hover:shadow-xl flex items-center justify-center gap-2"
+                    >
+                      <Wallet className="w-4 h-4 md:w-5 md:h-5" />
+                      Connect Wallet
+                    </button>
+                  )}
+                </ConnectButton.Custom>
+              </div>
+            ) : (
+              <button
+                type="submit"
+                disabled={isApproving || isCreating}
+                className="flex-1 px-4 md:px-6 py-2 md:py-3 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 disabled:from-gray-400 disabled:to-gray-500 text-white rounded-lg md:rounded-xl text-sm md:text-base font-bold transition-all shadow-lg hover:shadow-xl disabled:shadow-none"
+              >
+                {isApproving ? 'Approving...' : isCreating ? 'Creating...' : 'Create Market'}
+              </button>
+            )}
           </div>
 
           {step === 'approve' && (
