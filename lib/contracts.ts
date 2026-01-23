@@ -40,13 +40,6 @@ export const STABLECOINS = {
       decimals: 6,
       icon: '🧪',
     },
-    {
-      address: '0x4200000000000000000000000000000000000006',
-      symbol: 'WETH',
-      name: 'Wrapped Ether',
-      decimals: 18,
-      icon: '/wrapped ether.png',
-    },
   ],
   base: [
     {
@@ -76,13 +69,6 @@ export const STABLECOINS = {
       name: 'Indonesian Rupiah',
       decimals: 18,
       icon: '🇮🇩',
-    },
-    {
-      address: '0x4200000000000000000000000000000000000006',
-      symbol: 'WETH',
-      name: 'Wrapped Ether',
-      decimals: 18,
-      icon: '/wrapped ether.png',
     },
   ],
 } as const;
