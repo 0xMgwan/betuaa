@@ -187,8 +187,8 @@ export default function Notifications() {
             </div>
 
             {/* Footer */}
-            <div className="p-3 md:p-4 border-t border-gray-200 dark:border-gray-700">
-              <button className="w-full text-center py-2 text-xs md:text-sm text-blue-600 dark:text-blue-400 hover:underline font-medium">
+            <div className="p-2 border-t border-gray-200 dark:border-gray-700">
+              <button className="w-full text-center py-1.5 text-xs text-blue-600 dark:text-blue-400 hover:underline">
                 View all notifications
               </button>
             </div>
