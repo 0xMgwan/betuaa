@@ -5,6 +5,7 @@ import '@rainbow-me/rainbowkit/styles.css';
 import { Providers } from "./providers";
 import { ThemeProvider } from '@/components/ThemeProvider';
 import { LanguageProvider } from '@/contexts/LanguageContext';
+import MobileBottomNav from '@/components/MobileBottomNav';
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -32,7 +33,10 @@ export default function RootLayout({
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
         <LanguageProvider>
-          <Providers>{children}</Providers>
+          <Providers>
+            {children}
+            <MobileBottomNav />
+          </Providers>
         </LanguageProvider>
       </body>
     </html>

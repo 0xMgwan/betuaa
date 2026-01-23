@@ -178,7 +178,7 @@ export default function Home() {
   }));
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-950">
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-950 pb-16 md:pb-0">
       <Navbar 
         searchQuery={searchQuery}
         onSearchChange={setSearchQuery}

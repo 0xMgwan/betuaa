@@ -34,6 +34,7 @@ export default function CategoryTabs({ activeCategory, onCategoryChange }: Categ
               <button
                 key={category.id}
                 onClick={() => onCategoryChange(category.id)}
+                data-category={category.id}
                 className={`
                   flex items-center gap-2 px-3 py-2 md:px-4 md:py-2.5 rounded-lg text-xs md:text-sm font-semibold whitespace-nowrap transition-all snap-start
                   ${
