@@ -7,11 +7,12 @@ import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import SellModal from "@/components/SellModal";
 import ClaimSuccessModal from "@/components/ClaimSuccessModal";
+import CreateMarketModal from "@/components/CreateMarketModal";
 import { useUserPositions } from '@/hooks/useUserPositions';
 import { useClaimWinnings } from '@/hooks/usePredictionMarket';
 import { useAllMarkets } from '@/hooks/useMarkets';
 import { STABLECOINS } from '@/lib/contracts';
-import { TrendingUp, TrendingDown, DollarSign, Sparkles, Award, Target, Star, Activity } from 'lucide-react';
+import { TrendingUp, TrendingDown, DollarSign, Sparkles, Award, Target, Star, Activity, Plus } from 'lucide-react';
 import CompactMarketCard from '@/components/CompactMarketCard';
 import BlockchainMarketModal from '@/components/BlockchainMarketModal';
 import { useTranslation } from '@/hooks/useTranslation';
@@ -28,6 +29,7 @@ export default function Portfolio() {
   const [activeTab, setActiveTab] = useState<'positions' | 'favorites' | 'activity'>('positions');
   const [favoriteIds, setFavoriteIds] = useState<number[]>([]);
   const [selectedBlockchainMarket, setSelectedBlockchainMarket] = useState<any>(null);
+  const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const { claimWinnings, isPending: isClaiming, isSuccess: claimSuccess } = useClaimWinnings();
 
   const generatePriceHistory = (yesPrice: number, noPrice: number) => {
@@ -452,6 +454,20 @@ export default function Portfolio() {
           market={selectedBlockchainMarket}
         />
       )}
+
+      {/* Floating Create Button - Mobile Only */}
+      <button
+        onClick={() => setIsCreateModalOpen(true)}
+        className="md:hidden fixed bottom-20 right-4 z-40 w-14 h-14 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white rounded-full shadow-lg hover:shadow-xl transition-all duration-300 flex items-center justify-center"
+        aria-label="Create Market"
+      >
+        <Plus className="w-6 h-6" />
+      </button>
+
+      <CreateMarketModal
+        isOpen={isCreateModalOpen}
+        onClose={() => setIsCreateModalOpen(false)}
+      />
 
       <Footer />
     </div>
