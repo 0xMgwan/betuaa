@@ -15,6 +15,7 @@ import { useTranslation } from "@/hooks/useTranslation";
 import { useUsername } from "@/hooks/useUsername";
 import { useLanguage } from "@/contexts/LanguageContext";
 import CategoryTabs from "./CategoryTabs";
+import Notifications from "./Notifications";
 
 interface NavbarProps {
   searchQuery?: string;
@@ -102,6 +103,7 @@ export default function Navbar({
               <Plus className="h-4 w-4" />
               {t('nav.createMarket')}
             </button>
+            <Notifications />
             <button
               onClick={toggleTheme}
               className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
@@ -124,6 +126,7 @@ export default function Navbar({
               <Plus className="h-3.5 w-3.5" />
               Create
             </button>
+            <Notifications />
             <button
               onClick={toggleTheme}
               className="p-1.5 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
