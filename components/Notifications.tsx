@@ -120,10 +120,10 @@ export default function Notifications() {
           />
           
           {/* Dropdown */}
-          <div className="absolute right-0 mt-2 w-96 bg-white dark:bg-gray-800 rounded-xl shadow-xl border border-gray-200 dark:border-gray-700 z-50 max-h-96 overflow-hidden">
+          <div className="absolute right-0 mt-2 w-80 md:w-96 bg-white dark:bg-gray-800 rounded-xl shadow-xl border border-gray-200 dark:border-gray-700 z-50 max-h-80 md:max-h-96 overflow-hidden">
             {/* Header */}
-            <div className="flex items-center justify-between p-4 border-b border-gray-200 dark:border-gray-700">
-              <h3 className="font-semibold text-gray-900 dark:text-white">Notifications</h3>
+            <div className="flex items-center justify-between p-3 md:p-4 border-b border-gray-200 dark:border-gray-700">
+              <h3 className="font-semibold text-gray-900 dark:text-white text-sm md:text-base">Notifications</h3>
               <div className="flex items-center gap-2">
                 {unreadCount > 0 && (
                   <button
@@ -143,7 +143,7 @@ export default function Notifications() {
             </div>
 
             {/* Notifications List */}
-            <div className="overflow-y-auto max-h-80">
+            <div className="overflow-y-auto max-h-60 md:max-h-80">
               {notifications.length === 0 ? (
                 <div className="p-8 text-center">
                   <Bell className="w-12 h-12 text-gray-300 dark:text-gray-600 mx-auto mb-3" />
@@ -153,7 +153,7 @@ export default function Notifications() {
                 notifications.map((notification) => (
                   <div
                     key={notification.id}
-                    className={`p-4 border-b border-gray-100 dark:border-gray-700 last:border-b-0 hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors cursor-pointer ${
+                    className={`p-3 md:p-4 border-b border-gray-100 dark:border-gray-700 last:border-b-0 hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors cursor-pointer ${
                       !notification.read ? 'bg-blue-50/50 dark:bg-blue-900/10' : ''
                     }`}
                     onClick={() => markAsRead(notification.id)}
@@ -165,10 +165,10 @@ export default function Notifications() {
                       <div className="flex-1 min-w-0">
                         <div className="flex items-start justify-between gap-2">
                           <div className="flex-1">
-                            <p className="font-medium text-gray-900 dark:text-white text-sm">
+                            <p className="font-medium text-gray-900 dark:text-white text-xs md:text-sm">
                               {notification.title}
                             </p>
-                            <p className="text-gray-600 dark:text-gray-400 text-sm mt-0.5">
+                            <p className="text-gray-600 dark:text-gray-400 text-xs md:text-sm mt-0.5">
                               {notification.message}
                             </p>
                             <p className="text-xs text-gray-500 dark:text-gray-500 mt-1">
@@ -187,8 +187,8 @@ export default function Notifications() {
             </div>
 
             {/* Footer */}
-            <div className="p-3 border-t border-gray-200 dark:border-gray-700">
-              <button className="w-full text-center text-sm text-blue-600 dark:text-blue-400 hover:underline">
+            <div className="p-2 md:p-3 border-t border-gray-200 dark:border-gray-700">
+              <button className="w-full text-center text-xs md:text-sm text-blue-600 dark:text-blue-400 hover:underline">
                 View all notifications
               </button>
             </div>
