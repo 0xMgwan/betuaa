@@ -53,19 +53,19 @@ export default function BlockchainMarketModal({
     <div className="fixed inset-0 bg-black/50 dark:bg-black/70 flex items-center justify-center z-50 p-0 md:p-4">
       <div className="bg-white dark:bg-gray-800 rounded-none md:rounded-2xl max-w-4xl w-full h-full md:h-auto md:max-h-[90vh] overflow-y-auto">
         {/* Header */}
-        <div className="sticky top-0 bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 p-4 md:p-6">
-          <div className="flex items-start justify-between mb-3">
-            <div className="flex items-center gap-2">
-              <span className="px-2.5 py-1 bg-blue-100 dark:bg-blue-900/30 text-blue-800 dark:text-blue-400 text-xs font-medium rounded uppercase flex items-center gap-1">
-                <span>{categoryInfo.icon}</span>
+        <div className="sticky top-0 bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 p-2 md:p-6">
+          <div className="flex items-start justify-between mb-2">
+            <div className="flex items-center gap-1">
+              <span className="px-1.5 py-0.5 bg-blue-100 dark:bg-blue-900/30 text-blue-800 dark:text-blue-400 text-xs font-medium rounded uppercase flex items-center gap-0.5">
+                <span className="text-xs">{categoryInfo.icon}</span>
                 {categoryInfo.label}
               </span>
-              <span className="text-gray-500 dark:text-gray-400 text-sm flex items-center gap-1">
-                <Clock className="w-4 h-4" />
+              <span className="text-gray-500 dark:text-gray-400 text-xs flex items-center gap-1">
+                <Clock className="w-3 h-3" />
                 {closingDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
               </span>
             </div>
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-1">
               <ShareButton
                 marketId={market.id}
                 marketTitle={market.title}
@@ -73,44 +73,47 @@ export default function BlockchainMarketModal({
               />
               <button
                 onClick={onClose}
-                className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
+                className="p-1.5 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
               >
-                <X className="w-5 h-5 text-gray-500 dark:text-gray-400" />
+                <X className="w-4 h-4 text-gray-500 dark:text-gray-400" />
               </button>
             </div>
           </div>
-          <h2 className="text-xl md:text-2xl font-bold text-gray-900 dark:text-white mb-2">
+          <h2 className="text-base md:text-2xl font-bold text-gray-900 dark:text-white mb-1">
             {market.title}
           </h2>
-          <p className="text-sm md:text-base text-gray-600 dark:text-gray-400">
+          <p className="text-xs md:text-base text-gray-600 dark:text-gray-400">
             {cleanDescription(market.description)}
           </p>
         </div>
 
         {/* Content */}
-        <div className="p-4 md:p-6 space-y-4 md:space-y-6">
+        <div className="p-2 md:p-6 space-y-2 md:space-y-6">
           {/* Stats Row */}
-          <div className="grid grid-cols-3 gap-4">
+          <div className="grid grid-cols-3 gap-2">
             <div>
-              <div className="text-sm text-gray-600 dark:text-gray-400 mb-1">Volume</div>
-              <div className="text-xl font-bold text-gray-900 dark:text-white flex items-center gap-1">
-                <DollarSign className="w-5 h-5" />
-                {(Number(market.totalVolume) / 1e6).toFixed(1)}M
+              <div className="text-xs text-gray-600 dark:text-gray-400 mb-0.5">Volume</div>
+              <div className="text-sm md:text-xl font-bold text-gray-900 dark:text-white flex items-center gap-0.5">
+                <DollarSign className="w-3 h-3 md:w-5 md:h-5" />
+                {market.totalVolume > BigInt(0) 
+                  ? (Number(market.totalVolume) / 1e6).toFixed(1) + 'M'
+                  : '0'
+                }
               </div>
             </div>
             <div>
-              <div className="text-sm text-gray-600 dark:text-gray-400 mb-1">Traders</div>
-              <div className="text-xl font-bold text-gray-900 dark:text-white flex items-center gap-1">
-                <Users className="w-5 h-5" />
+              <div className="text-xs text-gray-600 dark:text-gray-400 mb-0.5">Traders</div>
+              <div className="text-sm md:text-xl font-bold text-gray-900 dark:text-white flex items-center gap-0.5">
+                <Users className="w-3 h-3 md:w-5 md:h-5" />
                 {market.participantCount.toLocaleString()}
               </div>
             </div>
             <div>
-              <div className="text-sm text-gray-600 dark:text-gray-400 mb-1">24h Change</div>
-              <div className={`text-xl font-bold flex items-center gap-1 ${
+              <div className="text-xs text-gray-600 dark:text-gray-400 mb-0.5">24h Change</div>
+              <div className={`text-sm md:text-xl font-bold flex items-center gap-0.5 ${
                 change24h >= 0 ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'
               }`}>
-                {change24h >= 0 ? <TrendingUp className="w-5 h-5" /> : <TrendingDown className="w-5 h-5" />}
+                {change24h >= 0 ? <TrendingUp className="w-3 h-3 md:w-5 md:h-5" /> : <TrendingDown className="w-3 h-3 md:w-5 md:h-5" />}
                 {change24h >= 0 ? '+' : ''}{change24h.toFixed(1)}%
               </div>
             </div>
@@ -118,31 +121,31 @@ export default function BlockchainMarketModal({
 
           {/* Price History Chart */}
           <div>
-            <div className="flex items-center justify-between mb-3">
-              <h3 className="font-semibold text-gray-900 dark:text-white">Price History</h3>
-              <div className="flex items-center gap-4 text-sm">
-                <div className="flex items-center gap-2">
-                  <div className="w-3 h-3 bg-green-500 rounded-full"></div>
+            <div className="flex items-center justify-between mb-2">
+              <h3 className="font-semibold text-gray-900 dark:text-white text-sm md:text-base">Price History</h3>
+              <div className="flex items-center gap-2 text-xs">
+                <div className="flex items-center gap-1">
+                  <div className="w-2 h-2 bg-green-500 rounded-full"></div>
                   <span className="text-gray-600 dark:text-gray-400">Yes {yesOutcome?.price || 50}¢</span>
                 </div>
-                <div className="flex items-center gap-2">
-                  <div className="w-3 h-3 bg-red-500 rounded-full"></div>
+                <div className="flex items-center gap-1">
+                  <div className="w-2 h-2 bg-red-500 rounded-full"></div>
                   <span className="text-gray-600 dark:text-gray-400">No {noOutcome?.price || 50}¢</span>
                 </div>
               </div>
             </div>
-            <PriceChart data={priceHistory} height={250} />
+            <PriceChart data={priceHistory} height={180} />
           </div>
 
           {/* Trading Section */}
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-2 gap-2">
             {/* Yes Option */}
-            <div className="bg-green-50 dark:bg-green-900/10 rounded-xl p-3 border-2 border-green-200 dark:border-green-800">
-              <div className="mb-2">
+            <div className="bg-green-50 dark:bg-green-900/10 rounded-lg p-2 border border-green-200 dark:border-green-800">
+              <div className="mb-1">
                 <div className="text-xs text-gray-600 dark:text-gray-400 mb-0.5">
                   Buy Yes
                 </div>
-                <div className="text-3xl font-bold text-green-600 dark:text-green-400">
+                <div className="text-2xl md:text-3xl font-bold text-green-600 dark:text-green-400">
                   {yesOutcome?.price || 50}¢
                 </div>
               </div>
@@ -152,19 +155,19 @@ export default function BlockchainMarketModal({
                   setSelectedOutcome({ id: 0, name: yesOutcome?.name || 'Yes', price: yesOutcome?.price || 50 });
                   setShowTradingModal(true);
                 }}
-                className="w-full px-3 py-2.5 bg-green-600 hover:bg-green-700 disabled:bg-gray-400 disabled:cursor-not-allowed text-white rounded-lg font-bold text-sm transition-colors"
+                className="w-full px-2 py-1.5 bg-green-600 hover:bg-green-700 disabled:bg-gray-400 disabled:cursor-not-allowed text-white rounded-md font-bold text-xs transition-colors"
               >
-                {isActive ? 'Buy Yes' : 'Market Closed'}
+                {isActive ? 'Buy Yes' : 'Closed'}
               </button>
             </div>
 
             {/* No Option */}
-            <div className="bg-red-50 dark:bg-red-900/10 rounded-xl p-3 border-2 border-red-200 dark:border-red-800">
-              <div className="mb-2">
+            <div className="bg-red-50 dark:bg-red-900/10 rounded-lg p-2 border border-red-200 dark:border-red-800">
+              <div className="mb-1">
                 <div className="text-xs text-gray-600 dark:text-gray-400 mb-0.5">
                   Buy No
                 </div>
-                <div className="text-3xl font-bold text-red-600 dark:text-red-400">
+                <div className="text-2xl md:text-3xl font-bold text-red-600 dark:text-red-400">
                   {noOutcome?.price || 50}¢
                 </div>
               </div>
@@ -174,9 +177,9 @@ export default function BlockchainMarketModal({
                   setSelectedOutcome({ id: 1, name: noOutcome?.name || 'No', price: noOutcome?.price || 50 });
                   setShowTradingModal(true);
                 }}
-                className="w-full px-3 py-2.5 bg-red-600 hover:bg-red-700 disabled:bg-gray-400 disabled:cursor-not-allowed text-white rounded-lg font-bold text-sm transition-colors"
+                className="w-full px-2 py-1.5 bg-red-600 hover:bg-red-700 disabled:bg-gray-400 disabled:cursor-not-allowed text-white rounded-md font-bold text-xs transition-colors"
               >
-                {isActive ? 'Buy No' : 'Market Closed'}
+                {isActive ? 'Buy No' : 'Closed'}
               </button>
             </div>
           </div>
@@ -200,12 +203,12 @@ export default function BlockchainMarketModal({
           )}
 
           {/* Rules Summary */}
-          <div className="bg-gray-50 dark:bg-gray-900 rounded-xl p-4">
-            <h3 className="font-semibold text-gray-900 dark:text-white mb-2">
+          <div className="bg-gray-50 dark:bg-gray-900 rounded-lg p-2">
+            <h3 className="font-semibold text-gray-900 dark:text-white mb-1 text-sm">
               Rules Summary
             </h3>
-            <p className="text-gray-600 dark:text-gray-400 text-sm leading-relaxed">
-              This market will resolve to <span className="font-semibold text-gray-900 dark:text-white">Yes</span> if the event occurs before {closingDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}. Otherwise, it will resolve to <span className="font-semibold text-gray-900 dark:text-white">No</span>. Sources will be verified from official announcements and reputable news outlets.
+            <p className="text-gray-600 dark:text-gray-400 text-xs leading-relaxed">
+              Resolves to <span className="font-semibold text-gray-900 dark:text-white">Yes</span> if event occurs before {closingDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}, otherwise <span className="font-semibold text-gray-900 dark:text-white">No</span>.
             </p>
           </div>
 
