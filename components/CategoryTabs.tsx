@@ -5,8 +5,8 @@ import { useTranslation } from "@/hooks/useTranslation";
 
 const categories = [
   { id: "trending", name: "Trending", icon: TrendingUp },
-  { id: "new", name: "New", icon: Sparkles },
   { id: "all", name: "All", icon: Grid3x3 },
+  { id: "new", name: "New", icon: Sparkles },
   { id: "sports", name: "Sports", icon: Trophy },
   { id: "crypto", name: "Crypto", icon: Bitcoin },
   { id: "politics", name: "Politics", icon: Globe },
