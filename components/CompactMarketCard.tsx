@@ -248,8 +248,8 @@ export default function CompactMarketCard({
           </button>
         </div>
 
-        <div className="flex items-center justify-between text-[9px] md:text-[10px]">
-          <span className="text-gray-500 dark:text-gray-400 font-medium">Volume:</span>
+        <div className="text-[9px] md:text-[10px]">
+          <span className="text-gray-500 dark:text-gray-400 font-medium">Volume: </span>
           <span className="font-bold text-gray-900 dark:text-white">{volume}</span>
         </div>
       </div>
