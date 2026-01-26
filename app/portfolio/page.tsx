@@ -229,7 +229,7 @@ export default function Portfolio() {
               </p>
             </div>
           ) : (
-            <div className="grid grid-cols-1 gap-3 md:gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
               {positions.map((position) => {
                 const token = STABLECOINS.baseSepolia.find(
                   (t) => t.address.toLowerCase() === position.paymentToken.toLowerCase()
@@ -241,50 +241,50 @@ export default function Portfolio() {
                 return (
                   <div
                     key={`${position.marketId}-${position.outcomeId}`}
-                    className="group relative overflow-hidden bg-white/80 dark:bg-gray-800/80 backdrop-blur-xl rounded-xl p-4 border border-gray-200 dark:border-gray-700 shadow-lg hover:shadow-xl transition-all duration-300"
+                    className="group relative overflow-hidden bg-white/80 dark:bg-gray-800/80 backdrop-blur-xl rounded-xl p-3 border border-gray-200 dark:border-gray-700 shadow-lg hover:shadow-xl transition-all duration-300"
                   >
-                    <div className={`absolute top-0 right-0 w-64 h-64 ${isWinning ? 'bg-gradient-to-br from-green-500/10 to-emerald-500/10' : 'bg-gradient-to-br from-blue-500/10 to-purple-500/10'} rounded-full blur-3xl group-hover:scale-150 transition-transform duration-500`}></div>
+                    <div className={`absolute top-0 right-0 w-32 h-32 ${isWinning ? 'bg-gradient-to-br from-green-500/10 to-emerald-500/10' : 'bg-gradient-to-br from-blue-500/10 to-purple-500/10'} rounded-full blur-3xl group-hover:scale-150 transition-transform duration-500`}></div>
                     
                     <div className="relative">
-                      <div className="mb-3">
-                        <h3 className="text-base font-bold text-gray-900 dark:text-white mb-2 line-clamp-2">
+                      <div className="mb-2">
+                        <h3 className="text-sm font-bold text-gray-900 dark:text-white mb-1.5 line-clamp-1">
                           {position.marketTitle}
                         </h3>
                         <div className="flex items-center justify-between">
-                          <span className={`px-2 py-0.5 rounded-full text-xs font-bold ${
+                          <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold ${
                             position.outcomeId === 0
-                              ? 'bg-gradient-to-r from-green-500 to-emerald-600 text-white shadow-lg shadow-green-500/50'
-                              : 'bg-gradient-to-r from-red-500 to-orange-600 text-white shadow-lg shadow-red-500/50'
+                              ? 'bg-gradient-to-r from-green-500 to-emerald-600 text-white shadow-md shadow-green-500/50'
+                              : 'bg-gradient-to-r from-red-500 to-orange-600 text-white shadow-md shadow-red-500/50'
                           }`}>
                             {position.outcomeId === 0 ? 'Yes' : 'No'}
                           </span>
                           <div className="text-right">
-                            <div className="text-xl font-black text-gray-900 dark:text-white">
+                            <div className="text-base font-black text-gray-900 dark:text-white">
                               {sharesNumber.toFixed(2)}
                             </div>
-                            <div className="text-xs text-gray-500 dark:text-gray-400">shares</div>
+                            <div className="text-[9px] text-gray-500 dark:text-gray-400">shares</div>
                           </div>
                         </div>
                       </div>
 
-                      <div className="grid grid-cols-2 gap-3 mb-4">
+                      <div className="grid grid-cols-2 gap-2 mb-2">
                         <div>
-                          <div className="text-xs text-gray-500 dark:text-gray-400 mb-1">Current Price</div>
-                          <div className="text-lg font-bold text-gray-900 dark:text-white">{position.currentPrice}¢</div>
+                          <div className="text-[9px] text-gray-500 dark:text-gray-400 mb-0.5">Current Price</div>
+                          <div className="text-sm font-bold text-gray-900 dark:text-white">{position.currentPrice}¢</div>
                         </div>
                         <div>
-                          <div className="text-xs text-gray-500 dark:text-gray-400 mb-1">Current Value</div>
-                          <div className="text-lg font-bold text-gray-900 dark:text-white">{currentValue.toFixed(2)} {token?.symbol}</div>
+                          <div className="text-[9px] text-gray-500 dark:text-gray-400 mb-0.5">Current Value</div>
+                          <div className="text-sm font-bold text-gray-900 dark:text-white">{currentValue.toFixed(2)} {token?.symbol}</div>
                         </div>
                         <div>
-                          <div className="text-xs text-gray-500 dark:text-gray-400 mb-1">P&L</div>
-                          <div className={`text-lg font-bold ${position.unrealizedPnL >= 0 ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'}`}>
+                          <div className="text-[9px] text-gray-500 dark:text-gray-400 mb-0.5">P&L</div>
+                          <div className={`text-sm font-bold ${position.unrealizedPnL >= 0 ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'}`}>
                             {position.unrealizedPnL >= 0 ? '+' : ''}{position.unrealizedPnL.toFixed(2)}
                           </div>
                         </div>
                         <div>
-                          <div className="text-xs text-gray-500 dark:text-gray-400 mb-1">P&L %</div>
-                          <div className={`text-lg font-bold ${position.unrealizedPnLPercent >= 0 ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'}`}>
+                          <div className="text-[9px] text-gray-500 dark:text-gray-400 mb-0.5">P&L %</div>
+                          <div className={`text-sm font-bold ${position.unrealizedPnLPercent >= 0 ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'}`}>
                             {position.unrealizedPnLPercent.toFixed(2)}%
                           </div>
                         </div>
@@ -296,7 +296,7 @@ export default function Portfolio() {
                             setSelectedPosition(position);
                             setShowSellModal(true);
                           }}
-                          className="w-full px-4 py-2.5 bg-gradient-to-r from-red-600 to-orange-600 hover:from-red-700 hover:to-orange-700 text-white rounded-lg font-bold shadow-lg shadow-red-500/50 hover:shadow-xl hover:shadow-red-500/50 transition-all duration-300"
+                          className="w-full px-3 py-2 bg-gradient-to-r from-red-600 to-orange-600 hover:from-red-700 hover:to-orange-700 text-white rounded-lg text-xs font-bold shadow-lg shadow-red-500/50 hover:shadow-xl hover:shadow-red-500/50 transition-all duration-300"
                         >
                           Sell Shares
                         </button>
@@ -311,12 +311,12 @@ export default function Portfolio() {
                             }
                           }}
                           disabled={isClaiming}
-                          className="w-full px-4 py-2.5 bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white rounded-lg font-bold shadow-lg shadow-green-500/50 hover:shadow-xl hover:shadow-green-500/50 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
+                          className="w-full px-3 py-2 bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white rounded-lg text-xs font-bold shadow-lg shadow-green-500/50 hover:shadow-xl hover:shadow-green-500/50 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
                         >
                           {isClaiming ? 'Claiming...' : t('portfolio.claimWinnings')}
                         </button>
                       ) : (
-                        <div className="w-full px-4 py-2.5 bg-gray-200 dark:bg-gray-700 text-gray-600 dark:text-gray-400 rounded-lg font-bold text-center">
+                        <div className="w-full px-3 py-2 bg-gray-200 dark:bg-gray-700 text-gray-600 dark:text-gray-400 rounded-lg text-xs font-bold text-center">
                           {t('portfolio.marketResolved')}
                         </div>
                       )}
