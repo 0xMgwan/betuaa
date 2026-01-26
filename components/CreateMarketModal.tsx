@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { X, Sparkles, Calendar, DollarSign, Tag, FileText, TrendingUp, ChevronDown, Wallet } from 'lucide-react';
+import { X, Sparkles, Calendar, DollarSign, Tag, FileText, TrendingUp, ChevronDown, Wallet, Bitcoin, Trophy, Building2, Clapperboard, Cpu, BarChart3 } from 'lucide-react';
 import { useAccount } from 'wagmi';
 import { ConnectButton } from '@rainbow-me/rainbowkit';
 import { STABLECOINS } from '@/lib/contracts';
@@ -11,15 +11,25 @@ import { CONTRACTS } from '@/lib/contracts';
 import { parseUnits } from 'viem';
 import { useTranslation } from '@/hooks/useTranslation';
 import Image from 'next/image';
+import { CATEGORIES as CATEGORY_CONFIG } from '@/lib/categoryUtils';
 
-const CATEGORIES = [
-  { value: 'crypto', label: 'Crypto', icon: '₿', color: 'from-orange-500 to-yellow-500' },
-  { value: 'sports', label: 'Sports', icon: '⚽', color: 'from-green-500 to-emerald-500' },
-  { value: 'politics', label: 'Politics', icon: '🏛️', color: 'from-blue-500 to-indigo-500' },
-  { value: 'entertainment', label: 'Entertainment', icon: '🎬', color: 'from-purple-500 to-pink-500' },
-  { value: 'technology', label: 'Technology', icon: '💻', color: 'from-cyan-500 to-blue-500' },
-  { value: 'other', label: 'Other', icon: '📊', color: 'from-gray-500 to-slate-500' },
-];
+const iconMap = {
+  Bitcoin,
+  Trophy,
+  Building2,
+  Clapperboard,
+  Cpu,
+  BarChart3,
+};
+
+const CATEGORIES = Object.entries(CATEGORY_CONFIG).map(([key, config]) => ({
+  value: key,
+  label: config.label,
+  icon: config.icon,
+  color: config.color,
+  bgColor: config.bgColor,
+  textColor: config.textColor,
+}));
 
 interface CreateMarketModalProps {
   isOpen: boolean;
@@ -170,21 +180,26 @@ export default function CreateMarketModal({ isOpen, onClose }: CreateMarketModal
               {t('createMarket.category')}
             </label>
             <div className="grid grid-cols-3 gap-1.5 md:gap-3">
-              {CATEGORIES.map((cat) => (
-                <button
-                  key={cat.value}
-                  type="button"
-                  onClick={() => setCategory(cat.value)}
-                  className={`p-2 md:p-3 rounded-lg md:rounded-xl border-2 transition-all ${
-                    category === cat.value
-                      ? `border-transparent bg-gradient-to-r ${cat.color} text-white shadow-lg`
-                      : 'border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600'
-                  }`}
-                >
-                  <div className="text-xl md:text-2xl mb-0.5 md:mb-1">{cat.icon}</div>
-                  <div className="text-[10px] md:text-xs font-semibold">{cat.label}</div>
-                </button>
-              ))}
+              {CATEGORIES.map((cat) => {
+                const IconComponent = iconMap[cat.icon as keyof typeof iconMap];
+                return (
+                  <button
+                    key={cat.value}
+                    type="button"
+                    onClick={() => setCategory(cat.value)}
+                    className={`p-2 md:p-3 rounded-lg md:rounded-xl border-2 transition-all ${
+                      category === cat.value
+                        ? `border-transparent bg-gradient-to-r ${cat.color} text-white shadow-lg`
+                        : 'border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600'
+                    }`}
+                  >
+                    <div className="flex items-center justify-center mb-0.5 md:mb-1">
+                      {IconComponent && <IconComponent className="w-5 h-5 md:w-7 md:h-7" />}
+                    </div>
+                    <div className="text-[10px] md:text-xs font-semibold">{cat.label}</div>
+                  </button>
+                );
+              })}
             </div>
           </div>
 

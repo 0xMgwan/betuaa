@@ -13,8 +13,9 @@ import PriceChart from './PriceChart';
 import TradingModal from './TradingModal';
 import MarketComments from './MarketComments';
 import FavoriteButton from './FavoriteButton';
+import CategoryBadge from './CategoryBadge';
 import { BlockchainMarket } from '@/hooks/useMarkets';
-import { cleanDescription, extractCategory, getCategoryInfo } from '@/lib/categoryUtils';
+import { cleanDescription, extractCategory } from '@/lib/categoryUtils';
 
 interface BlockchainMarketModalProps {
   isOpen: boolean;
@@ -47,7 +48,6 @@ export default function BlockchainMarketModal({
 
   const change24h = yesOutcome ? ((yesOutcome.price - 50) / 50) * 100 : 0;
   const categoryKey = extractCategory(market.description);
-  const categoryInfo = getCategoryInfo(categoryKey);
 
   return (
     <div className="fixed inset-0 bg-black/50 dark:bg-black/70 flex items-center justify-center z-50 p-4">
@@ -55,11 +55,8 @@ export default function BlockchainMarketModal({
         {/* Header */}
         <div className="sticky top-0 bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 p-2 md:p-6">
           <div className="flex items-start justify-between mb-2">
-            <div className="flex items-center gap-1">
-              <span className="px-1.5 py-0.5 bg-blue-100 dark:bg-blue-900/30 text-blue-800 dark:text-blue-400 text-xs font-medium rounded uppercase flex items-center gap-0.5">
-                <span className="text-xs">{categoryInfo.icon}</span>
-                {categoryInfo.label}
-              </span>
+            <div className="flex items-center gap-2 flex-wrap">
+              <CategoryBadge category={categoryKey} size="sm" />
               <span className="text-gray-500 dark:text-gray-400 text-xs flex items-center gap-1">
                 <Clock className="w-3 h-3" />
                 {closingDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}

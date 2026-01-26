@@ -1,12 +1,12 @@
 // Utility functions for parsing and displaying market categories
 
 export const CATEGORIES = {
-  crypto: { label: 'CRYPTO', icon: '₿', color: 'from-orange-500 to-yellow-500' },
-  sports: { label: 'SPORTS', icon: '⚽', color: 'from-green-500 to-emerald-500' },
-  politics: { label: 'POLITICS', icon: '🏛️', color: 'from-blue-500 to-indigo-500' },
-  entertainment: { label: 'ENTERTAINMENT', icon: '🎬', color: 'from-purple-500 to-pink-500' },
-  technology: { label: 'TECHNOLOGY', icon: '💻', color: 'from-cyan-500 to-blue-500' },
-  other: { label: 'OTHER', icon: '📊', color: 'from-gray-500 to-slate-500' },
+  crypto: { label: 'CRYPTO', icon: 'Bitcoin', color: 'from-orange-500 to-yellow-500', bgColor: 'bg-orange-100 dark:bg-orange-900/30', textColor: 'text-orange-700 dark:text-orange-400' },
+  sports: { label: 'SPORTS', icon: 'Trophy', color: 'from-green-500 to-emerald-500', bgColor: 'bg-green-100 dark:bg-green-900/30', textColor: 'text-green-700 dark:text-green-400' },
+  politics: { label: 'POLITICS', icon: 'Building2', color: 'from-blue-500 to-indigo-500', bgColor: 'bg-blue-100 dark:bg-blue-900/30', textColor: 'text-blue-700 dark:text-blue-400' },
+  entertainment: { label: 'ENTERTAINMENT', icon: 'Clapperboard', color: 'from-purple-500 to-pink-500', bgColor: 'bg-purple-100 dark:bg-purple-900/30', textColor: 'text-purple-700 dark:text-purple-400' },
+  technology: { label: 'TECHNOLOGY', icon: 'Cpu', color: 'from-cyan-500 to-blue-500', bgColor: 'bg-cyan-100 dark:bg-cyan-900/30', textColor: 'text-cyan-700 dark:text-cyan-400' },
+  other: { label: 'OTHER', icon: 'BarChart3', color: 'from-gray-500 to-slate-500', bgColor: 'bg-gray-100 dark:bg-gray-900/30', textColor: 'text-gray-700 dark:text-gray-400' },
 } as const;
 
 export type CategoryKey = keyof typeof CATEGORIES;

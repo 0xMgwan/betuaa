@@ -1,8 +1,17 @@
 "use client";
 
-import { TrendingUp, TrendingDown, Clock } from "lucide-react";
+import { TrendingUp, TrendingDown, Clock, Bitcoin, Trophy, Building2, Clapperboard, Cpu, BarChart3, LucideIcon } from "lucide-react";
 import { Card } from "./ui/card";
 import { extractCategory, getCategoryInfo } from '@/lib/categoryUtils';
+
+const iconMap: Record<string, LucideIcon> = {
+  Bitcoin,
+  Trophy,
+  Building2,
+  Clapperboard,
+  Cpu,
+  BarChart3,
+};
 
 interface CompactMarketCardProps {
   id: number;
@@ -76,32 +85,14 @@ export default function CompactMarketCard({
     return `${i === 0 ? 'M' : 'L'} ${x} ${y}`;
   }).join(' ');
 
-  // Get category icon
+  // Get category icon component
   const getCategoryIcon = () => {
-    const cat = actualCategory.toLowerCase();
-    switch (cat) {
-      case 'sports':
-        return '⚽';
-      case 'crypto':
-        return '₿';
-      case 'politics':
-        return '🏛️';
-      case 'entertainment':
-        return '🎬';
-      case 'technology':
-        return '💻';
-      case 'other':
-        return '📊';
-      case 'business':
-        return '💼';
-      case 'tech':
-        return '💻';
-      case 'climate':
-        return '🌍';
-      default:
-        return '📊';
-    }
+    const categoryKey = description ? extractCategory(description) : category.toLowerCase();
+    const categoryInfo = getCategoryInfo(categoryKey as any);
+    return iconMap[categoryInfo.icon] || BarChart3;
   };
+
+  const CategoryIcon = getCategoryIcon();
 
   const getCategoryColor = () => {
     // Use actualCategory for blockchain markets, fallback to category prop
@@ -139,7 +130,7 @@ export default function CompactMarketCard({
       <div className="flex items-start gap-2 mb-2">
         {/* Category Icon */}
         <div className={`w-8 h-8 md:w-9 md:h-9 rounded-lg bg-gradient-to-br ${getCategoryColor()} flex items-center justify-center flex-shrink-0 group-hover:scale-105 transition-transform`}>
-          <span className="text-sm md:text-base">{getCategoryIcon()}</span>
+          <CategoryIcon className="w-4 h-4 md:w-5 md:h-5 text-white" />
         </div>
         
         <div className="flex-1 min-w-0">
