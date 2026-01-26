@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { X, Sparkles, Calendar, DollarSign, Tag, FileText, TrendingUp, ChevronDown, Wallet, Bitcoin, Trophy, Building2, Clapperboard, Cpu, BarChart3 } from 'lucide-react';
+import { X, Zap, Calendar, DollarSign, Tag, FileText, TrendingUp, ChevronDown, Wallet, Bitcoin, Trophy, Building2, Clapperboard, Cpu, BarChart3 } from 'lucide-react';
 import { useAccount } from 'wagmi';
 import { ConnectButton } from '@rainbow-me/rainbowkit';
 import { STABLECOINS } from '@/lib/contracts';
@@ -167,18 +167,54 @@ export default function CreateMarketModal({ isOpen, onClose }: CreateMarketModal
   return (
     <div className="fixed inset-0 bg-black/50 dark:bg-black/70 backdrop-blur-sm flex items-center justify-center z-50 p-4">
       <div className="bg-white dark:bg-gray-800 rounded-xl md:rounded-2xl max-w-2xl w-full max-h-[85vh] md:max-h-[90vh] overflow-y-auto shadow-2xl border border-gray-200 dark:border-gray-700">
-        <div className="sticky top-0 bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600 p-3 md:p-6 flex items-center justify-between">
-          <div className="flex items-center gap-2 md:gap-3">
-            <div className="p-1 md:p-2 bg-white/20 backdrop-blur-sm rounded-lg">
-              <Sparkles className="w-4 h-4 md:w-6 md:h-6 text-white" />
+        <div className="sticky top-0 bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600 p-4 md:p-6 flex items-center justify-between shadow-lg">
+          <div className="flex items-center gap-3 md:gap-4">
+            <div className="relative group">
+              {/* Subtle background glow */}
+              <div className="absolute -inset-2 bg-gradient-to-br from-amber-400/20 to-orange-500/20 rounded-3xl blur-xl"></div>
+              
+              {/* Main icon container with geometric design */}
+              <div className="relative w-14 h-14 md:w-16 md:h-16">
+                {/* Background layers for depth */}
+                <div className="absolute inset-0 bg-gradient-to-br from-amber-400 to-orange-600 rounded-2xl rotate-6 opacity-80"></div>
+                <div className="absolute inset-0 bg-gradient-to-br from-orange-500 to-red-500 rounded-2xl -rotate-6 opacity-60"></div>
+                
+                {/* Main surface */}
+                <div className="absolute inset-0 bg-gradient-to-br from-amber-300 via-orange-400 to-orange-600 rounded-2xl shadow-2xl border border-white/30">
+                  {/* Top highlight */}
+                  <div className="absolute inset-x-0 top-0 h-1/2 bg-gradient-to-b from-white/40 to-transparent rounded-t-2xl"></div>
+                  
+                  {/* Custom chart/trend icon */}
+                  <svg className="absolute inset-0 w-full h-full p-3 md:p-3.5" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    {/* Rising bars */}
+                    <rect x="3" y="14" width="3" height="7" rx="1" fill="white" fillOpacity="0.9"/>
+                    <rect x="8" y="10" width="3" height="11" rx="1" fill="white" fillOpacity="0.95"/>
+                    <rect x="13" y="6" width="3" height="15" rx="1" fill="white"/>
+                    <rect x="18" y="3" width="3" height="18" rx="1" fill="white"/>
+                    {/* Trend line */}
+                    <path d="M4 16L9 12L14 8L20 4" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" opacity="0.6"/>
+                    {/* Star accent */}
+                    <circle cx="20" cy="4" r="2" fill="white"/>
+                  </svg>
+                  
+                  {/* Bottom shadow */}
+                  <div className="absolute inset-x-0 bottom-0 h-1/3 bg-gradient-to-t from-black/20 to-transparent rounded-b-2xl"></div>
+                </div>
+                
+                {/* Corner accent */}
+                <div className="absolute -top-1 -right-1 w-3 h-3 bg-white rounded-full shadow-lg"></div>
+              </div>
             </div>
-            <h2 className="text-base md:text-2xl font-bold text-white">{t('createMarket.title')}</h2>
+            <div>
+              <h2 className="text-lg md:text-3xl font-black text-white drop-shadow-lg tracking-tight">{t('createMarket.title')}</h2>
+              <p className="text-xs md:text-sm text-white/80 font-medium mt-0.5">Launch your prediction market</p>
+            </div>
           </div>
           <button
             onClick={onClose}
-            className="p-1.5 md:p-2 hover:bg-white/20 rounded-lg transition-colors"
+            className="p-2 md:p-2.5 hover:bg-white/20 rounded-xl transition-all hover:scale-110 active:scale-95 group"
           >
-            <X className="w-4 h-4 md:w-6 md:h-6 text-white" />
+            <X className="w-5 h-5 md:w-6 md:h-6 text-white group-hover:rotate-90 transition-transform duration-300" />
           </button>
         </div>
 
@@ -258,35 +294,43 @@ export default function CreateMarketModal({ isOpen, onClose }: CreateMarketModal
           </div>
 
           <div>
-            <label className="block text-xs md:text-sm font-medium text-gray-700 dark:text-gray-300 mb-1 md:mb-2 flex items-center gap-1.5 md:gap-2">
-              <DollarSign className="w-3 h-3 md:w-4 md:h-4" />
+            <label className="block text-xs md:text-sm font-medium text-gray-700 dark:text-gray-300 mb-1 md:mb-2 flex items-center gap-2">
+              <div className="w-5 h-5 rounded-full bg-white border border-gray-200 dark:border-gray-600 flex items-center justify-center overflow-hidden">
+                <Image 
+                  src="/USDC logo.png" 
+                  alt="USDC"
+                  width={20}
+                  height={20}
+                  className="w-full h-full object-cover"
+                />
+              </div>
               {t('createMarket.paymentToken')}
             </label>
             <div className="relative">
               <button
                 type="button"
                 onClick={() => setIsTokenDropdownOpen(!isTokenDropdownOpen)}
-                className="w-full px-3 md:px-4 py-2 md:py-3 text-sm md:text-base border border-gray-300 dark:border-gray-600 rounded-lg md:rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white transition-all flex items-center justify-between"
+                className="w-full px-3 py-2 border-2 border-gray-300 dark:border-gray-600 rounded-lg flex items-center justify-between hover:border-blue-500 dark:hover:border-blue-400 transition-colors bg-white dark:bg-gray-700 text-sm"
               >
-                <div className="flex items-center gap-3">
+                <div className="flex items-center gap-2">
                   {selectedStablecoin?.icon.startsWith('/') ? (
                     <Image 
                       src={selectedStablecoin.icon} 
                       alt={selectedStablecoin.symbol}
-                      width={20}
-                      height={20}
-                      className="rounded-full md:w-6 md:h-6"
+                      width={18}
+                      height={18}
+                      className="rounded-full"
                     />
                   ) : (
-                    <span className="text-base md:text-xl">{selectedStablecoin?.icon}</span>
+                    <span className="text-base">{selectedStablecoin?.icon}</span>
                   )}
-                  <span className="text-sm md:text-base">{selectedStablecoin?.symbol} - {selectedStablecoin?.name}</span>
+                  <span className="text-sm font-medium">{selectedStablecoin?.symbol} - {selectedStablecoin?.name}</span>
                 </div>
-                <ChevronDown className={`w-4 h-4 md:w-5 md:h-5 transition-transform ${isTokenDropdownOpen ? 'rotate-180' : ''}`} />
+                <ChevronDown className={`w-4 h-4 transition-transform ${isTokenDropdownOpen ? 'rotate-180' : ''}`} />
               </button>
               
               {isTokenDropdownOpen && (
-                <div className="absolute z-10 w-full mt-2 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg md:rounded-xl shadow-lg max-h-60 overflow-y-auto">
+                <div className="absolute z-10 w-full mt-1 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg shadow-lg max-h-48 overflow-y-auto">
                   {STABLECOINS.baseSepolia.map((token) => (
                     <button
                       key={token.address}
@@ -295,7 +339,7 @@ export default function CreateMarketModal({ isOpen, onClose }: CreateMarketModal
                         setSelectedToken(token.address);
                         setIsTokenDropdownOpen(false);
                       }}
-                      className={`w-full px-3 md:px-4 py-2 md:py-3 flex items-center gap-2 md:gap-3 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors text-sm md:text-base ${
+                      className={`w-full px-3 py-2 flex items-center gap-2 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors text-sm ${
                         selectedToken === token.address ? 'bg-blue-50 dark:bg-blue-900/20' : ''
                       }`}
                     >
@@ -303,19 +347,19 @@ export default function CreateMarketModal({ isOpen, onClose }: CreateMarketModal
                         <Image 
                           src={token.icon} 
                           alt={token.symbol}
-                          width={20}
-                          height={20}
-                          className="rounded-full md:w-6 md:h-6"
+                          width={18}
+                          height={18}
+                          className="rounded-full"
                         />
                       ) : (
-                        <span className="text-base md:text-xl">{token.icon}</span>
+                        <span className="text-base">{token.icon}</span>
                       )}
-                      <div className="flex items-center gap-2">
+                      <div className="flex items-center gap-1.5">
                         <span className="font-medium">{token.symbol}</span>
-                        <span className="text-gray-600 dark:text-gray-400">- {token.name}</span>
+                        <span className="text-gray-600 dark:text-gray-400 text-xs">- {token.name}</span>
                       </div>
                       {selectedToken === token.address && (
-                        <span className="ml-auto text-blue-600 dark:text-blue-400">✓</span>
+                        <span className="ml-auto text-blue-600 dark:text-blue-400 text-sm">✓</span>
                       )}
                     </button>
                   ))}
