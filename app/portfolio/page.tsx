@@ -139,8 +139,13 @@ export default function Portfolio() {
             <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-blue-500/20 to-cyan-500/20 rounded-full blur-3xl group-hover:scale-150 transition-transform duration-500"></div>
             <div className="relative">
               <div className="flex items-center gap-1.5 md:gap-2 mb-2 md:mb-3">
-                <div className="p-1.5 md:p-2 bg-gradient-to-br from-blue-500 to-cyan-600 rounded-lg shadow-lg">
-                  <DollarSign className="w-4 h-4 md:w-5 md:h-5 text-white" />
+                <div className="relative w-9 h-9 md:w-10 md:h-10">
+                  <div className="absolute inset-0 bg-blue-500 rounded-xl rotate-6 opacity-80"></div>
+                  <div className="absolute inset-0 bg-cyan-500 rounded-xl -rotate-6 opacity-60"></div>
+                  <div className="absolute inset-0 bg-gradient-to-br from-blue-400 to-cyan-600 rounded-xl flex items-center justify-center shadow-lg">
+                    <div className="absolute inset-x-0 top-0 h-1/2 bg-gradient-to-b from-white/30 to-transparent rounded-t-xl"></div>
+                    <DollarSign className="w-5 h-5 md:w-6 md:h-6 text-white relative z-10" strokeWidth={2.5} />
+                  </div>
                 </div>
                 <div className="text-xs md:text-sm font-medium text-gray-600 dark:text-gray-400">
                   {t('portfolio.totalValue')}
@@ -157,8 +162,13 @@ export default function Portfolio() {
                 <div className={`absolute top-0 right-0 w-32 h-32 ${totalPnL >= 0 ? 'bg-gradient-to-br from-green-500/20 to-emerald-500/20' : 'bg-gradient-to-br from-red-500/20 to-orange-500/20'} rounded-full blur-3xl group-hover:scale-150 transition-transform duration-500`}></div>
                 <div className="relative">
                   <div className="flex items-center gap-1.5 md:gap-2 mb-2 md:mb-3">
-                    <div className={`p-1.5 md:p-2 ${totalPnL >= 0 ? 'bg-gradient-to-br from-green-500 to-emerald-600' : 'bg-gradient-to-br from-red-500 to-orange-600'} rounded-lg shadow-lg`}>
-                      {totalPnL >= 0 ? <TrendingUp className="w-4 h-4 md:w-5 md:h-5 text-white" /> : <TrendingDown className="w-4 h-4 md:w-5 md:h-5 text-white" />}
+                    <div className="relative w-9 h-9 md:w-10 md:h-10">
+                      <div className={`absolute inset-0 ${totalPnL >= 0 ? 'bg-green-500' : 'bg-red-500'} rounded-xl rotate-6 opacity-80`}></div>
+                      <div className={`absolute inset-0 ${totalPnL >= 0 ? 'bg-emerald-500' : 'bg-orange-500'} rounded-xl -rotate-6 opacity-60`}></div>
+                      <div className={`absolute inset-0 ${totalPnL >= 0 ? 'bg-gradient-to-br from-green-400 to-emerald-600' : 'bg-gradient-to-br from-red-400 to-orange-600'} rounded-xl flex items-center justify-center shadow-lg`}>
+                        <div className="absolute inset-x-0 top-0 h-1/2 bg-gradient-to-b from-white/30 to-transparent rounded-t-xl"></div>
+                        {totalPnL >= 0 ? <TrendingUp className="w-5 h-5 md:w-6 md:h-6 text-white relative z-10" strokeWidth={2.5} /> : <TrendingDown className="w-5 h-5 md:w-6 md:h-6 text-white relative z-10" strokeWidth={2.5} />}
+                      </div>
                     </div>
                     <div className="text-xs md:text-sm font-medium text-gray-600 dark:text-gray-400">
                       {t('portfolio.unrealizedPL')}
@@ -175,8 +185,13 @@ export default function Portfolio() {
             <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-purple-500/20 to-pink-500/20 rounded-full blur-3xl group-hover:scale-150 transition-transform duration-500"></div>
             <div className="relative">
               <div className="flex items-center gap-1.5 md:gap-2 mb-2 md:mb-3">
-                <div className="p-1.5 md:p-2 bg-gradient-to-br from-purple-500 to-pink-600 rounded-lg shadow-lg">
-                  <Target className="w-4 h-4 md:w-5 md:h-5 text-white" />
+                <div className="relative w-9 h-9 md:w-10 md:h-10">
+                  <div className="absolute inset-0 bg-purple-500 rounded-xl rotate-6 opacity-80"></div>
+                  <div className="absolute inset-0 bg-pink-500 rounded-xl -rotate-6 opacity-60"></div>
+                  <div className="absolute inset-0 bg-gradient-to-br from-purple-400 to-pink-600 rounded-xl flex items-center justify-center shadow-lg">
+                    <div className="absolute inset-x-0 top-0 h-1/2 bg-gradient-to-b from-white/30 to-transparent rounded-t-xl"></div>
+                    <Target className="w-5 h-5 md:w-6 md:h-6 text-white relative z-10" strokeWidth={2.5} />
+                  </div>
                 </div>
                 <div className="text-xs md:text-sm font-medium text-gray-600 dark:text-gray-400">
                   {t('portfolio.activePositions')}
