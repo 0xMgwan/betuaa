@@ -124,26 +124,26 @@ export default function CompactMarketCard({
 
   return (
     <Card 
-      className="p-3 md:p-4 hover:shadow-xl hover:shadow-blue-500/10 dark:hover:shadow-blue-500/20 hover:scale-[1.02] transition-all duration-300 cursor-pointer group active:scale-[0.98] border border-gray-200 dark:border-gray-800 hover:border-blue-500/50 dark:hover:border-blue-500/50 bg-gradient-to-br from-white to-gray-50/50 dark:from-gray-900 dark:to-gray-800/50 backdrop-blur-sm overflow-hidden relative"
+      className="p-2.5 md:p-3 hover:shadow-xl hover:shadow-blue-500/10 dark:hover:shadow-blue-500/20 hover:scale-[1.02] transition-all duration-300 cursor-pointer group active:scale-[0.98] border border-gray-200 dark:border-gray-800 hover:border-blue-500/50 dark:hover:border-blue-500/50 bg-gradient-to-br from-white to-gray-50/50 dark:from-gray-900 dark:to-gray-800/50 backdrop-blur-sm overflow-hidden relative"
       onClick={onClick}
     >
       {/* Subtle background gradient overlay */}
       <div className="absolute inset-0 bg-gradient-to-br from-blue-500/5 via-purple-500/5 to-pink-500/5 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
       
       <div className="relative z-10">
-        <div className="flex items-start gap-2.5 mb-3">
+        <div className="flex items-start gap-2 mb-2">
           {/* Category Icon with enhanced gradient */}
-          <div className={`w-10 h-10 md:w-11 md:h-11 rounded-xl bg-gradient-to-br ${getCategoryColor()} flex items-center justify-center flex-shrink-0 group-hover:scale-110 transition-all duration-300 shadow-lg group-hover:shadow-xl`}>
-            <CategoryIcon className="w-5 h-5 md:w-6 md:h-6 text-white drop-shadow-sm" />
+          <div className={`w-9 h-9 md:w-10 md:h-10 rounded-xl bg-gradient-to-br ${getCategoryColor()} flex items-center justify-center flex-shrink-0 group-hover:scale-110 transition-all duration-300 shadow-lg group-hover:shadow-xl`}>
+            <CategoryIcon className="w-4 h-4 md:w-5 md:h-5 text-white drop-shadow-sm" />
           </div>
           
           <div className="flex-1 min-w-0">
-            <div className="flex items-center gap-1.5 mb-1.5 flex-wrap">
-              <span className="text-[10px] md:text-xs font-bold text-blue-600 dark:text-blue-400 uppercase tracking-wide">
+            <div className="flex items-center gap-1 mb-1 flex-wrap">
+              <span className="text-[9px] md:text-[10px] font-bold text-blue-600 dark:text-blue-400 uppercase tracking-wide">
                 {actualCategory}
               </span>
               {isBlockchain && (
-                <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold shadow-sm ${
+                <span className={`px-1.5 py-0.5 rounded-full text-[9px] font-bold shadow-sm ${
                   status === 'resolved'
                     ? 'bg-gradient-to-r from-gray-100 to-gray-200 dark:from-gray-700 dark:to-gray-600 text-gray-700 dark:text-gray-300'
                     : status === 'active'
@@ -153,12 +153,12 @@ export default function CompactMarketCard({
                   {status.charAt(0).toUpperCase() + status.slice(1)}
                 </span>
               )}
-              <span className="text-[10px] md:text-xs text-gray-500 dark:text-gray-400 flex items-center gap-1">
-                <Clock className="h-3 w-3" />
+              <span className="text-[9px] md:text-[10px] text-gray-500 dark:text-gray-400 flex items-center gap-0.5">
+                <Clock className="h-2.5 w-2.5" />
                 {endDate}
               </span>
             </div>
-            <h3 className="font-bold text-sm md:text-base mb-2 line-clamp-2 text-gray-900 dark:text-white group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors leading-snug">
+            <h3 className="font-bold text-xs md:text-sm mb-1.5 line-clamp-2 text-gray-900 dark:text-white group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors leading-tight">
               {question}
             </h3>
           </div>
@@ -166,20 +166,20 @@ export default function CompactMarketCard({
           {/* Trend Icon */}
           <div className="flex-shrink-0">
             {trend === "up" ? (
-              <div className="p-1.5 rounded-lg bg-green-100 dark:bg-green-900/30 group-hover:scale-110 transition-transform">
-                <TrendingUp className="h-4 w-4 text-green-600 dark:text-green-400" />
+              <div className="p-1 rounded-lg bg-green-100 dark:bg-green-900/30 group-hover:scale-110 transition-transform">
+                <TrendingUp className="h-3.5 w-3.5 text-green-600 dark:text-green-400" />
               </div>
             ) : (
-              <div className="p-1.5 rounded-lg bg-red-100 dark:bg-red-900/30 group-hover:scale-110 transition-transform">
-                <TrendingDown className="h-4 w-4 text-red-600 dark:text-red-400" />
+              <div className="p-1 rounded-lg bg-red-100 dark:bg-red-900/30 group-hover:scale-110 transition-transform">
+                <TrendingDown className="h-3.5 w-3.5 text-red-600 dark:text-red-400" />
               </div>
             )}
           </div>
         </div>
 
         {/* Mini Chart with enhanced styling */}
-        <div className="mb-3 bg-gradient-to-br from-gray-50 to-gray-100/50 dark:from-gray-900 dark:to-gray-800/50 rounded-xl p-2 md:p-2.5 overflow-hidden border border-gray-200/50 dark:border-gray-700/50 group-hover:border-blue-500/30 transition-all">
-          <svg viewBox="0 0 200 50" className="w-full h-10 md:h-12">
+        <div className="mb-2 bg-gradient-to-br from-gray-50 to-gray-100/50 dark:from-gray-900 dark:to-gray-800/50 rounded-xl p-1.5 md:p-2 overflow-hidden border border-gray-200/50 dark:border-gray-700/50 group-hover:border-blue-500/30 transition-all">
+          <svg viewBox="0 0 200 50" className="w-full h-8 md:h-10">
             {/* Grid lines */}
             <line x1="0" y1="10" x2="200" y2="10" stroke="currentColor" strokeWidth="0.5" className="text-gray-300 dark:text-gray-700" strokeDasharray="3 3" />
             <line x1="0" y1="25" x2="200" y2="25" stroke="currentColor" strokeWidth="0.5" className="text-gray-300 dark:text-gray-700" strokeDasharray="3 3" />
@@ -223,15 +223,15 @@ export default function CompactMarketCard({
           </svg>
         </div>
 
-        <div className="flex items-center gap-2 mb-3">
+        <div className="flex items-center gap-1.5 mb-2">
           <button
             type="button"
             onClick={(e) => handleButtonClick(e, 0, 'Yes', yesPrice)}
             disabled={status !== 'active'}
-            className="flex-1 bg-gradient-to-br from-green-50 to-emerald-50 dark:from-green-900/20 dark:to-emerald-900/20 rounded-xl px-3 py-2.5 hover:from-green-100 hover:to-emerald-100 dark:hover:from-green-900/40 dark:hover:to-emerald-900/40 active:scale-95 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed border border-green-200/50 dark:border-green-800/50 hover:border-green-300 dark:hover:border-green-700 hover:shadow-md group/yes"
+            className="flex-1 bg-gradient-to-br from-green-50 to-emerald-50 dark:from-green-900/20 dark:to-emerald-900/20 rounded-lg px-2 py-2 hover:from-green-100 hover:to-emerald-100 dark:hover:from-green-900/40 dark:hover:to-emerald-900/40 active:scale-95 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed border border-green-200/50 dark:border-green-800/50 hover:border-green-300 dark:hover:border-green-700 hover:shadow-md group/yes"
           >
-            <div className="text-[10px] md:text-xs text-gray-600 dark:text-gray-400 font-medium mb-0.5">Yes</div>
-            <div className="text-base md:text-lg font-bold text-green-600 dark:text-green-400 group-hover/yes:scale-105 transition-transform">
+            <div className="text-[9px] md:text-[10px] text-gray-600 dark:text-gray-400 font-medium mb-0.5">Yes</div>
+            <div className="text-sm md:text-base font-bold text-green-600 dark:text-green-400 group-hover/yes:scale-105 transition-transform">
               {(yesPrice * 100).toFixed(0)}¢
             </div>
           </button>
@@ -239,16 +239,16 @@ export default function CompactMarketCard({
             type="button"
             onClick={(e) => handleButtonClick(e, 1, 'No', noPrice)}
             disabled={status !== 'active'}
-            className="flex-1 bg-gradient-to-br from-red-50 to-rose-50 dark:from-red-900/20 dark:to-rose-900/20 rounded-xl px-3 py-2.5 hover:from-red-100 hover:to-rose-100 dark:hover:from-red-900/40 dark:hover:to-rose-900/40 active:scale-95 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed border border-red-200/50 dark:border-red-800/50 hover:border-red-300 dark:hover:border-red-700 hover:shadow-md group/no"
+            className="flex-1 bg-gradient-to-br from-red-50 to-rose-50 dark:from-red-900/20 dark:to-rose-900/20 rounded-lg px-2 py-2 hover:from-red-100 hover:to-rose-100 dark:hover:from-red-900/40 dark:hover:to-rose-900/40 active:scale-95 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed border border-red-200/50 dark:border-red-800/50 hover:border-red-300 dark:hover:border-red-700 hover:shadow-md group/no"
           >
-            <div className="text-[10px] md:text-xs text-gray-600 dark:text-gray-400 font-medium mb-0.5">No</div>
-            <div className="text-base md:text-lg font-bold text-red-600 dark:text-red-400 group-hover/no:scale-105 transition-transform">
+            <div className="text-[9px] md:text-[10px] text-gray-600 dark:text-gray-400 font-medium mb-0.5">No</div>
+            <div className="text-sm md:text-base font-bold text-red-600 dark:text-red-400 group-hover/no:scale-105 transition-transform">
               {(noPrice * 100).toFixed(0)}¢
             </div>
           </button>
         </div>
 
-        <div className="flex items-center justify-between text-[10px] md:text-xs">
+        <div className="flex items-center justify-between text-[9px] md:text-[10px]">
           <span className="text-gray-500 dark:text-gray-400 font-medium">Volume:</span>
           <span className="font-bold text-gray-900 dark:text-white">{volume}</span>
         </div>
