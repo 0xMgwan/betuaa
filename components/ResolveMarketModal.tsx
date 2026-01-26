@@ -26,7 +26,11 @@ export default function ResolveMarketModal({
   const handleResolve = async () => {
     if (selectedOutcome === null) return;
     
-    await resolveMarket(market.id, selectedOutcome);
+    try {
+      await resolveMarket(market.id, selectedOutcome);
+    } catch (error) {
+      console.error('Error resolving market:', error);
+    }
   };
 
   // Close modal after successful resolution

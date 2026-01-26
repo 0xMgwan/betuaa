@@ -68,24 +68,34 @@ export default function TradingModal({
     if (!amount) return;
     setStep('approve');
     
-    // Approve unlimited amount (standard DeFi practice)
-    // User only needs to approve once, ever
-    await approve(
-      paymentToken as `0x${string}`,
-      CONTRACTS.baseSepolia.predictionMarket as `0x${string}`,
-      MAX_UINT256
-    );
+    try {
+      // Approve unlimited amount (standard DeFi practice)
+      // User only needs to approve once, ever
+      await approve(
+        paymentToken as `0x${string}`,
+        CONTRACTS.baseSepolia.predictionMarket as `0x${string}`,
+        MAX_UINT256
+      );
+    } catch (error) {
+      console.error('Error approving token:', error);
+      setStep('input');
+    }
   };
 
   const handleBuy = async () => {
     if (!amount) return;
     setStep('buy');
     
-    await buyShares(
-      marketId,
-      outcomeId,
-      sharesAmount
-    );
+    try {
+      await buyShares(
+        marketId,
+        outcomeId,
+        sharesAmount
+      );
+    } catch (error) {
+      console.error('Error buying shares:', error);
+      setStep('input');
+    }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {

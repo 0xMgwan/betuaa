@@ -64,32 +64,42 @@ export default function CreateMarketModal({ isOpen, onClose }: CreateMarketModal
   const handleApprove = async () => {
     if (!selectedStablecoin || !initialLiquidity) return;
     
-    const amount = parseUnits(initialLiquidity, selectedStablecoin.decimals);
-    await approve(
-      selectedToken as `0x${string}`,
-      CONTRACTS.baseSepolia.predictionMarket as `0x${string}`,
-      amount
-    );
+    try {
+      const amount = parseUnits(initialLiquidity, selectedStablecoin.decimals);
+      await approve(
+        selectedToken as `0x${string}`,
+        CONTRACTS.baseSepolia.predictionMarket as `0x${string}`,
+        amount
+      );
+    } catch (error) {
+      console.error('Error approving token:', error);
+      setStep('form');
+    }
   };
 
   const handleCreateMarket = async () => {
     if (!selectedStablecoin) return;
 
-    const closingTimestamp = BigInt(Math.floor(new Date(closingDate).getTime() / 1000));
-    const liquidityAmount = parseUnits(initialLiquidity || '0', selectedStablecoin.decimals);
+    try {
+      const closingTimestamp = BigInt(Math.floor(new Date(closingDate).getTime() / 1000));
+      const liquidityAmount = parseUnits(initialLiquidity || '0', selectedStablecoin.decimals);
 
-    // Encode category in description with special format
-    const descriptionWithCategory = `[CATEGORY:${category}] ${description}`;
+      // Encode category in description with special format
+      const descriptionWithCategory = `[CATEGORY:${category}] ${description}`;
 
-    await createMarket(
-      title,
-      descriptionWithCategory,
-      0, // Binary market
-      closingTimestamp,
-      ['Yes', 'No'],
-      liquidityAmount,
-      selectedToken as `0x${string}`
-    );
+      await createMarket(
+        title,
+        descriptionWithCategory,
+        0, // Binary market
+        closingTimestamp,
+        ['Yes', 'No'],
+        liquidityAmount,
+        selectedToken as `0x${string}`
+      );
+    } catch (error) {
+      console.error('Error creating market:', error);
+      setStep('form');
+    }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {

@@ -303,8 +303,12 @@ export default function Portfolio() {
                       ) : position.winningOutcomeId === position.outcomeId ? (
                         <button
                           onClick={async () => {
-                            setClaimedPosition(position);
-                            await claimWinnings(position.marketId, position.outcomeId);
+                            try {
+                              setClaimedPosition(position);
+                              await claimWinnings(position.marketId, position.outcomeId);
+                            } catch (error) {
+                              console.error('Error claiming winnings:', error);
+                            }
                           }}
                           disabled={isClaiming}
                           className="w-full px-4 py-2.5 bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white rounded-lg font-bold shadow-lg shadow-green-500/50 hover:shadow-xl hover:shadow-green-500/50 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
