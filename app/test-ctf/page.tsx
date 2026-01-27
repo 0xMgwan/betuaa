@@ -168,10 +168,10 @@ export default function TestCTFPage() {
           {marketData && Array.isArray(marketData) && (
             <div className="mb-4 p-4 bg-gray-50 dark:bg-gray-900 rounded-lg">
               <p className="text-sm text-gray-600 dark:text-gray-400 mb-1">
-                <span className="font-semibold">Market #{selectedMarketId}:</span> {String(marketData[0] || '')}
+                <span className="font-semibold">Market #{selectedMarketId}:</span> {String((marketData as any)[0] || '')}
               </p>
               <p className="text-sm text-gray-600 dark:text-gray-400">
-                <span className="font-semibold">Status:</span> {marketData[8] ? 'Resolved' : 'Active'}
+                <span className="font-semibold">Status:</span> {(marketData as any)[8] ? 'Resolved' : 'Active'}
               </p>
             </div>
           )}
