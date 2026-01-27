@@ -331,7 +331,10 @@ export default function PolymarketTradingModal({
                         borderRadius: '8px',
                         color: '#fff'
                       }}
-                      formatter={(value: number) => [`$${(value / 1000).toFixed(1)}K`, 'Volume']}
+                      formatter={(value) => {
+                        const vol = typeof value === 'number' ? value : 0;
+                        return [`$${(vol / 1000).toFixed(1)}K`, 'Volume'];
+                      }}
                     />
                     <Bar 
                       dataKey="volume" 
