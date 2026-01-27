@@ -16,6 +16,8 @@ import { TrendingUp, TrendingDown, DollarSign, Sparkles, Award, Target, Star, Ac
 import CompactMarketCard from '@/components/CompactMarketCard';
 import BlockchainMarketModal from '@/components/BlockchainMarketModal';
 import { useTranslation } from '@/hooks/useTranslation';
+import { ErrorAlert } from '@/components/ErrorBoundary';
+import { SkeletonStats, SkeletonPortfolioGrid, SkeletonMarketGrid } from '@/components/SkeletonLoader';
 
 export default function Portfolio() {
   const { t } = useTranslation();
@@ -133,6 +135,9 @@ export default function Portfolio() {
         {activeTab === 'positions' && (
           <>
             {/* Stats Grid with Premium Design */}
+            {isLoading ? (
+              <SkeletonStats />
+            ) : (
             <div className="grid grid-cols-1 md:grid-cols-3 gap-3 md:gap-6 mb-4 md:mb-8">
           {/* Total Value Card */}
           <div className="group relative overflow-hidden bg-white/80 dark:bg-gray-800/80 backdrop-blur-xl rounded-xl md:rounded-2xl p-4 md:p-6 border border-gray-200 dark:border-gray-700 shadow-lg hover:shadow-2xl transition-all duration-300 hover:-translate-y-1">
@@ -211,6 +216,7 @@ export default function Portfolio() {
             </div>
           </div>
         </div>
+            )}
 
         {/* Positions List */}
         <div>
@@ -219,18 +225,7 @@ export default function Portfolio() {
           </h2>
 
           {isLoading ? (
-            <div className="space-y-4">
-              {[1, 2, 3].map((i) => (
-                <div
-                  key={i}
-                  className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-xl rounded-2xl p-6 animate-pulse border border-gray-200 dark:border-gray-700"
-                >
-                  <div className="h-6 bg-gray-200 dark:bg-gray-700 rounded-lg mb-4"></div>
-                  <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded mb-2"></div>
-                  <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-2/3"></div>
-                </div>
-              ))}
-            </div>
+            <SkeletonPortfolioGrid count={6} />
           ) : positions.length === 0 ? (
             <div className="text-center py-20 bg-white/80 dark:bg-gray-800/80 backdrop-blur-xl rounded-2xl border border-gray-200 dark:border-gray-700 shadow-lg">
               <div className="w-16 h-16 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center mx-auto mb-4">
