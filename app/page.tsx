@@ -20,6 +20,10 @@ import TradingModal from "@/components/TradingModal";
 import { ConnectButton } from '@rainbow-me/rainbowkit';
 import { useAccount } from 'wagmi';
 import { STABLECOINS } from '@/lib/contracts';
+import { usePolymarketMarkets } from '@/hooks/usePolymarketData';
+import { SimplifiedPolymarketMarket } from '@/lib/polymarket/types';
+import { categorizePolymarketMarket } from '@/lib/polymarket/categoryMapper';
+import PolymarketTradingModal from '@/components/PolymarketTradingModal';
 
 export default function Home() {
   const { t } = useTranslation();
@@ -27,9 +31,14 @@ export default function Home() {
   const [activeCategory, setActiveCategory] = useState("all");
   const [selectedMarket, setSelectedMarket] = useState<Market | null>(null);
   const [selectedBlockchainMarket, setSelectedBlockchainMarket] = useState<BlockchainMarket | null>(null);
+  const [selectedPolymarketMarket, setSelectedPolymarketMarket] = useState<SimplifiedPolymarketMarket | null>(null);
   const [renderKey, setRenderKey] = useState(0);
   const { activities } = useActivityFeed();
   const { markets: blockchainMarkets, isLoading: isLoadingBlockchain } = useAllMarkets();
+  const { markets: polymarketMarkets, isLoading: isLoadingPolymarket } = usePolymarketMarkets({ 
+    limit: 100, 
+    active: true 
+  });
   
   // Search and filter state
   const [searchQuery, setSearchQuery] = useState("");
@@ -40,11 +49,12 @@ export default function Home() {
   // Centralized modal state
   const [showConnectPrompt, setShowConnectPrompt] = useState(false);
   const [showTradingModal, setShowTradingModal] = useState(false);
+  const [showPolymarketTradingModal, setShowPolymarketTradingModal] = useState(false);
   const [selectedTrade, setSelectedTrade] = useState<{ marketId: number; outcomeId: number; outcomeName: string; price: number; paymentToken: string } | null>(null);
 
   // Lock body scroll when modals are open
   useEffect(() => {
-    if (showConnectPrompt || showTradingModal || selectedBlockchainMarket) {
+    if (showConnectPrompt || showTradingModal || selectedBlockchainMarket || showPolymarketTradingModal) {
       document.body.style.overflow = 'hidden';
     } else {
       document.body.style.overflow = 'unset';
@@ -52,7 +62,7 @@ export default function Home() {
     return () => {
       document.body.style.overflow = 'unset';
     };
-  }, [showConnectPrompt, showTradingModal, selectedBlockchainMarket]);
+  }, [showConnectPrompt, showTradingModal, selectedBlockchainMarket, showPolymarketTradingModal]);
 
   // Handle trade click from cards
   const handleTradeClick = (marketId: number, outcomeId: number, outcomeName: string, price: number, paymentToken: string) => {
@@ -112,6 +122,51 @@ export default function Home() {
     
     return markets;
   }, [blockchainMarkets, searchQuery, statusFilter, sortBy]);
+
+  // Filter and categorize Polymarket markets
+  const displayedPolymarketMarkets = useMemo(() => {
+    let markets = [...polymarketMarkets];
+    
+    // Apply category filter
+    if (activeCategory !== 'all') {
+      markets = markets.filter(market => {
+        const category = categorizePolymarketMarket(market);
+        return category === activeCategory;
+      });
+    }
+    
+    // Apply search filter
+    if (searchQuery.trim()) {
+      const query = searchQuery.toLowerCase();
+      markets = markets.filter(market => 
+        market.question.toLowerCase().includes(query) ||
+        market.description.toLowerCase().includes(query)
+      );
+    }
+    
+    // Apply status filter
+    if (statusFilter !== 'all') {
+      markets = markets.filter(market => {
+        if (statusFilter === 'active') return market.active && !market.closed;
+        if (statusFilter === 'closed') return market.closed && !market.resolved;
+        if (statusFilter === 'resolved') return market.resolved;
+        return true;
+      });
+    }
+    
+    // Apply sorting
+    markets = [...markets].sort((a, b) => {
+      if (sortBy === 'volume') {
+        return parseFloat(b.volume || '0') - parseFloat(a.volume || '0');
+      }
+      if (sortBy === 'closing') {
+        return new Date(a.endDate).getTime() - new Date(b.endDate).getTime();
+      }
+      return 0;
+    });
+    
+    return markets;
+  }, [polymarketMarkets, activeCategory, searchQuery, statusFilter, sortBy]);
 
   const displayedMarkets = useMemo(() => {
     let markets = activeCategory === "all" 
@@ -211,6 +266,15 @@ export default function Home() {
               {/* Blockchain Markets - using same card format */}
               {displayedBlockchainMarkets.length > 0 && (
                 <div className="mb-0 md:mb-8">
+                  <div className="mb-4 flex items-center justify-between">
+                    <h3 className="text-lg md:text-xl font-bold text-gray-900 dark:text-white">
+                      Created Markets
+                    </h3>
+                    <span className="text-xs md:text-sm text-gray-500 dark:text-gray-400">
+                      {displayedBlockchainMarkets.length} markets
+                    </span>
+                  </div>
+                  
                   {/* First 3 markets - horizontal scroll on mobile */}
                   {displayedBlockchainMarkets.length > 0 && (
                     <div className="mb-3 md:mb-6 overflow-x-auto scrollbar-hide md:hidden">
@@ -309,11 +373,138 @@ export default function Home() {
                 </div>
               )}
 
+              {/* Polymarket Markets Section */}
+              {displayedPolymarketMarkets.length > 0 && (
+                <div className="mb-0 md:mb-8">
+                  <div className="mb-4 flex items-center justify-between">
+                    <h3 className="text-lg md:text-xl font-bold text-gray-900 dark:text-white">
+                      Live Markets
+                    </h3>
+                    <span className="text-xs md:text-sm text-gray-500 dark:text-gray-400">
+                      {displayedPolymarketMarkets.length} markets
+                    </span>
+                  </div>
+                  
+                  {/* Mobile - horizontal scroll */}
+                  <div className="mb-3 md:mb-6 overflow-x-auto scrollbar-hide md:hidden">
+                    <div className="flex gap-3 pb-2">
+                      {displayedPolymarketMarkets.slice(0, 3).map((market) => {
+                        const volumeNum = parseFloat(market.volume || '0');
+                        const volumeDisplay = volumeNum > 1000000 
+                          ? `${(volumeNum / 1000000).toFixed(1)}M USDC`
+                          : volumeNum > 1000
+                          ? `${(volumeNum / 1000).toFixed(1)}K USDC`
+                          : `${volumeNum.toFixed(0)} USDC`;
+
+                        return (
+                          <div key={`poly-mobile-${market.id}`} className="flex-shrink-0 w-[85vw]">
+                            <div 
+                              onClick={() => {
+                                setSelectedPolymarketMarket(market);
+                                setShowPolymarketTradingModal(true);
+                              }}
+                              className="cursor-pointer"
+                            >
+                              <CompactMarketCard
+                                id={parseInt(market.id.slice(0, 8), 16)}
+                                question={market.question}
+                                category={categorizePolymarketMarket(market).toUpperCase()}
+                                yesPrice={market.yesPrice}
+                                noPrice={market.noPrice}
+                                volume={volumeDisplay}
+                                endDate={new Date(market.endDate).toLocaleDateString()}
+                                trend={market.yesPrice > 0.5 ? 'up' : 'down'}
+                                priceHistory={generatePriceHistory(market.yesPrice * 100, market.noPrice * 100)}
+                                status={market.resolved ? 'resolved' : market.active ? 'active' : 'closed'}
+                              />
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+                  
+                  {/* Desktop grid */}
+                  <div className="hidden md:grid grid-cols-2 gap-6">
+                    {displayedPolymarketMarkets.map((market) => {
+                      const volumeNum = parseFloat(market.volume || '0');
+                      const volumeDisplay = volumeNum > 1000000 
+                        ? `${(volumeNum / 1000000).toFixed(1)}M USDC`
+                        : volumeNum > 1000
+                        ? `${(volumeNum / 1000).toFixed(1)}K USDC`
+                        : `${volumeNum.toFixed(0)} USDC`;
+
+                      return (
+                        <div 
+                          key={`poly-desktop-${market.id}`}
+                          onClick={() => {
+                            setSelectedPolymarketMarket(market);
+                            setShowPolymarketTradingModal(true);
+                          }}
+                          className="cursor-pointer"
+                        >
+                          <CompactMarketCard
+                            id={parseInt(market.id.slice(0, 8), 16)}
+                            question={market.question}
+                            category={categorizePolymarketMarket(market).toUpperCase()}
+                            yesPrice={market.yesPrice}
+                            noPrice={market.noPrice}
+                            volume={volumeDisplay}
+                            endDate={new Date(market.endDate).toLocaleDateString()}
+                            trend={market.yesPrice > 0.5 ? 'up' : 'down'}
+                            priceHistory={generatePriceHistory(market.yesPrice * 100, market.noPrice * 100)}
+                            status={market.resolved ? 'resolved' : market.active ? 'active' : 'closed'}
+                          />
+                        </div>
+                      );
+                    })}
+                  </div>
+                  
+                  {/* Remaining markets on mobile */}
+                  {displayedPolymarketMarkets.length > 3 && (
+                    <div className="md:hidden grid grid-cols-1 gap-3">
+                      {displayedPolymarketMarkets.slice(3).map((market) => {
+                        const volumeNum = parseFloat(market.volume || '0');
+                        const volumeDisplay = volumeNum > 1000000 
+                          ? `${(volumeNum / 1000000).toFixed(1)}M USDC`
+                          : volumeNum > 1000
+                          ? `${(volumeNum / 1000).toFixed(1)}K USDC`
+                          : `${volumeNum.toFixed(0)} USDC`;
+
+                        return (
+                          <div 
+                            key={`poly-remaining-${market.id}`}
+                            onClick={() => {
+                              setSelectedPolymarketMarket(market);
+                              setShowPolymarketTradingModal(true);
+                            }}
+                            className="cursor-pointer"
+                          >
+                            <CompactMarketCard
+                              id={parseInt(market.id.slice(0, 8), 16)}
+                              question={market.question}
+                              category={categorizePolymarketMarket(market).toUpperCase()}
+                              yesPrice={market.yesPrice}
+                              noPrice={market.noPrice}
+                              volume={volumeDisplay}
+                              endDate={new Date(market.endDate).toLocaleDateString()}
+                              trend={market.yesPrice > 0.5 ? 'up' : 'down'}
+                              priceHistory={generatePriceHistory(market.yesPrice * 100, market.noPrice * 100)}
+                              status={market.resolved ? 'resolved' : market.active ? 'active' : 'closed'}
+                            />
+                          </div>
+                        );
+                      })}
+                    </div>
+                  )}
+                </div>
+              )}
+
               <div className="mt-4 md:mt-8">
                 {/* Results Count */}
                 <div className="mb-3 md:mb-4 flex items-center justify-between">
                   <p className="text-xs md:text-sm text-gray-600 dark:text-gray-400">
-                    {displayedBlockchainMarkets.length + marketsWithHistory.length} {(displayedBlockchainMarkets.length + marketsWithHistory.length) === 1 ? 'market' : 'markets'} found
+                    {displayedBlockchainMarkets.length + displayedPolymarketMarkets.length + marketsWithHistory.length} {(displayedBlockchainMarkets.length + displayedPolymarketMarkets.length + marketsWithHistory.length) === 1 ? 'market' : 'markets'} found
                   </p>
                 </div>
 
@@ -431,6 +622,16 @@ export default function Home() {
           tokenDecimals={STABLECOINS.baseSepolia.find(t => t.address.toLowerCase() === selectedTrade.paymentToken.toLowerCase())?.decimals || 6}
         />
       )}
+
+      {/* Polymarket Trading Modal */}
+      <PolymarketTradingModal
+        market={selectedPolymarketMarket}
+        isOpen={showPolymarketTradingModal}
+        onClose={() => {
+          setShowPolymarketTradingModal(false);
+          setSelectedPolymarketMarket(null);
+        }}
+      />
     </div>
   );
 }
