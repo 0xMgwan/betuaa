@@ -1,13 +1,13 @@
 "use client";
 
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo, lazy, Suspense } from "react";
+import dynamic from "next/dynamic";
 import Navbar from "@/components/Navbar";
 import CategoryTabs from "@/components/CategoryTabs";
 import FeaturedMarket from "@/components/FeaturedMarket";
 import CompactMarketCard from "@/components/CompactMarketCard";
 import MarketModal from "@/components/MarketModal";
 import MarketList from "@/components/MarketList";
-import BlockchainMarketModal from "@/components/BlockchainMarketModal";
 import ActivityFeed from "@/components/ActivityFeed";
 import Footer from "@/components/Footer";
 import { marketsByCategory, Market } from "@/lib/marketData";
@@ -23,7 +23,10 @@ import { STABLECOINS } from '@/lib/contracts';
 import { usePolymarketMarkets } from '@/hooks/usePolymarketData';
 import { SimplifiedPolymarketMarket } from '@/lib/polymarket/types';
 import { categorizePolymarketMarket } from '@/lib/polymarket/categoryMapper';
-import PolymarketTradingModal from '@/components/PolymarketTradingModal';
+
+// Lazy load heavy components
+const BlockchainMarketModal = dynamic(() => import("@/components/BlockchainMarketModal"), { ssr: false });
+const PolymarketTradingModal = dynamic(() => import("@/components/PolymarketTradingModal"), { ssr: false });
 
 export default function Home() {
   const { t } = useTranslation();
@@ -51,6 +54,10 @@ export default function Home() {
   const [showTradingModal, setShowTradingModal] = useState(false);
   const [showPolymarketTradingModal, setShowPolymarketTradingModal] = useState(false);
   const [selectedTrade, setSelectedTrade] = useState<{ marketId: number; outcomeId: number; outcomeName: string; price: number; paymentToken: string } | null>(null);
+  
+  // Pagination state for blockchain markets (keep for blockchain markets only)
+  const [blockchainPage, setBlockchainPage] = useState(1);
+  const BLOCKCHAIN_PER_PAGE = 12;
 
   // Lock body scroll when modals are open
   useEffect(() => {
@@ -120,10 +127,13 @@ export default function Home() {
       return 0;
     });
     
-    return markets;
-  }, [blockchainMarkets, searchQuery, statusFilter, sortBy]);
+    // Apply pagination - only show current page
+    const startIdx = (blockchainPage - 1) * BLOCKCHAIN_PER_PAGE;
+    const endIdx = startIdx + BLOCKCHAIN_PER_PAGE;
+    return markets.slice(startIdx, endIdx);
+  }, [blockchainMarkets, searchQuery, statusFilter, sortBy, blockchainPage]);
 
-  // Filter and categorize Polymarket markets
+  // Filter and categorize Polymarket markets with pagination
   const displayedPolymarketMarkets = useMemo(() => {
     let markets = [...polymarketMarkets];
     
@@ -165,6 +175,7 @@ export default function Home() {
       return 0;
     });
     
+    // Return all markets (no pagination for Polymarket)
     return markets;
   }, [polymarketMarkets, activeCategory, searchQuery, statusFilter, sortBy]);
 

@@ -39,6 +39,7 @@ export function usePolymarketMarkets(params?: {
         const allMarkets: any[] = [];
         events.forEach((event: any) => {
           if (event.markets && Array.isArray(event.markets)) {
+            // Take all markets from each event
             event.markets.forEach((market: any) => {
               allMarkets.push({
                 ...market,
@@ -50,8 +51,11 @@ export function usePolymarketMarkets(params?: {
           }
         });
         
+        // Limit to 100 markets total
+        const limitedMarkets = allMarkets.slice(0, 100);
+        
         if (mounted) {
-          setMarkets(allMarkets.map(simplifyPolymarketMarket));
+          setMarkets(limitedMarkets.map(simplifyPolymarketMarket));
           setError(null);
         }
       } catch (err) {

@@ -3,28 +3,35 @@ import { NextResponse } from 'next/server';
 const POLYMARKET_API_BASE = 'https://gamma-api.polymarket.com';
 
 export async function GET(request: Request) {
-  const { searchParams } = new URL(request.url);
-  const limit = searchParams.get('limit') || '20';
-  const active = searchParams.get('active') || 'true';
-  const closed = searchParams.get('closed') || 'false';
-
   try {
-    // Use the correct query parameters as per Polymarket docs
-    const url = `${POLYMARKET_API_BASE}/events?active=${active}&closed=${closed}&limit=${limit}`;
-    
-    const response = await fetch(url, {
-      headers: {
-        'Accept': 'application/json',
-      },
-      next: { revalidate: 60 },
+    const { searchParams } = new URL(request.url);
+    const limit = searchParams.get('limit') || '100';
+    const active = searchParams.get('active') === 'true';
+    const closed = searchParams.get('closed') === 'true';
+
+    const params = new URLSearchParams({
+      active: active.toString(),
+      closed: closed.toString(),
+      limit,
     });
 
+    const response = await fetch(
+      `${POLYMARKET_API_BASE}/events?${params}`,
+      { next: { revalidate: 300 } }
+    );
+
     if (!response.ok) {
-      throw new Error(`Polymarket API error: ${response.status}`);
+      throw new Error(`Polymarket API error: ${response.statusText}`);
     }
 
     const data = await response.json();
-    return NextResponse.json(data);
+
+    // Add cache headers
+    return NextResponse.json(data, {
+      headers: {
+        'Cache-Control': 'public, s-maxage=300, stale-while-revalidate=600',
+      },
+    });
   } catch (error) {
     console.error('Error fetching Polymarket events:', error);
     return NextResponse.json(

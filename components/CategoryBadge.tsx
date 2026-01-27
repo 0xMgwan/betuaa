@@ -32,8 +32,9 @@ export default function CategoryBadge({
   size = 'md',
   showLabel = true,
 }: CategoryBadgeProps) {
-  const categoryInfo = CATEGORIES[category];
-  const IconComponent = iconMap[categoryInfo.icon];
+  // Fallback to 'other' if category is not found
+  const categoryInfo = CATEGORIES[category] || CATEGORIES['other'];
+  const IconComponent = iconMap[categoryInfo?.icon] || BarChart3;
 
   const sizeClasses = {
     sm: 'w-6 h-6',

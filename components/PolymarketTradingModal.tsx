@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { X, TrendingUp, TrendingDown, Users, DollarSign, Clock, ExternalLink, Share2 } from 'lucide-react';
+import { X, TrendingUp, TrendingDown, Users, Clock, ExternalLink } from 'lucide-react';
 import { useAccount, useWalletClient } from 'wagmi';
 import { SimplifiedPolymarketMarket } from '@/lib/polymarket/types';
 import { getOrderbook, placeOrder } from '@/lib/polymarket/tradingService';
@@ -37,15 +37,16 @@ export default function PolymarketTradingModal({
   const [loadingOrderbook, setLoadingOrderbook] = useState(false);
   const [showTrading, setShowTrading] = useState(false);
 
-  // Generate price history data - using stable prices since we don't have historical data
+  // Generate simplified price history data - reduce data points for better performance
   const generatePriceHistory = () => {
     const history = [];
     const now = new Date();
     const yesPrice = market.yesPrice * 100;
     const noPrice = market.noPrice * 100;
     
-    for (let i = 24; i >= 0; i--) {
-      const time = new Date(now.getTime() - i * 60 * 60 * 1000);
+    // Only generate 12 data points instead of 25 for better performance
+    for (let i = 12; i >= 0; i--) {
+      const time = new Date(now.getTime() - i * 2 * 60 * 60 * 1000);
       history.push({
         time: time.toLocaleTimeString('en-US', { hour: 'numeric', hour12: true }),
         Yes: yesPrice,
@@ -61,9 +62,10 @@ export default function PolymarketTradingModal({
   const categoryKey = categorizePolymarketMarket(market) as 'crypto' | 'sports' | 'politics' | 'entertainment' | 'technology' | 'other';
   const endDate = new Date(market.endDate);
 
-  // Load orderbook when market changes
+  // Load orderbook when market changes - disabled for performance
+  // Only load when user actually wants to trade
   useEffect(() => {
-    if (!isOpen) return;
+    if (!isOpen || !showTrading) return;
 
     const loadOrderbook = async () => {
       setLoadingOrderbook(true);
@@ -87,7 +89,7 @@ export default function PolymarketTradingModal({
     };
 
     loadOrderbook();
-  }, [market, outcome, side, isOpen]);
+  }, [market, outcome, side, isOpen, showTrading]);
 
   const handleTrade = async () => {
     if (!walletAddress || !walletClient) {
@@ -140,8 +142,8 @@ export default function PolymarketTradingModal({
     : volumeNum.toFixed(0);
 
   return (
-    <div className="fixed inset-0 bg-black/50 dark:bg-black/70 flex items-center justify-center z-50 p-4">
-      <div className="bg-white dark:bg-gray-800 rounded-2xl max-w-4xl w-full md:h-auto md:max-h-[90vh] max-h-[90vh] overflow-y-auto">
+    <div className="fixed inset-0 bg-black/50 dark:bg-black/70 flex items-center justify-center z-50 p-4 animate-in fade-in duration-200">
+      <div className="bg-white dark:bg-gray-800 rounded-2xl max-w-4xl w-full md:h-auto md:max-h-[90vh] max-h-[90vh] overflow-y-auto animate-in slide-in-from-bottom-4 duration-300">
         {/* Header */}
         <div className="sticky top-0 bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 p-2 md:p-6 z-10">
           <div className="flex items-start justify-between mb-2">

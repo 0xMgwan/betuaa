@@ -1,5 +1,6 @@
 "use client";
 
+import { memo } from "react";
 import { TrendingUp, TrendingDown, Clock, Bitcoin, Trophy, Building2, Clapperboard, Cpu, BarChart3, LucideIcon } from "lucide-react";
 import { Card } from "./ui/card";
 import { extractCategory, getCategoryInfo } from '@/lib/categoryUtils';
@@ -32,7 +33,7 @@ interface CompactMarketCardProps {
   paymentToken?: string;
 }
 
-export default function CompactMarketCard({
+function CompactMarketCard({
   id,
   question,
   category,
@@ -264,3 +265,5 @@ export default function CompactMarketCard({
     </Card>
   );
 }
+
+export default memo(CompactMarketCard);
