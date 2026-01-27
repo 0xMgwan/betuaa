@@ -23,6 +23,7 @@ import { STABLECOINS } from '@/lib/contracts';
 import { usePolymarketMarkets } from '@/hooks/usePolymarketData';
 import { SimplifiedPolymarketMarket } from '@/lib/polymarket/types';
 import { categorizePolymarketMarket } from '@/lib/polymarket/categoryMapper';
+import { useRealtimePrices } from '@/hooks/useRealtimePrices';
 
 // Lazy load heavy components
 const BlockchainMarketModal = dynamic(() => import("@/components/BlockchainMarketModal"), { ssr: false });
@@ -41,6 +42,13 @@ export default function Home() {
   const { markets: polymarketMarkets, isLoading: isLoadingPolymarket } = usePolymarketMarkets({ 
     limit: 100, 
     active: true 
+  });
+  
+  // Real-time price updates for Polymarket markets
+  const { priceUpdates, getPriceUpdate } = useRealtimePrices({
+    markets: polymarketMarkets,
+    enabled: true,
+    interval: 30000, // Update every 30 seconds
   });
   
   // Search and filter state
@@ -400,7 +408,13 @@ export default function Home() {
                   <div className="mb-3 md:mb-6 overflow-x-auto scrollbar-hide md:hidden">
                     <div className="flex gap-3 pb-2">
                       {displayedPolymarketMarkets.slice(0, 3).map((market) => {
-                        const volumeNum = parseFloat(market.volume || '0');
+                        // Get real-time price update if available
+                        const priceUpdate = getPriceUpdate(market.id);
+                        const currentYesPrice = priceUpdate?.yesPrice ?? market.yesPrice;
+                        const currentNoPrice = priceUpdate?.noPrice ?? market.noPrice;
+                        const currentVolume = priceUpdate?.volume ?? market.volume;
+                        
+                        const volumeNum = parseFloat(currentVolume || '0');
                         const volumeDisplay = volumeNum > 1000000 
                           ? `${(volumeNum / 1000000).toFixed(1)}M USDC`
                           : volumeNum > 1000
@@ -420,12 +434,12 @@ export default function Home() {
                                 id={parseInt(market.id.slice(0, 8), 16)}
                                 question={market.question}
                                 category={categorizePolymarketMarket(market).toUpperCase()}
-                                yesPrice={market.yesPrice}
-                                noPrice={market.noPrice}
+                                yesPrice={currentYesPrice}
+                                noPrice={currentNoPrice}
                                 volume={volumeDisplay}
                                 endDate={new Date(market.endDate).toLocaleDateString()}
-                                trend={market.yesPrice > 0.5 ? 'up' : 'down'}
-                                priceHistory={generatePriceHistory(market.yesPrice * 100, market.noPrice * 100)}
+                                trend={currentYesPrice > 0.5 ? 'up' : 'down'}
+                                priceHistory={generatePriceHistory(currentYesPrice * 100, currentNoPrice * 100)}
                                 status={market.resolved ? 'resolved' : market.active ? 'active' : 'closed'}
                               />
                             </div>
@@ -438,7 +452,13 @@ export default function Home() {
                   {/* Desktop grid */}
                   <div className="hidden md:grid grid-cols-2 gap-6">
                     {displayedPolymarketMarkets.map((market) => {
-                      const volumeNum = parseFloat(market.volume || '0');
+                      // Get real-time price update if available
+                      const priceUpdate = getPriceUpdate(market.id);
+                      const currentYesPrice = priceUpdate?.yesPrice ?? market.yesPrice;
+                      const currentNoPrice = priceUpdate?.noPrice ?? market.noPrice;
+                      const currentVolume = priceUpdate?.volume ?? market.volume;
+                      
+                      const volumeNum = parseFloat(currentVolume || '0');
                       const volumeDisplay = volumeNum > 1000000 
                         ? `${(volumeNum / 1000000).toFixed(1)}M USDC`
                         : volumeNum > 1000
@@ -458,12 +478,12 @@ export default function Home() {
                             id={parseInt(market.id.slice(0, 8), 16)}
                             question={market.question}
                             category={categorizePolymarketMarket(market).toUpperCase()}
-                            yesPrice={market.yesPrice}
-                            noPrice={market.noPrice}
+                            yesPrice={currentYesPrice}
+                            noPrice={currentNoPrice}
                             volume={volumeDisplay}
                             endDate={new Date(market.endDate).toLocaleDateString()}
-                            trend={market.yesPrice > 0.5 ? 'up' : 'down'}
-                            priceHistory={generatePriceHistory(market.yesPrice * 100, market.noPrice * 100)}
+                            trend={currentYesPrice > 0.5 ? 'up' : 'down'}
+                            priceHistory={generatePriceHistory(currentYesPrice * 100, currentNoPrice * 100)}
                             status={market.resolved ? 'resolved' : market.active ? 'active' : 'closed'}
                           />
                         </div>
