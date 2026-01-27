@@ -446,6 +446,26 @@ contract CTFPredictionMarket is ERC1155, ERC1155Holder, Ownable, ReentrancyGuard
         platformFeeBps = _feeBps;
     }
 
+    /**
+     * @notice Withdraw accumulated fees for a specific token
+     * @param token The ERC20 token to withdraw fees for
+     */
+    function withdrawFees(address token) external onlyOwner nonReentrant {
+        uint256 balance = IERC20(token).balanceOf(address(this));
+        require(balance > 0, "No fees to withdraw");
+        require(IERC20(token).transfer(owner(), balance), "Withdrawal failed");
+    }
+
+    /**
+     * @notice Withdraw specific amount of fees
+     * @param token The ERC20 token to withdraw
+     * @param amount Amount to withdraw
+     */
+    function withdrawFeesAmount(address token, uint256 amount) external onlyOwner nonReentrant {
+        require(amount > 0, "Amount must be greater than 0");
+        require(IERC20(token).transfer(owner(), amount), "Withdrawal failed");
+    }
+
     function pauseMarket(uint256 marketId) external onlyOwner {
         markets[marketId].paused = true;
     }
