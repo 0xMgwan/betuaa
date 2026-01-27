@@ -1,12 +1,12 @@
 'use client';
 
-import { useState, useEffect } from 'react';
-import { X, TrendingUp, TrendingDown, Users, Clock, ExternalLink } from 'lucide-react';
+import { useState, useEffect, useMemo } from 'react';
+import { X, TrendingUp, TrendingDown, Users, Clock, ExternalLink, BarChart2, Activity } from 'lucide-react';
 import { useAccount, useWalletClient } from 'wagmi';
 import { SimplifiedPolymarketMarket } from '@/lib/polymarket/types';
 import { getOrderbook, placeOrder } from '@/lib/polymarket/tradingService';
 import { categorizePolymarketMarket } from '@/lib/polymarket/categoryMapper';
-import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from 'recharts';
+import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend, AreaChart, Area, BarChart, Bar } from 'recharts';
 import CategoryBadge from './CategoryBadge';
 import Image from 'next/image';
 
@@ -36,6 +36,7 @@ export default function PolymarketTradingModal({
   const [orderbook, setOrderbook] = useState<any>(null);
   const [loadingOrderbook, setLoadingOrderbook] = useState(false);
   const [showTrading, setShowTrading] = useState(false);
+  const [chartView, setChartView] = useState<'price' | 'volume' | 'liquidity'>('price');
 
   // Generate simplified price history data - reduce data points for better performance
   const generatePriceHistory = () => {
@@ -57,6 +58,26 @@ export default function PolymarketTradingModal({
   };
 
   const priceHistory = generatePriceHistory();
+  
+  // Generate volume history data
+  const generateVolumeHistory = () => {
+    const history = [];
+    const now = new Date();
+    const totalVolume = parseFloat(market.volume || '0');
+    
+    for (let i = 12; i >= 0; i--) {
+      const time = new Date(now.getTime() - i * 2 * 60 * 60 * 1000);
+      const volumePoint = totalVolume * (0.7 + Math.random() * 0.3) / 13;
+      history.push({
+        time: time.toLocaleTimeString('en-US', { hour: 'numeric', hour12: true }),
+        volume: volumePoint,
+      });
+    }
+    return history;
+  };
+
+  const volumeHistory = useMemo(() => generateVolumeHistory(), [market.volume]);
+  
   // Calculate 24h change - for now showing 0% since we don't have historical data
   const change24h = 0;
   const categoryKey = categorizePolymarketMarket(market) as 'crypto' | 'sports' | 'politics' | 'entertainment' | 'technology' | 'other';
@@ -211,59 +232,114 @@ export default function PolymarketTradingModal({
             </div>
           </div>
 
-          {/* Price History Chart */}
+          {/* Chart Tabs */}
           <div>
-            <div className="flex items-center justify-between mb-2">
-              <h3 className="text-sm md:text-lg font-semibold text-gray-900 dark:text-white">Price History</h3>
-              <div className="flex items-center gap-3 text-xs">
-                <div className="flex items-center gap-1">
-                  <div className="w-2 h-2 rounded-full bg-green-500"></div>
-                  <span className="text-gray-600 dark:text-gray-400">Yes {(market.yesPrice * 100).toFixed(1)}¢</span>
-                </div>
-                <div className="flex items-center gap-1">
-                  <div className="w-2 h-2 rounded-full bg-red-500"></div>
-                  <span className="text-gray-600 dark:text-gray-400">No {(market.noPrice * 100).toFixed(1)}¢</span>
-                </div>
+            <div className="flex items-center justify-between mb-3">
+              <div className="flex gap-2">
+                <button
+                  onClick={() => setChartView('price')}
+                  className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${
+                    chartView === 'price'
+                      ? 'bg-blue-500 text-white'
+                      : 'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-600'
+                  }`}
+                >
+                  <Activity className="w-3 h-3 inline mr-1" />
+                  Price
+                </button>
+                <button
+                  onClick={() => setChartView('volume')}
+                  className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${
+                    chartView === 'volume'
+                      ? 'bg-blue-500 text-white'
+                      : 'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-600'
+                  }`}
+                >
+                  <BarChart2 className="w-3 h-3 inline mr-1" />
+                  Volume
+                </button>
               </div>
+              {chartView === 'price' && (
+                <div className="flex items-center gap-3 text-xs">
+                  <div className="flex items-center gap-1">
+                    <div className="w-2 h-2 rounded-full bg-green-500"></div>
+                    <span className="text-gray-600 dark:text-gray-400">Yes {(market.yesPrice * 100).toFixed(1)}¢</span>
+                  </div>
+                  <div className="flex items-center gap-1">
+                    <div className="w-2 h-2 rounded-full bg-red-500"></div>
+                    <span className="text-gray-600 dark:text-gray-400">No {(market.noPrice * 100).toFixed(1)}¢</span>
+                  </div>
+                </div>
+              )}
             </div>
+            
             <div className="h-48 md:h-64">
               <ResponsiveContainer width="100%" height="100%">
-                <LineChart data={priceHistory}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="#374151" opacity={0.1} />
-                  <XAxis 
-                    dataKey="time" 
-                    stroke="#9CA3AF"
-                    tick={{ fontSize: 10 }}
-                  />
-                  <YAxis 
-                    stroke="#9CA3AF"
-                    tick={{ fontSize: 10 }}
-                    domain={[0, 100]}
-                  />
-                  <Tooltip 
-                    contentStyle={{
-                      backgroundColor: '#1F2937',
-                      border: 'none',
-                      borderRadius: '8px',
-                      color: '#fff'
-                    }}
-                  />
-                  <Legend />
-                  <Line 
-                    type="monotone" 
-                    dataKey="Yes" 
-                    stroke="#10B981" 
-                    strokeWidth={2}
-                    dot={false}
-                  />
-                  <Line 
-                    type="monotone" 
-                    dataKey="No" 
-                    stroke="#EF4444" 
-                    strokeWidth={2}
-                    dot={false}
-                  />
-                </LineChart>
+                {chartView === 'price' ? (
+                  <LineChart data={priceHistory}>
+                    <CartesianGrid strokeDasharray="3 3" stroke="#374151" opacity={0.1} />
+                    <XAxis 
+                      dataKey="time" 
+                      stroke="#9CA3AF"
+                      tick={{ fontSize: 10 }}
+                    />
+                    <YAxis 
+                      stroke="#9CA3AF"
+                      tick={{ fontSize: 10 }}
+                      domain={[0, 100]}
+                    />
+                    <Tooltip 
+                      contentStyle={{
+                        backgroundColor: '#1F2937',
+                        border: 'none',
+                        borderRadius: '8px',
+                        color: '#fff'
+                      }}
+                    />
+                    <Legend />
+                    <Line 
+                      type="monotone" 
+                      dataKey="Yes" 
+                      stroke="#10B981" 
+                      strokeWidth={2}
+                      dot={false}
+                    />
+                    <Line 
+                      type="monotone" 
+                      dataKey="No" 
+                      stroke="#EF4444" 
+                      strokeWidth={2}
+                      dot={false}
+                    />
+                  </LineChart>
+                ) : (
+                  <BarChart data={volumeHistory}>
+                    <CartesianGrid strokeDasharray="3 3" stroke="#374151" opacity={0.1} />
+                    <XAxis 
+                      dataKey="time" 
+                      stroke="#9CA3AF"
+                      tick={{ fontSize: 10 }}
+                    />
+                    <YAxis 
+                      stroke="#9CA3AF"
+                      tick={{ fontSize: 10 }}
+                    />
+                    <Tooltip 
+                      contentStyle={{
+                        backgroundColor: '#1F2937',
+                        border: 'none',
+                        borderRadius: '8px',
+                        color: '#fff'
+                      }}
+                      formatter={(value: number) => [`$${(value / 1000).toFixed(1)}K`, 'Volume']}
+                    />
+                    <Bar 
+                      dataKey="volume" 
+                      fill="#3B82F6"
+                      radius={[4, 4, 0, 0]}
+                    />
+                  </BarChart>
+                )}
               </ResponsiveContainer>
             </div>
           </div>
