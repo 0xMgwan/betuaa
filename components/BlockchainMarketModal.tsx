@@ -99,8 +99,8 @@ export default function BlockchainMarketModal({
                   height={16}
                   className="w-4 h-4 rounded-full"
                 />
-                {market.totalVolume > BigInt(0) 
-                  ? (Number(market.totalVolume) / 1e6).toFixed(1) + 'K USDC'
+                {Number(market.totalVolume) > 0
+                  ? (Number(market.totalVolume) / 1e6).toFixed(2) + ' USDC'
                   : '0 USDC'
                 }
               </div>

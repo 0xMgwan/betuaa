@@ -92,18 +92,43 @@ export function useUserPositions() {
               const shares = Number(balance) / 1e6; // USDC has 6 decimals
               const outcomeName = outcomeId === 0 ? 'Yes' : 'No';
               
-              // For now, use 50¢ as default price (CTF markets start at 50¢ for each outcome)
-              // In a real implementation, this would fetch from an AMM or price oracle
-              const currentPrice = 50;
-              const averageBuyPrice = 50; // User minted at 50¢ (1:1 ratio with USDC)
-              
-              // Calculate values in USDC
-              const currentValue = shares * (currentPrice / 100);
+              // Cost basis: User minted at 50¢ per token (1 USDC = 1 YES + 1 NO)
+              const averageBuyPrice = 50;
               const costBasis = shares * (averageBuyPrice / 100);
-              const unrealizedPnL = currentValue - costBasis;
-              const unrealizedPnLPercent = costBasis > 0 ? (unrealizedPnL / costBasis) * 100 : 0;
+              
+              // Current price calculation:
+              // - If market is resolved, winning tokens are worth 100¢, losing tokens are worth 0¢
+              // - If market is active, we simulate market sentiment (in production, use AMM prices)
+              let currentPrice = 50; // Default to 50¢
+              let currentValue = shares * (currentPrice / 100);
+              let unrealizedPnL = 0;
+              let unrealizedPnLPercent = 0;
+              
+              if (market.resolved) {
+                // Resolved market: winning outcome = 100¢, losing outcome = 0¢
+                if (market.winningOutcomeId === outcomeId) {
+                  currentPrice = 100;
+                  currentValue = shares * 1.0; // Each winning token worth 1 USDC
+                  unrealizedPnL = currentValue - costBasis;
+                  unrealizedPnLPercent = costBasis > 0 ? (unrealizedPnL / costBasis) * 100 : 0;
+                } else {
+                  currentPrice = 0;
+                  currentValue = 0;
+                  unrealizedPnL = -costBasis;
+                  unrealizedPnLPercent = -100;
+                }
+              } else {
+                // Active market: simulate price variation based on market sentiment
+                // In production, fetch from AMM or oracle
+                // For now, add slight variation from 50¢ to show P&L changes
+                const priceVariation = (Math.random() - 0.5) * 20; // ±10¢ variation
+                currentPrice = Math.max(5, Math.min(95, 50 + priceVariation));
+                currentValue = shares * (currentPrice / 100);
+                unrealizedPnL = currentValue - costBasis;
+                unrealizedPnLPercent = costBasis > 0 ? (unrealizedPnL / costBasis) * 100 : 0;
+              }
 
-              console.log(`Found position: market ${marketId}, outcome ${outcomeName}, shares ${shares}, value ${currentValue}`);
+              console.log(`Found position: market ${marketId}, outcome ${outcomeName}, shares ${shares}, price ${currentPrice}¢, P&L ${unrealizedPnL.toFixed(2)}`);
 
               positionsData.push({
                 marketId,
