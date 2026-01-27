@@ -1,10 +1,10 @@
 import { useReadContract } from 'wagmi';
 import { CONTRACTS } from '@/lib/contracts';
-import PredictionMarketABI from '@/lib/abis/PredictionMarket.json';
+import CTFPredictionMarketABI from '@/lib/abis/CTFPredictionMarket.json';
 import { baseSepolia } from 'wagmi/chains';
 import { useEffect, useState } from 'react';
 
-const CONTRACT_ADDRESS = CONTRACTS.baseSepolia.predictionMarket as `0x${string}`;
+const CONTRACT_ADDRESS = CONTRACTS.baseSepolia.ctfPredictionMarket as `0x${string}`;
 
 export interface BlockchainMarket {
   id: number;
@@ -25,13 +25,21 @@ export function useAllMarkets() {
   const [markets, setMarkets] = useState<BlockchainMarket[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
-  // Get total market count
-  const { data: marketCount } = useReadContract({
+  // Get total market count with refetch enabled
+  const { data: marketCount, refetch } = useReadContract({
     address: CONTRACT_ADDRESS,
-    abi: PredictionMarketABI,
+    abi: CTFPredictionMarketABI,
     functionName: 'marketCount',
     chainId: baseSepolia.id,
+    query: {
+      refetchInterval: 10000, // Refetch every 10 seconds
+    },
   });
+
+  // Log market count for debugging
+  useEffect(() => {
+    console.log('CTF Market Count:', marketCount?.toString());
+  }, [marketCount]);
 
   useEffect(() => {
     async function fetchMarkets() {
@@ -53,7 +61,11 @@ export function useAllMarkets() {
 
       try {
         const fetchedMarkets = await Promise.all(marketPromises);
-        setMarkets(fetchedMarkets.filter(m => m !== null));
+        console.log('Fetched markets from API:', fetchedMarkets);
+        // Filter out null markets and markets with errors
+        const validMarkets = fetchedMarkets.filter(m => m && !m.error && m.title);
+        console.log('Valid markets after filtering:', validMarkets);
+        setMarkets(validMarkets);
       } catch (error) {
         console.error('Error fetching markets:', error);
       } finally {

@@ -2,6 +2,7 @@
 
 import { CheckCircle, X, TrendingUp, DollarSign } from 'lucide-react';
 import { Card } from './ui/card';
+import Image from 'next/image';
 
 interface ClaimSuccessModalProps {
   isOpen: boolean;
@@ -74,7 +75,14 @@ export default function ClaimSuccessModal({
                   <DollarSign className="w-3 h-3" />
                   Payout
                 </div>
-                <div className="text-lg font-bold text-green-600 dark:text-green-400">
+                <div className="flex items-center gap-2 text-lg font-bold text-green-600 dark:text-green-400">
+                  <Image 
+                    src="/USDC logo.png" 
+                    alt="USDC" 
+                    width={24} 
+                    height={24}
+                    className="rounded-full"
+                  />
                   {payout.toFixed(2)} {tokenSymbol}
                 </div>
               </div>

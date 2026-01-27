@@ -147,7 +147,7 @@ export default function BlockchainMarketModal({
             <div className="bg-green-50 dark:bg-green-900/10 rounded-lg p-2 border border-green-200 dark:border-green-800">
               <div className="mb-1">
                 <div className="text-xs text-gray-600 dark:text-gray-400 mb-0.5">
-                  Buy Yes
+                  Mint Yes Tokens
                 </div>
                 <div className="text-2xl md:text-3xl font-bold text-green-600 dark:text-green-400">
                   {yesOutcome?.price || 50}¢
@@ -161,7 +161,7 @@ export default function BlockchainMarketModal({
                 }}
                 className="w-full px-2 py-1.5 bg-green-600 hover:bg-green-700 disabled:bg-gray-400 disabled:cursor-not-allowed text-white rounded-md font-bold text-xs transition-colors"
               >
-                {isActive ? 'Buy Yes' : 'Closed'}
+                {isActive ? 'Mint Yes' : 'Closed'}
               </button>
             </div>
 
@@ -169,7 +169,7 @@ export default function BlockchainMarketModal({
             <div className="bg-red-50 dark:bg-red-900/10 rounded-lg p-2 border border-red-200 dark:border-red-800">
               <div className="mb-1">
                 <div className="text-xs text-gray-600 dark:text-gray-400 mb-0.5">
-                  Buy No
+                  Mint No Tokens
                 </div>
                 <div className="text-2xl md:text-3xl font-bold text-red-600 dark:text-red-400">
                   {noOutcome?.price || 50}¢
@@ -183,7 +183,7 @@ export default function BlockchainMarketModal({
                 }}
                 className="w-full px-2 py-1.5 bg-red-600 hover:bg-red-700 disabled:bg-gray-400 disabled:cursor-not-allowed text-white rounded-md font-bold text-xs transition-colors"
               >
-                {isActive ? 'Buy No' : 'Closed'}
+                {isActive ? 'Mint No' : 'Closed'}
               </button>
             </div>
           </div>

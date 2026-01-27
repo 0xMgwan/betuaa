@@ -5,7 +5,7 @@ import { X, Zap, Calendar, DollarSign, Tag, FileText, TrendingUp, ChevronDown, W
 import { useAccount } from 'wagmi';
 import { ConnectButton } from '@rainbow-me/rainbowkit';
 import { STABLECOINS } from '@/lib/contracts';
-import { useCreateMarket } from '@/hooks/usePredictionMarket';
+import { useCTFCreateMarket } from '@/hooks/useCTFMarket';
 import { useApproveToken } from '@/hooks/useERC20';
 import { CONTRACTS } from '@/lib/contracts';
 import { parseUnits } from 'viem';
@@ -48,7 +48,7 @@ export default function CreateMarketModal({ isOpen, onClose }: CreateMarketModal
   const [step, setStep] = useState<'form' | 'approve' | 'create'>('form');
   const [isTokenDropdownOpen, setIsTokenDropdownOpen] = useState(false);
 
-  const { createMarket, isPending: isCreating, isSuccess } = useCreateMarket();
+  const { createMarket, isPending: isCreating, isSuccess } = useCTFCreateMarket();
   const { approve, isPending: isApproving, isSuccess: isApproved } = useApproveToken();
 
   const selectedStablecoin = STABLECOINS.baseSepolia.find(t => t.address === selectedToken);
@@ -68,7 +68,7 @@ export default function CreateMarketModal({ isOpen, onClose }: CreateMarketModal
       const amount = parseUnits(initialLiquidity, selectedStablecoin.decimals);
       await approve(
         selectedToken as `0x${string}`,
-        CONTRACTS.baseSepolia.predictionMarket as `0x${string}`,
+        CONTRACTS.baseSepolia.ctfPredictionMarket as `0x${string}`,
         amount
       );
     } catch (error) {
@@ -90,10 +90,8 @@ export default function CreateMarketModal({ isOpen, onClose }: CreateMarketModal
       await createMarket(
         title,
         descriptionWithCategory,
-        0, // Binary market
+        BigInt(2), // Binary market (2 outcomes)
         closingTimestamp,
-        ['Yes', 'No'],
-        liquidityAmount,
         selectedToken as `0x${string}`
       );
     } catch (error) {

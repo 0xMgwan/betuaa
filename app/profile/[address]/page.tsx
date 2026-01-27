@@ -8,7 +8,7 @@ import Footer from '@/components/Footer';
 import { useUserPositions } from '@/hooks/useUserPositions';
 import { useAllMarkets } from '@/hooks/useMarkets';
 import ResolveMarketModal from '@/components/ResolveMarketModal';
-import { TrendingUp, TrendingDown, DollarSign, Target, Award, Calendar, Users, BarChart3, Trophy, CheckCircle, Clock as ClockIcon, XCircle } from 'lucide-react';
+import { TrendingUp, TrendingDown, DollarSign, Target, Award, Calendar, Users, BarChart3, Trophy, CheckCircle, Clock as ClockIcon, XCircle, Zap, Gamepad2, Mic2, Globe } from 'lucide-react';
 import { useTranslation } from '@/hooks/useTranslation';
 
 export default function ProfilePage() {
@@ -292,14 +292,42 @@ export default function ProfilePage() {
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                   {marketsCreated.map((market) => {
                     const closingDate = new Date(Number(market.closingDate) * 1000);
-                    const isActive = closingDate > new Date() && !market.resolved;
+                    const isActive = closingDate > new Date();
                     const isClosed = closingDate <= new Date() && !market.resolved;
+
+                    // Extract category from description
+                    const categoryMatch = market.description.match(/\[CATEGORY:(\w+)\]/);
+                    const categoryName = categoryMatch ? categoryMatch[1].toLowerCase() : 'crypto';
+                    const category = categoryName.toUpperCase();
                     
+                    // Get category icon
+                    const getCategoryIcon = (cat: string) => {
+                      switch(cat) {
+                        case 'crypto': return <Zap className="w-4 h-4" />;
+                        case 'sports': return <Trophy className="w-4 h-4" />;
+                        case 'entertainment': return <Mic2 className="w-4 h-4" />;
+                        case 'other': return <Globe className="w-4 h-4" />;
+                        default: return <Zap className="w-4 h-4" />;
+                      }
+                    };
+                    
+                    // Get category color
+                    const getCategoryColor = (cat: string) => {
+                      switch(cat) {
+                        case 'crypto': return 'text-blue-600 dark:text-blue-400';
+                        case 'sports': return 'text-orange-600 dark:text-orange-400';
+                        case 'entertainment': return 'text-purple-600 dark:text-purple-400';
+                        case 'other': return 'text-green-600 dark:text-green-400';
+                        default: return 'text-blue-600 dark:text-blue-400';
+                      }
+                    };
+
                     return (
-                      <div key={market.id} className="bg-white dark:bg-gray-800 rounded-lg p-4 border border-gray-200 dark:border-gray-700 hover:shadow-lg transition-shadow">
+                      <div key={market.id} className="bg-white dark:bg-gray-800 rounded-lg p-4 border border-gray-200 dark:border-gray-700">
                         <div className="flex items-start justify-between mb-2">
-                          <span className="text-xs font-semibold text-blue-600 dark:text-blue-400 uppercase">
-                            CRYPTO
+                          <span className={`text-xs font-semibold uppercase flex items-center gap-1 ${getCategoryColor(categoryName)}`}>
+                            {getCategoryIcon(categoryName)}
+                            {category}
                           </span>
                           <span className={`px-2 py-0.5 rounded text-xs font-bold flex items-center gap-1 ${
                             market.resolved
@@ -332,19 +360,15 @@ export default function ProfilePage() {
                         </h4>
                         
                         <p className="text-xs text-gray-600 dark:text-gray-400 mb-3 line-clamp-2">
-                          {market.description}
+                          {market.description.replace(/\[CATEGORY:\w+\]\s*/, '')}
                         </p>
                         
-                        <div className="grid grid-cols-3 gap-2 text-xs mb-3">
+                        <div className="grid grid-cols-2 gap-2 text-xs mb-3">
                           <div>
-                            <p className="text-gray-500 dark:text-gray-400">Volume</p>
+                            <p className="text-gray-500 dark:text-gray-400">Status</p>
                             <p className="font-bold text-gray-900 dark:text-white">
-                              ${(Number(market.totalVolume) / 1e6).toFixed(2)}
+                              {market.resolved ? 'Resolved' : isActive ? 'Active' : 'Closed'}
                             </p>
-                          </div>
-                          <div>
-                            <p className="text-gray-500 dark:text-gray-400">Traders</p>
-                            <p className="font-bold text-gray-900 dark:text-white">{market.participantCount}</p>
                           </div>
                           <div>
                             <p className="text-gray-500 dark:text-gray-400">Closes</p>

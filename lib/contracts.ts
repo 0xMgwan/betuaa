@@ -1,10 +1,15 @@
 // Contract addresses for Stretch platform
 export const CONTRACTS = {
   baseSepolia: {
-    predictionMarket: '0x33063a9fD4d812939586E90924Fa3946e252C019', // Fixed: claimWinnings decimal handling
-    mockUSDC: '0x182FcDFe504bb116555C8b9b3CF425F44a965b11',
+    // CTF Prediction Market (New)
+    ctfPredictionMarket: '0x692C052Ca3765FCf24a38Ea0c1F653259dF2E8e7',
+    mockUSDC: '0x7c476223C59E2106511C7238c1A3f78C4d8AF7a1',
+    
+    // Legacy contracts (kept for reference)
+    predictionMarket: '0x33063a9fD4d812939586E90924Fa3946e252C019',
   },
   base: {
+    ctfPredictionMarket: '', // Deploy to mainnet when ready
     predictionMarket: '', // Deploy to mainnet when ready
   },
 } as const;

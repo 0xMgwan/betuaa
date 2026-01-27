@@ -9,7 +9,7 @@ import SellModal from "@/components/SellModal";
 import ClaimSuccessModal from "@/components/ClaimSuccessModal";
 import CreateMarketModal from "@/components/CreateMarketModal";
 import { useUserPositions } from '@/hooks/useUserPositions';
-import { useClaimWinnings } from '@/hooks/usePredictionMarket';
+import { useCTFRedeemWinningTokens } from '@/hooks/useCTFMarket';
 import { useAllMarkets } from '@/hooks/useMarkets';
 import { STABLECOINS } from '@/lib/contracts';
 import { TrendingUp, TrendingDown, DollarSign, Sparkles, Award, Target, Star, Activity, Plus } from 'lucide-react';
@@ -30,7 +30,7 @@ export default function Portfolio() {
   const [favoriteIds, setFavoriteIds] = useState<number[]>([]);
   const [selectedBlockchainMarket, setSelectedBlockchainMarket] = useState<any>(null);
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
-  const { claimWinnings, isPending: isClaiming, isSuccess: claimSuccess } = useClaimWinnings();
+  const { redeemWinningTokens, isPending: isClaiming, isSuccess: claimSuccess } = useCTFRedeemWinningTokens();
 
   const generatePriceHistory = (yesPrice: number, noPrice: number) => {
     return Array.from({ length: 10 }, (_, i) => ({
@@ -245,100 +245,157 @@ export default function Portfolio() {
             </div>
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
-              {positions.map((position) => {
-                const token = STABLECOINS.baseSepolia.find(
-                  (t) => t.address.toLowerCase() === position.paymentToken.toLowerCase()
-                );
-                const isWinning = position.unrealizedPnLPercent > 0;
-                const sharesNumber = Number(position.shares) / 1e18;
-                const currentValue = (sharesNumber * position.currentPrice) / 100;
+              {(() => {
+                // Group positions by marketId
+                const groupedPositions = positions.reduce((acc, position) => {
+                  if (!acc[position.marketId]) {
+                    acc[position.marketId] = {
+                      marketId: position.marketId,
+                      marketTitle: position.marketTitle,
+                      paymentToken: position.paymentToken,
+                      resolved: position.resolved,
+                      winningOutcomeId: position.winningOutcomeId,
+                      positions: []
+                    };
+                  }
+                  acc[position.marketId].positions.push(position);
+                  return acc;
+                }, {} as Record<number, any>);
 
-                return (
-                  <div
-                    key={`${position.marketId}-${position.outcomeId}`}
-                    className="group relative overflow-hidden bg-white/80 dark:bg-gray-800/80 backdrop-blur-xl rounded-xl p-3 border border-gray-200 dark:border-gray-700 shadow-lg hover:shadow-xl transition-all duration-300"
-                  >
-                    <div className={`absolute top-0 right-0 w-32 h-32 ${isWinning ? 'bg-gradient-to-br from-green-500/10 to-emerald-500/10' : 'bg-gradient-to-br from-blue-500/10 to-purple-500/10'} rounded-full blur-3xl group-hover:scale-150 transition-transform duration-500`}></div>
-                    
-                    <div className="relative">
-                      <div className="mb-2">
-                        <h3 className="text-sm font-bold text-gray-900 dark:text-white mb-1.5 line-clamp-1">
-                          {position.marketTitle}
-                        </h3>
-                        <div className="flex items-center justify-between">
-                          <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold ${
-                            position.outcomeId === 0
-                              ? 'bg-gradient-to-r from-green-500 to-emerald-600 text-white shadow-md shadow-green-500/50'
-                              : 'bg-gradient-to-r from-red-500 to-orange-600 text-white shadow-md shadow-red-500/50'
-                          }`}>
-                            {position.outcomeId === 0 ? 'Yes' : 'No'}
-                          </span>
-                          <div className="text-right">
-                            <div className="text-base font-black text-gray-900 dark:text-white">
-                              {sharesNumber.toFixed(2)}
+                return Object.values(groupedPositions).map((market: any) => {
+                  const token = STABLECOINS.baseSepolia.find(
+                    (t) => t.address.toLowerCase() === market.paymentToken.toLowerCase()
+                  );
+                  
+                  const yesPosition = market.positions.find((p: any) => p.outcomeId === 0);
+                  const noPosition = market.positions.find((p: any) => p.outcomeId === 1);
+                  
+                  const totalValue = market.positions.reduce((sum: number, p: any) => {
+                    const shares = Number(p.shares) / 1e6;
+                    return sum + (shares * p.currentPrice) / 100;
+                  }, 0);
+                  
+                  const totalPnL = market.positions.reduce((sum: number, p: any) => sum + p.unrealizedPnL, 0);
+
+                  return (
+                    <div
+                      key={market.marketId}
+                      className="group relative overflow-hidden bg-white/80 dark:bg-gray-800/80 backdrop-blur-xl rounded-xl p-3 border border-gray-200 dark:border-gray-700 shadow-lg hover:shadow-xl transition-all duration-300"
+                    >
+                      <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-blue-500/10 to-purple-500/10 rounded-full blur-3xl group-hover:scale-150 transition-transform duration-500"></div>
+                      
+                      <div className="relative">
+                        <div className="mb-3">
+                          <h3 className="text-sm font-bold text-gray-900 dark:text-white mb-2 line-clamp-1">
+                            {market.marketTitle}
+                          </h3>
+                          
+                          {/* YES Position */}
+                          {yesPosition && (
+                            <div className="flex items-center justify-between mb-2 p-2 bg-green-50 dark:bg-green-900/20 rounded-lg">
+                              <div className="flex items-center gap-2">
+                                <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-gradient-to-r from-green-500 to-emerald-600 text-white">
+                                  Yes
+                                </span>
+                                <span className="text-xs font-bold text-gray-900 dark:text-white">
+                                  {(Number(yesPosition.shares) / 1e6).toFixed(2)}
+                                </span>
+                              </div>
+                              <button
+                                onClick={() => {
+                                  setSelectedPosition(yesPosition);
+                                  setShowSellModal(true);
+                                }}
+                                className="text-xs px-2 py-1 bg-red-500 hover:bg-red-600 text-white rounded font-medium"
+                              >
+                                Sell
+                              </button>
                             </div>
-                            <div className="text-[9px] text-gray-500 dark:text-gray-400">shares</div>
-                          </div>
+                          )}
+                          
+                          {/* NO Position */}
+                          {noPosition && (
+                            <div className="flex items-center justify-between p-2 bg-red-50 dark:bg-red-900/20 rounded-lg">
+                              <div className="flex items-center gap-2">
+                                <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-gradient-to-r from-red-500 to-orange-600 text-white">
+                                  No
+                                </span>
+                                <span className="text-xs font-bold text-gray-900 dark:text-white">
+                                  {(Number(noPosition.shares) / 1e6).toFixed(2)}
+                                </span>
+                              </div>
+                              <button
+                                onClick={() => {
+                                  setSelectedPosition(noPosition);
+                                  setShowSellModal(true);
+                                }}
+                                className="text-xs px-2 py-1 bg-red-500 hover:bg-red-600 text-white rounded font-medium"
+                              >
+                                Sell
+                              </button>
+                            </div>
+                          )}
                         </div>
-                      </div>
 
-                      <div className="grid grid-cols-2 gap-2 mb-2">
-                        <div>
-                          <div className="text-[9px] text-gray-500 dark:text-gray-400 mb-0.5">Current Price</div>
-                          <div className="text-sm font-bold text-gray-900 dark:text-white">{position.currentPrice}¢</div>
-                        </div>
-                        <div>
-                          <div className="text-[9px] text-gray-500 dark:text-gray-400 mb-0.5">Current Value</div>
-                          <div className="text-sm font-bold text-gray-900 dark:text-white">{currentValue.toFixed(2)} {token?.symbol}</div>
-                        </div>
-                        <div>
-                          <div className="text-[9px] text-gray-500 dark:text-gray-400 mb-0.5">P&L</div>
-                          <div className={`text-sm font-bold ${position.unrealizedPnL >= 0 ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'}`}>
-                            {position.unrealizedPnL >= 0 ? '+' : ''}{position.unrealizedPnL.toFixed(2)}
+                        <div className="grid grid-cols-2 gap-2 mb-2">
+                          <div>
+                            <div className="text-[9px] text-gray-500 dark:text-gray-400 mb-0.5">Total Value</div>
+                            <div className="text-sm font-bold text-gray-900 dark:text-white">{totalValue.toFixed(2)} {token?.symbol}</div>
+                          </div>
+                          <div>
+                            <div className="text-[9px] text-gray-500 dark:text-gray-400 mb-0.5">Total P&L</div>
+                            <div className={`text-sm font-bold ${totalPnL >= 0 ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'}`}>
+                              {totalPnL >= 0 ? '+' : ''}{totalPnL.toFixed(2)}
+                            </div>
                           </div>
                         </div>
-                        <div>
-                          <div className="text-[9px] text-gray-500 dark:text-gray-400 mb-0.5">P&L %</div>
-                          <div className={`text-sm font-bold ${position.unrealizedPnLPercent >= 0 ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'}`}>
-                            {position.unrealizedPnLPercent.toFixed(2)}%
-                          </div>
-                        </div>
-                      </div>
 
-                      {!position.resolved ? (
-                        <button
-                          onClick={() => {
-                            setSelectedPosition(position);
-                            setShowSellModal(true);
-                          }}
-                          className="w-full px-3 py-2 bg-gradient-to-r from-red-600 to-orange-600 hover:from-red-700 hover:to-orange-700 text-white rounded-lg text-xs font-bold shadow-lg shadow-red-500/50 hover:shadow-xl hover:shadow-red-500/50 transition-all duration-300"
-                        >
-                          Sell Shares
-                        </button>
-                      ) : position.winningOutcomeId === position.outcomeId ? (
-                        <button
-                          onClick={async () => {
-                            try {
-                              setClaimedPosition(position);
-                              await claimWinnings(position.marketId, position.outcomeId);
-                            } catch (error) {
-                              console.error('Error claiming winnings:', error);
-                            }
-                          }}
-                          disabled={isClaiming}
-                          className="w-full px-3 py-2 bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white rounded-lg text-xs font-bold shadow-lg shadow-green-500/50 hover:shadow-xl hover:shadow-green-500/50 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
-                        >
-                          {isClaiming ? 'Claiming...' : t('portfolio.claimWinnings')}
-                        </button>
-                      ) : (
-                        <div className="w-full px-3 py-2 bg-gray-200 dark:bg-gray-700 text-gray-600 dark:text-gray-400 rounded-lg text-xs font-bold text-center">
-                          {t('portfolio.marketResolved')}
-                        </div>
-                      )}
+                        {market.resolved && (
+                          <div className="mt-2">
+                            {yesPosition && market.winningOutcomeId === 0 && (
+                              <button
+                                onClick={() => {
+                                  try {
+                                    setClaimedPosition(yesPosition);
+                                    redeemWinningTokens(market.marketId, yesPosition.shares);
+                                  } catch (error) {
+                                    console.error('Error claiming winnings:', error);
+                                  }
+                                }}
+                                disabled={isClaiming}
+                                className="w-full px-3 py-2 bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white rounded-lg text-xs font-bold shadow-lg shadow-green-500/50 hover:shadow-xl hover:shadow-green-500/50 transition-all duration-300 disabled:opacity-50"
+                              >
+                                {isClaiming ? 'Claiming...' : 'Claim YES Winnings'}
+                              </button>
+                            )}
+                            {noPosition && market.winningOutcomeId === 1 && (
+                              <button
+                                onClick={() => {
+                                  try {
+                                    setClaimedPosition(noPosition);
+                                    redeemWinningTokens(market.marketId, noPosition.shares);
+                                  } catch (error) {
+                                    console.error('Error claiming winnings:', error);
+                                  }
+                                }}
+                                disabled={isClaiming}
+                                className="w-full px-3 py-2 bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white rounded-lg text-xs font-bold shadow-lg shadow-green-500/50 hover:shadow-xl hover:shadow-green-500/50 transition-all duration-300 disabled:opacity-50"
+                              >
+                                {isClaiming ? 'Claiming...' : 'Claim NO Winnings'}
+                              </button>
+                            )}
+                            {((yesPosition && market.winningOutcomeId !== 0) || (noPosition && market.winningOutcomeId !== 1)) && (
+                              <div className="w-full px-3 py-2 bg-gray-200 dark:bg-gray-700 text-gray-600 dark:text-gray-400 rounded-lg text-xs font-bold text-center">
+                                Market Resolved - No Winnings
+                              </div>
+                            )}
+                          </div>
+                        )}
+                      </div>
                     </div>
-                  </div>
-                );
-              })}
+                  );
+                });
+              })()}
             </div>
           )}
         </div>
@@ -460,8 +517,8 @@ export default function Portfolio() {
             setClaimedPosition(null);
           }}
           marketTitle={claimedPosition.marketTitle}
-          shares={Number(claimedPosition.shares) / 1e18}
-          payout={(Number(claimedPosition.shares) / 1e18 * claimedPosition.currentPrice) / 100}
+          shares={Number(claimedPosition.shares) / 1e6}
+          payout={(Number(claimedPosition.shares) / 1e6 * claimedPosition.currentPrice) / 100}
           tokenSymbol={STABLECOINS.baseSepolia.find(t => t.address.toLowerCase() === claimedPosition.paymentToken.toLowerCase())?.symbol || 'USDC'}
         />
       )}

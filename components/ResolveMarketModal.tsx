@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { X, AlertCircle } from 'lucide-react';
-import { useResolveMarket } from '@/hooks/usePredictionMarket';
+import { useCTFResolveMarket } from '@/hooks/useCTFMarket';
 
 interface ResolveMarketModalProps {
   isOpen: boolean;
@@ -10,7 +10,6 @@ interface ResolveMarketModalProps {
   market: {
     id: number;
     title: string;
-    outcomes: Array<{ name: string }>;
   };
 }
 
@@ -21,7 +20,7 @@ export default function ResolveMarketModal({
 }: ResolveMarketModalProps) {
   const [selectedOutcome, setSelectedOutcome] = useState<number | null>(null);
   const [showConfirm, setShowConfirm] = useState(false);
-  const { resolveMarket, isPending, isSuccess } = useResolveMarket();
+  const { resolveMarket, isPending, isSuccess } = useCTFResolveMarket();
 
   const handleResolve = async () => {
     if (selectedOutcome === null) return;
@@ -83,7 +82,7 @@ export default function ResolveMarketModal({
                   </h4>
                   <p className="text-sm text-yellow-800 dark:text-yellow-300">
                     You are about to resolve this market with outcome:{' '}
-                    <strong>{market.outcomes[selectedOutcome!]?.name}</strong>
+                    <strong>{['Yes', 'No'][selectedOutcome!]}</strong>
                   </p>
                   <p className="text-sm text-yellow-800 dark:text-yellow-300 mt-2">
                     This action cannot be undone!
@@ -135,7 +134,7 @@ export default function ResolveMarketModal({
                 Select Winning Outcome
               </label>
               <div className="space-y-2">
-                {market.outcomes.map((outcome, index) => (
+                {['Yes', 'No'].map((outcome, index) => (
                   <button
                     key={index}
                     onClick={() => setSelectedOutcome(index)}
@@ -147,7 +146,7 @@ export default function ResolveMarketModal({
                   >
                     <div className="flex items-center justify-between">
                       <span className="font-semibold text-gray-900 dark:text-white">
-                        {outcome.name}
+                        {outcome}
                       </span>
                       {selectedOutcome === index && (
                         <span className="text-blue-600 dark:text-blue-400">✓</span>

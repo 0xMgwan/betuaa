@@ -4,7 +4,7 @@ import React, { useState, useEffect } from 'react';
 import { X, AlertCircle } from 'lucide-react';
 import { parseUnits, formatUnits } from 'viem';
 import { useAccount } from 'wagmi';
-import { useBuyShares } from '@/hooks/usePredictionMarket';
+import { useCTFMintPositionTokens } from '@/hooks/useCTFMarket';
 import { useApproveToken, useTokenBalance, useTokenAllowance } from '@/hooks/useERC20';
 import { CONTRACTS } from '@/lib/contracts';
 
@@ -33,9 +33,9 @@ export default function TradingModal({
 }: TradingModalProps) {
   const { address } = useAccount();
   const [amount, setAmount] = useState('');
-  const [step, setStep] = useState<'input' | 'approve' | 'buy'>('input');
+  const [step, setStep] = useState<'input' | 'approve' | 'mint'>('input');
 
-  const { buyShares, isPending: isBuying, isSuccess: buySuccess } = useBuyShares();
+  const { mintPositionTokens, isPending: isMinting, isSuccess: mintSuccess } = useCTFMintPositionTokens();
   const { approve, isPending: isApproving, isSuccess: approveSuccess } = useApproveToken();
 
   // Get user's token balance
@@ -44,14 +44,14 @@ export default function TradingModal({
     address as `0x${string}`
   );
 
-  // Get current allowance
+  // Get current allowance for CTF contract
   const { data: allowance } = useTokenAllowance(
     paymentToken as `0x${string}`,
     address as `0x${string}`,
-    CONTRACTS.baseSepolia.predictionMarket as `0x${string}`
+    CONTRACTS.baseSepolia.ctfPredictionMarket as `0x${string}`
   );
 
-  const sharesAmount = amount ? parseUnits(amount, 18) : BigInt(0);
+  const mintAmount = amount ? parseUnits(amount, tokenDecimals) : BigInt(0);
   
   // Estimate cost for display
   const estimatedCostDisplay = amount ? parseFloat(amount) * (currentPrice / 100) : 0;
@@ -69,11 +69,9 @@ export default function TradingModal({
     setStep('approve');
     
     try {
-      // Approve unlimited amount (standard DeFi practice)
-      // User only needs to approve once, ever
       await approve(
         paymentToken as `0x${string}`,
-        CONTRACTS.baseSepolia.predictionMarket as `0x${string}`,
+        CONTRACTS.baseSepolia.ctfPredictionMarket as `0x${string}`,
         MAX_UINT256
       );
     } catch (error) {
@@ -82,18 +80,14 @@ export default function TradingModal({
     }
   };
 
-  const handleBuy = async () => {
+  const handleMint = async () => {
     if (!amount) return;
-    setStep('buy');
+    setStep('mint');
     
     try {
-      await buyShares(
-        marketId,
-        outcomeId,
-        sharesAmount
-      );
+      await mintPositionTokens(marketId, mintAmount);
     } catch (error) {
-      console.error('Error buying shares:', error);
+      console.error('Error minting position tokens:', error);
       setStep('input');
     }
   };
@@ -104,25 +98,24 @@ export default function TradingModal({
     if (needsApproval) {
       await handleApprove();
     } else {
-      await handleBuy();
+      await handleMint();
     }
   };
 
-  // Auto-proceed after approval - use useEffect with delay to ensure on-chain confirmation
+  // Auto-proceed after approval
   React.useEffect(() => {
     if (approveSuccess && step === 'approve') {
-      // Wait 3 seconds for approval to be confirmed on-chain before buying
       const timer = setTimeout(() => {
-        setStep('buy');
-        handleBuy();
+        setStep('mint');
+        handleMint();
       }, 3000);
       
       return () => clearTimeout(timer);
     }
   }, [approveSuccess, step]);
 
-  // Close modal after successful buy
-  if (buySuccess) {
+  // Close modal after successful mint
+  if (mintSuccess) {
     setTimeout(() => {
       onClose();
       setAmount('');
@@ -158,16 +151,16 @@ export default function TradingModal({
           </button>
         </div>
 
-        {buySuccess ? (
+        {mintSuccess ? (
           <div className="text-center py-8">
             <div className="w-16 h-16 bg-green-100 dark:bg-green-900/30 rounded-full flex items-center justify-center mx-auto mb-4">
               <span className="text-3xl">✅</span>
             </div>
             <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-2">
-              Purchase Successful!
+              Position Tokens Minted!
             </h3>
             <p className="text-gray-600 dark:text-gray-400">
-              You bought {amount} shares of {outcomeName}
+              You minted {amount} {tokenSymbol} worth of {outcomeName} tokens
             </p>
           </div>
         ) : (
@@ -175,7 +168,7 @@ export default function TradingModal({
             {/* Amount Input */}
             <div>
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                Number of Shares
+                Amount ({tokenSymbol})
               </label>
               <input
                 type="number"
@@ -232,17 +225,17 @@ export default function TradingModal({
               <button
                 type="button"
                 onClick={onClose}
-                disabled={isApproving || isBuying}
+                disabled={isApproving || isMinting}
                 className="flex-1 px-6 py-3 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 font-medium transition-colors disabled:opacity-50"
               >
                 Cancel
               </button>
               <button
                 type="submit"
-                disabled={!amount || isApproving || isBuying || estimatedCostDisplay > parseFloat(balanceFormatted)}
+                disabled={!amount || isApproving || isMinting || estimatedCostDisplay > parseFloat(balanceFormatted)}
                 className="flex-1 px-6 py-3 bg-blue-600 hover:bg-blue-700 disabled:bg-gray-400 text-white rounded-lg font-medium transition-colors"
               >
-                {isApproving ? 'Approving...' : isBuying ? 'Buying...' : needsApproval ? 'Approve & Buy' : 'Buy Shares'}
+                {isApproving ? 'Approving...' : isMinting ? 'Minting...' : needsApproval ? 'Approve & Mint' : 'Mint Tokens'}
               </button>
             </div>
 
@@ -263,10 +256,10 @@ export default function TradingModal({
               </div>
             )}
 
-            {step === 'buy' && (
+            {step === 'mint' && (
               <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-3">
                 <p className="text-sm text-blue-800 dark:text-blue-200">
-                  Step 2/2: Purchasing shares...
+                  Step 2/2: Minting position tokens...
                 </p>
               </div>
             )}

@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import { X, AlertCircle } from 'lucide-react';
 import { formatUnits } from 'viem';
-import { useSellShares } from '@/hooks/usePredictionMarket';
+import { useCTFBurnPositionTokens } from '@/hooks/useCTFMarket';
 
 interface SellModalProps {
   isOpen: boolean;
@@ -25,19 +25,29 @@ export default function SellModal({
   position,
 }: SellModalProps) {
   const [amount, setAmount] = useState('');
-  const { sellShares, isPending, isSuccess } = useSellShares();
+  const { burnPositionTokens, isPending, isSuccess, error } = useCTFBurnPositionTokens();
+  
+  // Log errors
+  if (error) {
+    console.error('Burn error:', error);
+  }
 
-  const maxShares = Number(position.shares) / 1e18;
+  const maxShares = Number(position.shares) / 1e6; // USDC has 6 decimals
   const sharesToSell = amount ? parseFloat(amount) : 0;
   const estimatedPayout = (sharesToSell * position.currentPrice) / 100;
 
-  const handleSell = async (e: React.FormEvent) => {
+  const handleSell = (e: React.FormEvent) => {
     e.preventDefault();
     
     if (!amount || sharesToSell <= 0) return;
 
-    const sharesInWei = BigInt(Math.floor(sharesToSell * 1e18));
-    await sellShares(position.marketId, position.outcomeId, sharesInWei);
+    try {
+      const sharesAmount = BigInt(Math.floor(sharesToSell * 1e6)); // USDC has 6 decimals
+      console.log('Selling shares:', { marketId: position.marketId, amount: sharesToSell, sharesAmount: sharesAmount.toString() });
+      burnPositionTokens(position.marketId, sharesAmount);
+    } catch (error) {
+      console.error('Error selling shares:', error);
+    }
   };
 
   // Close modal after successful sell
