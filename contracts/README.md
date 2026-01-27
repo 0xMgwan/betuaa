@@ -1,18 +1,35 @@
 # Betua Smart Contracts
 
-Prediction market smart contracts for the Betua platform on BASE.
+Prediction market smart contracts for the Betua platform on BASE, following Polymarket CTF Exchange standards.
 
 ## Contracts
 
-### PredictionMarket.sol
-Main contract for creating and managing prediction markets.
+### CTFPredictionMarket.sol (NEW - Recommended)
+**Conditional Token Framework** based prediction market following Polymarket standards.
+
+**Features:**
+- ✅ ERC1155 outcome tokens (transferable & tradeable)
+- ✅ Signature-based order matching (off-chain orders, on-chain settlement)
+- ✅ Complete set minting/redeeming (deposit collateral → get all outcome tokens)
+- ✅ Compatible with Polymarket CLOB client
+- ✅ Gas-efficient trading with EIP-712 signatures
+- ✅ Order book system with maker/taker orders
+- ✅ Works with any ERC20 collateral token
+- ✅ 1:1 collateral redemption for winning tokens
+
+**See:** [CTF_ARCHITECTURE.md](./CTF_ARCHITECTURE.md) for detailed documentation
+
+### PredictionMarket.sol (Legacy)
+Original share-based prediction market contract.
 
 **Features:**
 - Create binary and multi-outcome markets
-- Buy and sell shares with dynamic pricing
+- Direct buy/sell with dynamic pricing
 - Liquidity provision and subsidies
 - Oracle-based resolution
 - Fee distribution to creators and platform
+
+**Note:** New deployments should use CTFPredictionMarket.sol
 
 ### MockUSDC.sol
 Mock USDC token for testing purposes.
@@ -29,37 +46,35 @@ foundryup
 forge install OpenZeppelin/openzeppelin-contracts
 ```
 
-### Deploy to BASE Sepolia
+### Deploy CTFPredictionMarket (Recommended)
 
 1. Set up environment variables:
 ```bash
 cd contracts
-cp .env.example .env
+cp env.example .env
 # Edit .env with your values
 ```
 
-2. Deploy MockUSDC (for testing):
+2. Deploy to BASE Sepolia:
 ```bash
-forge create ./src/MockUSDC.sol:MockUSDC \
+forge create ./src/CTFPredictionMarket.sol:CTFPredictionMarket \
   --rpc-url $BASE_SEPOLIA_RPC_URL \
   --account deployer
 ```
 
-3. Deploy PredictionMarket:
+3. Deploy to BASE Mainnet:
+```bash
+forge create ./src/CTFPredictionMarket.sol:CTFPredictionMarket \
+  --rpc-url $BASE_RPC_URL \
+  --account deployer
+```
+
+### Deploy Legacy PredictionMarket
+
 ```bash
 forge create ./src/PredictionMarket.sol:PredictionMarket \
   --rpc-url $BASE_SEPOLIA_RPC_URL \
-  --account deployer \
-  --constructor-args <USDC_ADDRESS>
-```
-
-### Deploy to BASE Mainnet
-
-```bash
-forge create ./src/PredictionMarket.sol:PredictionMarket \
-  --rpc-url $BASE_RPC_URL \
-  --account deployer \
-  --constructor-args <USDC_ADDRESS>
+  --account deployer
 ```
 
 ## Testing
