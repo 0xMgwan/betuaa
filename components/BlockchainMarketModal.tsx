@@ -16,6 +16,7 @@ import FavoriteButton from './FavoriteButton';
 import CategoryBadge from './CategoryBadge';
 import { BlockchainMarket } from '@/hooks/useMarkets';
 import { cleanDescription, extractCategory } from '@/lib/categoryUtils';
+import Image from 'next/image';
 
 interface BlockchainMarketModalProps {
   isOpen: boolean;
@@ -90,11 +91,17 @@ export default function BlockchainMarketModal({
           <div className="grid grid-cols-3 gap-2">
             <div>
               <div className="text-xs text-gray-600 dark:text-gray-400 mb-0.5">Volume</div>
-              <div className="text-sm md:text-xl font-bold text-gray-900 dark:text-white flex items-center gap-0.5">
-                <DollarSign className="w-3 h-3 md:w-5 md:h-5" />
+              <div className="text-sm md:text-xl font-bold text-gray-900 dark:text-white flex items-center gap-1">
+                <Image 
+                  src="/USDC logo.png" 
+                  alt="USDC"
+                  width={16}
+                  height={16}
+                  className="w-4 h-4 rounded-full"
+                />
                 {market.totalVolume > BigInt(0) 
-                  ? (Number(market.totalVolume) / 1e6).toFixed(1) + 'M'
-                  : '0'
+                  ? (Number(market.totalVolume) / 1e6).toFixed(1) + 'K USDC'
+                  : '0 USDC'
                 }
               </div>
             </div>

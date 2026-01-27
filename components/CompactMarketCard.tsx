@@ -3,6 +3,7 @@
 import { TrendingUp, TrendingDown, Clock, Bitcoin, Trophy, Building2, Clapperboard, Cpu, BarChart3, LucideIcon } from "lucide-react";
 import { Card } from "./ui/card";
 import { extractCategory, getCategoryInfo } from '@/lib/categoryUtils';
+import Image from 'next/image';
 
 const iconMap: Record<string, LucideIcon> = {
   Bitcoin,
@@ -248,8 +249,15 @@ export default function CompactMarketCard({
           </button>
         </div>
 
-        <div className="text-[9px] md:text-[10px]">
-          <span className="text-gray-500 dark:text-gray-400 font-medium">Volume: </span>
+        <div className="text-[9px] md:text-[10px] flex items-center gap-1">
+          <span className="text-gray-500 dark:text-gray-400 font-medium">Volume:</span>
+          <Image 
+            src="/USDC logo.png" 
+            alt="USDC"
+            width={12}
+            height={12}
+            className="rounded-full"
+          />
           <span className="font-bold text-gray-900 dark:text-white">{volume}</span>
         </div>
       </div>

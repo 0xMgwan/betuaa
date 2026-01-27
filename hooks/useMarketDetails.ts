@@ -67,7 +67,7 @@ export function convertBlockchainMarketToModalFormat(
     category: 'Crypto', // Default category, could be enhanced
     yesPrice: (yesOutcome?.price || 50) / 100,
     noPrice: (noOutcome?.price || 50) / 100,
-    volume: `$${(Number(market.totalVolume) / 1e6).toFixed(1)}K`, // Assuming 6 decimals
+    volume: `${(Number(market.totalVolume) / 1e6).toFixed(1)}K USDC`, // Assuming 6 decimals
     endDate: closingDate.toLocaleDateString('en-US', { 
       month: 'short', 
       day: 'numeric', 

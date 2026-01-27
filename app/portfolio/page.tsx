@@ -373,7 +373,7 @@ export default function Portfolio() {
                         category="CRYPTO"
                         yesPrice={0.50}
                         noPrice={0.50}
-                        volume={`$${(Number(market.totalVolume) / 1e6).toFixed(2)}M`}
+                        volume={`${(Number(market.totalVolume) / 1e6).toFixed(1)}K USDC`}
                         endDate={closingDate.toLocaleDateString()}
                         trend="up"
                         priceHistory={generatePriceHistory(50, 50)}
