@@ -62,10 +62,9 @@ export default function PolymarketTradingModal({
   const categoryKey = categorizePolymarketMarket(market) as 'crypto' | 'sports' | 'politics' | 'entertainment' | 'technology' | 'other';
   const endDate = new Date(market.endDate);
 
-  // Load orderbook when market changes - disabled for performance
-  // Only load when user actually wants to trade
+  // Load orderbook when market changes
   useEffect(() => {
-    if (!isOpen || !showTrading) return;
+    if (!isOpen) return;
 
     const loadOrderbook = async () => {
       setLoadingOrderbook(true);
@@ -89,7 +88,7 @@ export default function PolymarketTradingModal({
     };
 
     loadOrderbook();
-  }, [market, outcome, side, isOpen, showTrading]);
+  }, [market, outcome, side, isOpen]);
 
   const handleTrade = async () => {
     if (!walletAddress || !walletClient) {
