@@ -1,0 +1,23 @@
+{
+  "network": "base-sepolia",
+  "chainId": 84532,
+  "deployedAt": "2026-01-27T13:03:00Z",
+  "contracts": {
+    "MockUSDC": {
+      "address": "0x7c476223C59E2106511C7238c1A3f78C4d8AF7a1",
+      "verified": true,
+      "explorer": "https://sepolia.basescan.org/address/0x7c476223c59e2106511c7238c1a3f78c4d8af7a1"
+    },
+    "CTFPredictionMarket": {
+      "address": "0x692C052Ca3765FCf24a38Ea0c1F653259dF2E8e7",
+      "verified": true,
+      "explorer": "https://sepolia.basescan.org/address/0x692c052ca3765fcf24a38ea0c1f653259df2e8e7"
+    }
+  },
+  "deployment": {
+    "gasUsed": 4262327,
+    "totalCost": "0.0000051147924 ETH",
+    "compiler": "0.8.24",
+    "optimizations": 200
+  }
+}
