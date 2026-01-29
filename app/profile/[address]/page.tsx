@@ -10,7 +10,7 @@ import { useAllMarkets } from '@/hooks/useMarkets';
 import ResolveMarketModal from '@/components/ResolveMarketModal';
 import { TrendingUp, TrendingDown, DollarSign, Target, Award, Calendar, Users, BarChart3, Trophy, CheckCircle, Clock as ClockIcon, XCircle, Zap, Gamepad2, Mic2, Globe } from 'lucide-react';
 import { useTranslation } from '@/hooks/useTranslation';
-import { fetchMarketData } from '@/lib/graphql';
+import { fetchMarketData, fetchUserStats } from '@/lib/graphql';
 
 export default function ProfilePage() {
   const { t } = useTranslation();
@@ -18,6 +18,12 @@ export default function ProfilePage() {
   const profileAddress = params.address as string;
   const { address: currentUserAddress } = useAccount();
   const isOwnProfile = currentUserAddress?.toLowerCase() === profileAddress?.toLowerCase();
+  
+  // State declarations first
+  const [activeTab, setActiveTab] = useState<'positions' | 'activity' | 'created'>('positions');
+  const [selectedMarketToResolve, setSelectedMarketToResolve] = useState<any>(null);
+  const [marketStats, setMarketStats] = useState<Record<string, any>>({});
+  const [userStats, setUserStats] = useState<any>(null);
   
   // Get real data from blockchain
   const { positions, activePositions, totalValue, totalPnL } = useUserPositions();
@@ -34,11 +40,13 @@ export default function ProfilePage() {
   const winningPositions = resolvedPositions.filter(p => p.winningOutcomeId === p.outcomeId).length;
   const winRate = resolvedPositions.length > 0 ? (winningPositions / resolvedPositions.length) * 100 : 0;
   
-  // Calculate total volume from positions
+  // Calculate total volume from positions (sum of all position values)
   const calculatedVolume = positions.reduce((sum, pos) => {
-    return sum + (Number(pos.shares) / 1e18 * pos.currentPrice / 100);
+    // Each position's volume is the number of shares (USDC has 6 decimals)
+    const positionValue = Number(pos.shares) / 1e6; // Convert from USDC decimals to actual amount
+    return sum + positionValue;
   }, 0);
-  
+
   const userData = {
     address: profileAddress,
     username: profileAddress ? `${profileAddress.slice(0, 6)}...${profileAddress.slice(-4)}` : '',
@@ -49,15 +57,27 @@ export default function ProfilePage() {
     totalTrades: totalTrades,
     activeTrades: activePositions.length,
     marketsCreated: marketsCreated.length,
-    followers: 0, // TODO: Implement follow system
-    following: 0, // TODO: Implement follow system
-    rank: 42, // TODO: Calculate from leaderboard
+    followers: 0,
+    following: 0,
+    rank: 42,
     badges: winRate > 60 ? ['Profit Master'] : [],
   };
 
-  const [activeTab, setActiveTab] = useState<'positions' | 'activity' | 'created'>('positions');
-  const [selectedMarketToResolve, setSelectedMarketToResolve] = useState<any>(null);
-  const [marketStats, setMarketStats] = useState<Record<string, any>>({});
+  // Fetch user stats from The Graph
+  useEffect(() => {
+    const fetchUserStatsData = async () => {
+      try {
+        const stats = await fetchUserStats(profileAddress);
+        setUserStats(stats);
+      } catch (error) {
+        console.error('Error fetching user stats:', error);
+      }
+    };
+
+    if (profileAddress) {
+      fetchUserStatsData();
+    }
+  }, [profileAddress]);
 
   // Fetch market stats from The Graph
   useEffect(() => {
