@@ -100,11 +100,11 @@ export default function CreateMarketModal({ isOpen, onClose }: CreateMarketModal
   useEffect(() => {
     const configurePyth = async () => {
       if (isSuccess && pythMarketData && isPythMode) {
-        // Wait a bit for the transaction to be indexed
-        await new Promise(resolve => setTimeout(resolve, 2000));
-        
-        // Get the market ID from the contract
         try {
+          // Wait for transaction to be indexed
+          await new Promise(resolve => setTimeout(resolve, 3000));
+          
+          // Get the market ID from the contract
           const response = await fetch(`https://sepolia.base.org`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
@@ -121,24 +121,26 @@ export default function CreateMarketModal({ isOpen, onClose }: CreateMarketModal
           const data = await response.json();
           const marketId = parseInt(data.result, 16);
           
+          console.log('Configuring Pyth market:', marketId);
+          
           // Configure Pyth resolution
-          await configurePythMarket(
+          configurePythMarket(
             marketId,
             pythMarketData.priceId,
             pythMarketData.threshold,
             pythMarketData.expiryTime,
             pythMarketData.isAbove
           );
-          
-          setPythMarketData(null);
         } catch (error) {
           console.error('Error configuring Pyth market:', error);
+          // Still clear the data even if configuration fails
+          setPythMarketData(null);
         }
       }
     };
     
     configurePyth();
-  }, [isSuccess, pythMarketData, isPythMode]);
+  }, [isSuccess, pythMarketData, isPythMode, configurePythMarket]);
 
   const handleApprove = async () => {
     if (!selectedStablecoin || !initialLiquidity) return;
