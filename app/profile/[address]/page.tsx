@@ -37,8 +37,15 @@ export default function ProfilePage() {
   // Calculate real stats
   const totalTrades = positions.length;
   const resolvedPositions = positions.filter(p => p.resolved);
-  const winningPositions = resolvedPositions.filter(p => p.winningOutcomeId === p.outcomeId).length;
+  const winningPositions = resolvedPositions.filter(p => {
+    // A position is winning if the user's outcome matches the winning outcome
+    const isWinning = p.winningOutcomeId === p.outcomeId;
+    console.log(`Position check: Market ${p.marketId}, User outcome: ${p.outcomeId}, Winning outcome: ${p.winningOutcomeId}, Is winning: ${isWinning}`);
+    return isWinning;
+  }).length;
   const winRate = resolvedPositions.length > 0 ? (winningPositions / resolvedPositions.length) * 100 : 0;
+  
+  console.log(`Win rate calculation: ${winningPositions} winning / ${resolvedPositions.length} resolved = ${winRate.toFixed(2)}%`);
   
   // Calculate total volume from positions (sum of all position values)
   const calculatedVolume = positions.reduce((sum, pos) => {
