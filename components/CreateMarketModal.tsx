@@ -109,49 +109,33 @@ export default function CreateMarketModal({ isOpen, onClose }: CreateMarketModal
           // Wait for transaction to be indexed
           await new Promise(resolve => setTimeout(resolve, 3000));
           
-          // Get the market ID from the contract
-          console.log('📡 Fetching market count from RPC...');
-          const response = await fetch(`https://sepolia.base.org`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              jsonrpc: '2.0',
-              method: 'eth_call',
-              params: [{
-                to: CONTRACTS.baseSepolia.ctfPredictionMarket,
-                data: '0x650acd66' // marketCount() selector
-              }, 'latest'],
-              id: 1
-            })
-          });
-          
+          // Fetch market count from API
+          console.log('📡 Fetching market count from API...');
+          const response = await fetch('/api/market-count');
+
           if (!response.ok) {
-            console.error('❌ RPC request failed:', response.status, response.statusText);
-            throw new Error(`RPC request failed: ${response.status}`);
+            throw new Error(`API request failed: ${response.status}`);
           }
-          
-          const data = await response.json();
-          console.log('📊 RPC response:', data);
-          
-          if (!data.result) {
-            console.error('❌ No result in RPC response:', data);
-            throw new Error('Failed to get market count from RPC');
+
+          const apiData = await response.json();
+          console.log('📊 API Response:', apiData);
+
+          if (!apiData.success) {
+            throw new Error(`API Error: ${apiData.error}`);
           }
-          
-          const marketCount = parseInt(data.result, 16);
-          const marketId = marketCount - 1;
-          
-          console.log('🔢 Market count:', marketCount, 'Market ID:', marketId);
-          
-          console.log('📊 Market ID:', marketId, 'Price ID:', pythMarketData.priceId);
+
+          const marketCount = apiData.marketCount;
+          const marketId = apiData.marketId;
+
+          console.log('🔢 Market count:', marketCount, 'Latest Market ID:', marketId);
           console.log('⚙️ Calling configurePythMarket with:', {
             marketId,
             priceId: pythMarketData.priceId,
             threshold: pythMarketData.threshold,
             expiryTime: pythMarketData.expiryTime,
-            isAbove: pythMarketData.isAbove
+            isAbove: pythMarketData.isAbove,
           });
-          
+
           // Configure Pyth resolution
           configurePythMarket(
             marketId,
@@ -160,7 +144,7 @@ export default function CreateMarketModal({ isOpen, onClose }: CreateMarketModal
             pythMarketData.expiryTime,
             pythMarketData.isAbove
           );
-          
+
           console.log('✅ Pyth configuration transaction submitted');
         } catch (error) {
           console.error('❌ Error configuring Pyth market:', error);
@@ -169,7 +153,7 @@ export default function CreateMarketModal({ isOpen, onClose }: CreateMarketModal
         }
       }
     };
-    
+
     configurePyth();
   }, [isSuccess, pythMarketData, isPythMode, configurePythMarket]);
 
