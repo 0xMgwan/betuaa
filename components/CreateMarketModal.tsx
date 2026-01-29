@@ -101,6 +101,7 @@ export default function CreateMarketModal({ isOpen, onClose }: CreateMarketModal
     const configurePyth = async () => {
       if (isSuccess && pythMarketData && isPythMode) {
         try {
+          console.log('🔄 Starting Pyth market configuration...');
           // Wait for transaction to be indexed
           await new Promise(resolve => setTimeout(resolve, 3000));
           
@@ -119,9 +120,15 @@ export default function CreateMarketModal({ isOpen, onClose }: CreateMarketModal
             })
           });
           const data = await response.json();
-          const marketId = parseInt(data.result, 16);
           
-          console.log('Configuring Pyth market:', marketId);
+          if (!data.result) {
+            throw new Error('Failed to get market count');
+          }
+          
+          const marketCount = parseInt(data.result, 16);
+          const marketId = marketCount - 1;
+          
+          console.log('📊 Market ID:', marketId, 'Price ID:', pythMarketData.priceId);
           
           // Configure Pyth resolution
           configurePythMarket(
@@ -131,8 +138,10 @@ export default function CreateMarketModal({ isOpen, onClose }: CreateMarketModal
             pythMarketData.expiryTime,
             pythMarketData.isAbove
           );
+          
+          console.log('✅ Pyth configuration transaction submitted');
         } catch (error) {
-          console.error('Error configuring Pyth market:', error);
+          console.error('❌ Error configuring Pyth market:', error);
           // Still clear the data even if configuration fails
           setPythMarketData(null);
         }
