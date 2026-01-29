@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { X, AlertCircle } from 'lucide-react';
+import Image from 'next/image';
 import { parseUnits, formatUnits } from 'viem';
 import { useAccount } from 'wagmi';
 import { useCTFMintPositionTokens } from '@/hooks/useCTFMarket';
@@ -179,8 +180,9 @@ export default function TradingModal({
               <div className="h-px bg-green-200 dark:bg-green-800"></div>
               <div className="flex items-center justify-between">
                 <span className="text-sm text-gray-600 dark:text-gray-400">Amount Invested</span>
-                <span className="font-semibold text-gray-900 dark:text-white flex items-center gap-1">
-                  <span>💵</span> {amount} {tokenSymbol}
+                <span className="font-semibold text-gray-900 dark:text-white flex items-center gap-2">
+                  <Image src="/USDC logo.png" alt="USDC" width={20} height={20} className="rounded-full" />
+                  {amount} {tokenSymbol}
                 </span>
               </div>
               <div className="h-px bg-green-200 dark:bg-green-800"></div>
