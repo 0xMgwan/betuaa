@@ -27,24 +27,29 @@ export function useConfigurePythMarket() {
     hash,
   });
 
-  const configurePythMarket = async (
+  const configurePythMarket = (
     marketId: number,
     priceId: string,
     threshold: number,
     expiryTime: number,
     isAbove: boolean
   ) => {
-    // Convert threshold to Pyth format (scaled by 10^8)
-    // int64 max value is 9223372036854775807
-    const thresholdScaled = Math.floor(threshold * 1e8);
-    
     console.log('🔐 configurePythMarket hook called with:', {
       marketId,
       priceId,
       threshold,
-      thresholdScaled,
       expiryTime,
       isAbove
+    });
+    
+    // Convert threshold to Pyth format (scaled by 10^8)
+    // int64 max value is 9223372036854775807
+    const thresholdScaled = Math.floor(threshold * 1e8);
+    
+    console.log('� Threshold scaling:', {
+      original: threshold,
+      scaled: thresholdScaled,
+      max: 9223372036854775807
     });
     
     // Ensure it fits in int64
@@ -53,29 +58,29 @@ export function useConfigurePythMarket() {
       throw new Error('Threshold value too large for int64');
     }
     
-    console.log('📝 Calling writeContract with args:', {
-      marketId: BigInt(marketId),
-      priceId,
-      thresholdScaled: BigInt(thresholdScaled),
-      expiryTime: BigInt(expiryTime),
-      isAbove
-    });
+    const args = [
+      BigInt(marketId),
+      priceId as `0x${string}`,
+      BigInt(thresholdScaled),
+      BigInt(expiryTime),
+      isAbove,
+    ];
     
-    writeContract({
-      address: PYTH_RESOLVER_ADDRESS,
-      abi: PYTH_RESOLVER_ABI,
-      functionName: 'configurePythMarket',
-      args: [
-        BigInt(marketId),
-        priceId as `0x${string}`,
-        BigInt(thresholdScaled),
-        BigInt(expiryTime),
-        isAbove,
-      ],
-      chainId: baseSepolia.id,
-    });
+    console.log('📝 Calling writeContract with args:', args);
     
-    console.log('✅ writeContract called');
+    try {
+      writeContract({
+        address: PYTH_RESOLVER_ADDRESS,
+        abi: PYTH_RESOLVER_ABI,
+        functionName: 'configurePythMarket',
+        args,
+        chainId: baseSepolia.id,
+      });
+      console.log('✅ writeContract called successfully');
+    } catch (error) {
+      console.error('❌ Error calling writeContract:', error);
+      throw error;
+    }
   };
 
   return {
