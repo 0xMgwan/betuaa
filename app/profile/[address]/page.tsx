@@ -284,44 +284,58 @@ export default function ProfilePage() {
               {activePositions.length === 0 ? (
                 <p className="text-gray-600 dark:text-gray-400 text-center py-8">No active positions</p>
               ) : (
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
                   {activePositions.map((position, index) => (
-                    <div key={index} className="bg-white dark:bg-gray-800 rounded-lg p-4 border border-gray-200 dark:border-gray-700 hover:shadow-lg transition-shadow">
-                      <div className="flex items-start justify-between mb-2">
-                        <span className="text-xs font-semibold text-blue-600 dark:text-blue-400 uppercase">
-                          CRYPTO
-                        </span>
-                        <span className={`px-2 py-0.5 rounded text-xs font-bold ${
-                          position.outcomeName.toLowerCase().includes('yes') 
-                            ? 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400'
-                            : 'bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400'
-                        }`}>
-                          {position.outcomeName}
-                        </span>
-                      </div>
+                    <div key={index} className="group relative overflow-hidden bg-gradient-to-br from-white to-gray-50 dark:from-gray-800 dark:to-gray-900 rounded-lg p-3 border border-gray-200 dark:border-gray-700 hover:shadow-lg hover:scale-[1.01] transition-all duration-200">
+                      {/* Gradient overlay */}
+                      <div className={`absolute top-0 right-0 w-24 h-24 ${
+                        position.outcomeName.toLowerCase().includes('yes')
+                          ? 'bg-gradient-to-br from-green-500/10 to-emerald-500/10'
+                          : 'bg-gradient-to-br from-red-500/10 to-orange-500/10'
+                      } rounded-full blur-2xl group-hover:scale-125 transition-transform duration-300`}></div>
                       
-                      <h4 className="font-semibold text-sm mb-3 line-clamp-2 text-gray-900 dark:text-white">
-                        {position.marketTitle}
-                      </h4>
-                      
-                      <div className="grid grid-cols-3 gap-2 text-xs">
-                        <div>
-                          <p className="text-gray-500 dark:text-gray-400">Shares</p>
-                          <p className="font-bold text-gray-900 dark:text-white">
-                            {(Number(position.shares) / 1e18).toFixed(2)}
-                          </p>
-                        </div>
-                        <div>
-                          <p className="text-gray-500 dark:text-gray-400">Price</p>
-                          <p className="font-bold text-gray-900 dark:text-white">{position.currentPrice}¢</p>
-                        </div>
-                        <div>
-                          <p className="text-gray-500 dark:text-gray-400">P&L</p>
-                          <p className={`font-bold ${
-                            position.unrealizedPnL >= 0 ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'
+                      <div className="relative">
+                        {/* Header */}
+                        <div className="flex items-start justify-between mb-2">
+                          <span className="text-[10px] font-bold text-blue-600 dark:text-blue-400 uppercase tracking-wide">
+                            CRYPTO
+                          </span>
+                          <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold whitespace-nowrap ${
+                            position.outcomeName.toLowerCase().includes('yes') 
+                              ? 'bg-gradient-to-r from-green-500 to-emerald-500 text-white'
+                              : 'bg-gradient-to-r from-red-500 to-orange-500 text-white'
                           }`}>
-                            {position.unrealizedPnL >= 0 ? '+' : ''}{position.unrealizedPnL.toFixed(2)}
-                          </p>
+                            {position.outcomeName}
+                          </span>
+                        </div>
+                        
+                        {/* Market Title */}
+                        <h4 className="font-semibold text-sm mb-2 line-clamp-2 text-gray-900 dark:text-white leading-snug">
+                          {position.marketTitle}
+                        </h4>
+                        
+                        {/* Stats Grid */}
+                        <div className="space-y-1.5">
+                          <div className="flex justify-between items-center px-2 py-1 bg-gray-50 dark:bg-gray-800/50 rounded">
+                            <span className="text-[10px] font-medium text-gray-600 dark:text-gray-400">Shares</span>
+                            <span className="font-bold text-xs text-gray-900 dark:text-white">
+                              {(Number(position.shares) / 1e6).toFixed(2)}
+                            </span>
+                          </div>
+                          <div className="flex justify-between items-center px-2 py-1 bg-gray-50 dark:bg-gray-800/50 rounded">
+                            <span className="text-[10px] font-medium text-gray-600 dark:text-gray-400">Price</span>
+                            <span className="font-bold text-xs text-gray-900 dark:text-white">{position.currentPrice.toFixed(1)}¢</span>
+                          </div>
+                          <div className="flex justify-between items-center px-2 py-1 bg-gradient-to-r from-gray-50 to-gray-100 dark:from-gray-800/50 dark:to-gray-700/50 rounded">
+                            <span className="text-[10px] font-medium text-gray-600 dark:text-gray-400">P&L</span>
+                            <span className={`font-bold text-sm ${
+                              position.unrealizedPnL >= 0 
+                                ? 'text-green-600 dark:text-green-400' 
+                                : 'text-red-600 dark:text-red-400'
+                            }`}>
+                              {position.unrealizedPnL >= 0 ? '+' : ''}${position.unrealizedPnL.toFixed(2)}
+                            </span>
+                          </div>
                         </div>
                       </div>
                     </div>
