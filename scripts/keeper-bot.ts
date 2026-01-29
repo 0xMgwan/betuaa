@@ -197,13 +197,25 @@ class KeeperBot {
     }
   }
 
-  async getPriceUpdateData(priceId: string): Promise<string[] | null> {
+  async getPriceUpdateData(priceId: string): Promise<`0x${string}`[] | null> {
     try {
       const response = await fetch(
         `${HERMES_API}/api/latest_vaas?ids[]=${priceId}`
       );
       const data = (await response.json()) as string[];
-      return data && data.length > 0 ? data : null;
+      
+      if (!data || data.length === 0) {
+        return null;
+      }
+      
+      // Convert base64 VAA data to hex bytes
+      const hexData = data.map(vaa => {
+        // VAA is already in base64, convert to hex
+        const buffer = Buffer.from(vaa, 'base64');
+        return `0x${buffer.toString('hex')}` as `0x${string}`;
+      });
+      
+      return hexData;
     } catch (error) {
       console.error(`❌ Error fetching update data for ${priceId}:`, error);
       return null;
@@ -246,32 +258,14 @@ class KeeperBot {
 
       console.log(`   📦 Update Data: ${updateData.length} item(s)`);
 
-      // Estimate gas
-      console.log(`   ⛽ Estimating gas...`);
-      const gasEstimate = await this.publicClient.estimateContractGas({
-        address: PYTH_RESOLVER,
-        abi: PYTH_RESOLVER_ABI,
-        functionName: 'resolveMarket',
-        args: [BigInt(market.id), updateData as `0x${string}`[]],
-        account: this.account,
-        value: parseEther('0.001'), // Estimate with 0.001 ETH
-      });
-
-      console.log(`   Gas Estimate: ${gasEstimate.toString()}`);
-
-      // Send resolution transaction
+      // Send resolution transaction (skip gas estimation as it often fails with Pyth data)
       console.log(`   📤 Sending resolution transaction...`);
-      
-      // Convert update data to proper hex format
-      const hexUpdateData = updateData.map(data => 
-        data.startsWith('0x') ? data : `0x${data}`
-      ) as `0x${string}`[];
       
       const hash = await this.walletClient.writeContract({
         address: PYTH_RESOLVER,
         abi: PYTH_RESOLVER_ABI,
         functionName: 'resolveMarket',
-        args: [BigInt(market.id), hexUpdateData],
+        args: [BigInt(market.id), updateData],
         value: parseEther('0.001'),
       });
 
