@@ -124,18 +124,22 @@ export function handleTransferSingle(event: TransferSingle): void {
       
       // Check each outcome for this market
       for (let outcomeNum = 0; outcomeNum < market.outcomeCount; outcomeNum++) {
-        let outcomeId = marketNum.toString() + "-" + outcomeNum.toString();
-        let outcome = Outcome.load(outcomeId);
+        let outcomeEntityId = marketNum.toString() + "-" + outcomeNum.toString();
+        let outcome = Outcome.load(outcomeEntityId);
         
-        if (outcome != null && outcome.tokenId == tokenId) {
+        if (outcome == null) continue;
+        
+        // Check if this outcome already has this tokenId
+        if (outcome.tokenId.equals(tokenId)) {
           foundMarket = market;
           foundOutcomeId = outcomeNum;
           break;
         }
         
-        // If tokenId not set yet, this might be the first mint - store it
-        if (outcome != null && outcome.tokenId == ZERO_BI) {
+        // If tokenId not set yet (equals 0), this is the first mint - store it
+        if (outcome.tokenId.equals(ZERO_BI)) {
           outcome.tokenId = tokenId;
+          outcome.totalSupply = outcome.totalSupply.plus(amount);
           outcome.save();
           foundMarket = market;
           foundOutcomeId = outcomeNum;

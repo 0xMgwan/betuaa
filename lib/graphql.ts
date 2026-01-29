@@ -1,6 +1,6 @@
 import { GraphQLClient } from 'graphql-request';
 
-const SUBGRAPH_URL = 'https://api.studio.thegraph.com/query/1724435/betuaa-ctf/v0.0.6';
+const SUBGRAPH_URL = 'https://api.studio.thegraph.com/query/1724435/betuaa-ctf/v0.0.7';
 
 export const graphqlClient = new GraphQLClient(SUBGRAPH_URL);
 
