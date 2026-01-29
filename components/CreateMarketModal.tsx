@@ -13,6 +13,7 @@ import { useTranslation } from '@/hooks/useTranslation';
 import Image from 'next/image';
 import { CATEGORIES as CATEGORY_CONFIG } from '@/lib/categoryUtils';
 import { PYTH_PRICE_FEEDS, fetchPythPrice, generatePythMarketQuestion, type PythFeedId } from '@/lib/pyth';
+import { useConfigurePythMarket } from '@/hooks/usePythResolver';
 
 const iconMap = {
   Bitcoin,
@@ -57,10 +58,19 @@ export default function CreateMarketModal({ isOpen, onClose }: CreateMarketModal
   const [isAbove, setIsAbove] = useState(true);
   const [expiryDays, setExpiryDays] = useState(1);
 
-  const { createMarket, isPending: isCreating, isSuccess } = useCTFCreateMarket();
+  const { createMarket, isPending: isCreating, isSuccess, hash: createHash } = useCTFCreateMarket();
   const { approve, isPending: isApproving, isSuccess: isApproved } = useApproveToken();
+  const { configurePythMarket, isPending: isConfiguringPyth, isSuccess: isPythConfigured } = useConfigurePythMarket();
 
   const selectedStablecoin = STABLECOINS.baseSepolia.find(t => t.address === selectedToken);
+  
+  // Store Pyth market data for configuration after creation
+  const [pythMarketData, setPythMarketData] = useState<{
+    priceId: string;
+    threshold: number;
+    expiryTime: number;
+    isAbove: boolean;
+  } | null>(null);
 
   // Fetch current price when feed changes
   useEffect(() => {
@@ -85,6 +95,50 @@ export default function CreateMarketModal({ isOpen, onClose }: CreateMarketModal
       handleCreateMarket();
     }
   }, [isApproved]);
+
+  // Automatically configure Pyth market after creation succeeds
+  useEffect(() => {
+    const configurePyth = async () => {
+      if (isSuccess && pythMarketData && isPythMode) {
+        // Wait a bit for the transaction to be indexed
+        await new Promise(resolve => setTimeout(resolve, 2000));
+        
+        // Get the market ID from the contract
+        try {
+          const response = await fetch(`https://sepolia.base.org`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              jsonrpc: '2.0',
+              method: 'eth_call',
+              params: [{
+                to: CONTRACTS.baseSepolia.ctfPredictionMarket,
+                data: '0x650acd66' // marketCount() selector
+              }, 'latest'],
+              id: 1
+            })
+          });
+          const data = await response.json();
+          const marketId = parseInt(data.result, 16);
+          
+          // Configure Pyth resolution
+          await configurePythMarket(
+            marketId,
+            pythMarketData.priceId,
+            pythMarketData.threshold,
+            pythMarketData.expiryTime,
+            pythMarketData.isAbove
+          );
+          
+          setPythMarketData(null);
+        } catch (error) {
+          console.error('Error configuring Pyth market:', error);
+        }
+      }
+    };
+    
+    configurePyth();
+  }, [isSuccess, pythMarketData, isPythMode]);
 
   const handleApprove = async () => {
     if (!selectedStablecoin || !initialLiquidity) return;
@@ -125,6 +179,14 @@ export default function CreateMarketModal({ isOpen, onClose }: CreateMarketModal
         });
         
         marketDescription = `[PYTH][CATEGORY:crypto] Pyth-powered market: ${feed.name} price prediction. Auto-resolves based on ${feed.symbol} price feed.`;
+        
+        // Store Pyth data for configuration after market creation
+        setPythMarketData({
+          priceId: feed.id,
+          threshold: parseFloat(threshold),
+          expiryTime,
+          isAbove,
+        });
       } else {
         closingTimestamp = BigInt(Math.floor(new Date(closingDate).getTime() / 1000));
         marketDescription = `[CATEGORY:${category}] ${description}`;
@@ -173,6 +235,22 @@ export default function CreateMarketModal({ isOpen, onClose }: CreateMarketModal
             <p className="text-sm md:text-base text-gray-600 dark:text-gray-400 mb-4 md:mb-6">
               Your prediction market has been successfully created on Base Sepolia.
             </p>
+            {isPythMode && isConfiguringPyth && (
+              <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-3 mb-4">
+                <p className="text-xs md:text-sm text-blue-800 dark:text-blue-200 flex items-center justify-center gap-2">
+                  <ZapIcon className="w-4 h-4 animate-pulse" />
+                  Configuring auto-resolution...
+                </p>
+              </div>
+            )}
+            {isPythMode && isPythConfigured && (
+              <div className="bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg p-3 mb-4">
+                <p className="text-xs md:text-sm text-green-800 dark:text-green-200 flex items-center justify-center gap-2">
+                  <ZapIcon className="w-4 h-4" />
+                  ✅ Auto-resolution configured!
+                </p>
+              </div>
+            )}
             <div className="flex flex-col md:flex-row gap-2 md:gap-3">
               <button
                 onClick={() => {
