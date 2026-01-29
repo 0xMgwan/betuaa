@@ -57,58 +57,106 @@ export function useUserPositions() {
       const positionsData: UserPosition[] = [];
       const count = Number(marketCount);
 
-      // Iterate through all markets
-      for (let marketId = 1; marketId <= count; marketId++) {
-        try {
-          // Fetch market data
-          const marketResponse = await fetch(`/api/market/${marketId}`);
-          if (!marketResponse.ok) continue;
-          const market = await marketResponse.json();
-          if (market.error) continue;
+      try {
+        // Fetch all market data in parallel
+        const marketPromises = [];
+        for (let marketId = 1; marketId <= count; marketId++) {
+          marketPromises.push(
+            fetch(`/api/market/${marketId}`).then(res => res.json()).catch(() => null)
+          );
+        }
+        const markets = await Promise.all(marketPromises);
 
-          // For CTF markets, check YES (0) and NO (1) token balances
+        // Build contract call batches for all markets and outcomes
+        const contractCalls = [];
+        const callMetadata = [];
+
+        for (let marketId = 1; marketId <= count; marketId++) {
+          const market = markets[marketId - 1];
+          if (!market || market.error) continue;
+
           for (let outcomeId = 0; outcomeId < 2; outcomeId++) {
-            // Get the actual token ID from the contract mapping
-            const tokenId = await publicClient.readContract({
+            // Get token ID
+            contractCalls.push({
               address: CONTRACT_ADDRESS,
               abi: CTFPredictionMarketABI,
               functionName: 'outcomeTokens',
               args: [BigInt(marketId), BigInt(outcomeId)],
-            }) as bigint;
+            });
+            callMetadata.push({ marketId, outcomeId, market, type: 'tokenId' });
+          }
+        }
 
-            console.log(`Market ${marketId}, outcome ${outcomeId}, tokenId ${tokenId}`);
+        // Execute all contract calls in batches
+        const batchSize = 10;
+        const tokenIds: Record<string, bigint> = {};
 
-            // Get user's balance of this outcome token
-            const balance = await publicClient.readContract({
+        for (let i = 0; i < contractCalls.length; i += batchSize) {
+          const batch = contractCalls.slice(i, i + batchSize);
+          const batchMeta = callMetadata.slice(i, i + batchSize);
+
+          const results = await Promise.all(
+            batch.map(call =>
+              publicClient.readContract(call as any).catch(() => BigInt(0))
+            )
+          );
+
+          results.forEach((tokenId, idx) => {
+            const meta = batchMeta[idx];
+            tokenIds[`${meta.marketId}-${meta.outcomeId}`] = tokenId as bigint;
+          });
+        }
+
+        // Now fetch all balances in parallel
+        const balanceCalls = [];
+        const balanceMetadata = [];
+
+        for (let marketId = 1; marketId <= count; marketId++) {
+          const market = markets[marketId - 1];
+          if (!market || market.error) continue;
+
+          for (let outcomeId = 0; outcomeId < 2; outcomeId++) {
+            const tokenId = tokenIds[`${marketId}-${outcomeId}`];
+            if (!tokenId) continue;
+
+            balanceCalls.push({
               address: CONTRACT_ADDRESS,
               abi: CTFPredictionMarketABI,
               functionName: 'balanceOf',
               args: [address as `0x${string}`, tokenId],
-            }) as bigint;
+            });
+            balanceMetadata.push({ marketId, outcomeId, market, tokenId });
+          }
+        }
 
-            console.log(`Market ${marketId}, outcome ${outcomeId}, tokenId ${tokenId}, balance: ${balance}`);
+        // Execute all balance calls in batches
+        for (let i = 0; i < balanceCalls.length; i += batchSize) {
+          const batch = balanceCalls.slice(i, i + batchSize);
+          const batchMeta = balanceMetadata.slice(i, i + batchSize);
 
+          const results = await Promise.all(
+            batch.map(call =>
+              publicClient.readContract(call as any).catch(() => BigInt(0))
+            )
+          );
+
+          results.forEach((balance, idx) => {
+            const meta = batchMeta[idx];
             if (balance > BigInt(0)) {
-              const shares = Number(balance) / 1e6; // USDC has 6 decimals
-              const outcomeName = outcomeId === 0 ? 'Yes' : 'No';
-              
-              // Cost basis: User minted at 50¢ per token (1 USDC = 1 YES + 1 NO)
+              const shares = Number(balance) / 1e6;
+              const outcomeName = meta.outcomeId === 0 ? 'Yes' : 'No';
               const averageBuyPrice = 50;
               const costBasis = shares * (averageBuyPrice / 100);
-              
-              // Current price calculation:
-              // - If market is resolved, winning tokens are worth 100¢, losing tokens are worth 0¢
-              // - If market is active, we simulate market sentiment (in production, use AMM prices)
-              let currentPrice = 50; // Default to 50¢
+
+              let currentPrice = 50;
               let currentValue = shares * (currentPrice / 100);
               let unrealizedPnL = 0;
               let unrealizedPnLPercent = 0;
-              
-              if (market.resolved) {
-                // Resolved market: winning outcome = 100¢, losing outcome = 0¢
-                if (market.winningOutcomeId === outcomeId) {
+
+              if (meta.market.resolved) {
+                if (meta.market.winningOutcomeId === meta.outcomeId) {
                   currentPrice = 100;
-                  currentValue = shares * 1.0; // Each winning token worth 1 USDC
+                  currentValue = shares * 1.0;
                   unrealizedPnL = currentValue - costBasis;
                   unrealizedPnLPercent = costBasis > 0 ? (unrealizedPnL / costBasis) * 100 : 0;
                 } else {
@@ -118,42 +166,39 @@ export function useUserPositions() {
                   unrealizedPnLPercent = -100;
                 }
               } else {
-                // Active market: simulate price variation based on market sentiment
-                // In production, fetch from AMM or oracle
-                // For now, add slight variation from 50¢ to show P&L changes
-                const priceVariation = (Math.random() - 0.5) * 20; // ±10¢ variation
+                const priceVariation = (Math.random() - 0.5) * 20;
                 currentPrice = Math.max(5, Math.min(95, 50 + priceVariation));
                 currentValue = shares * (currentPrice / 100);
                 unrealizedPnL = currentValue - costBasis;
                 unrealizedPnLPercent = costBasis > 0 ? (unrealizedPnL / costBasis) * 100 : 0;
               }
 
-              console.log(`Found position: market ${marketId}, outcome ${outcomeName}, shares ${shares}, price ${currentPrice}¢, P&L ${unrealizedPnL.toFixed(2)}`);
-
               positionsData.push({
-                marketId,
-                outcomeId,
+                marketId: meta.marketId,
+                outcomeId: meta.outcomeId,
                 shares: balance,
-                marketTitle: market.title,
+                marketTitle: meta.market.title,
                 outcomeName,
                 currentPrice,
                 averageBuyPrice,
                 unrealizedPnL,
                 unrealizedPnLPercent,
-                paymentToken: market.paymentToken,
-                resolved: market.resolved,
-                winningOutcomeId: market.winningOutcomeId,
+                paymentToken: meta.market.paymentToken,
+                resolved: meta.market.resolved,
+                winningOutcomeId: meta.market.winningOutcomeId,
               });
             }
-          }
-        } catch (error) {
-          console.error(`Error fetching position for market ${marketId}:`, error);
+          });
         }
-      }
 
-      console.log('useUserPositions: Final positions:', positionsData);
-      setPositions(positionsData);
-      setIsLoading(false);
+        console.log('useUserPositions: Final positions:', positionsData);
+        setPositions(positionsData);
+      } catch (error) {
+        console.error('Error fetching positions:', error);
+        setPositions([]);
+      } finally {
+        setIsLoading(false);
+      }
     }
 
     if (address && marketCount) {
