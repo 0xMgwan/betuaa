@@ -52,10 +52,10 @@ export function useAllMarkets() {
       const count = Number(marketCount);
       const marketPromises = [];
 
-      // Fetch all markets (starting from ID 1)
+      // Fetch all markets (starting from ID 1) with cache busting
       for (let i = 1; i <= count; i++) {
         marketPromises.push(
-          fetch(`/api/market/${i}`).then(res => res.json())
+          fetch(`/api/market/${i}?t=${Date.now()}`).then(res => res.json())
         );
       }
 

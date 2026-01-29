@@ -10,6 +10,10 @@ const publicClient = createPublicClient({
   transport: http(),
 });
 
+// Simple in-memory cache with 30 second TTL
+const marketCache = new Map<string, { data: any; timestamp: number }>();
+const CACHE_TTL = 30000; // 30 seconds
+
 export async function GET(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
@@ -24,8 +28,21 @@ export async function GET(
 
     console.log(`Fetching market ${marketId} from CTF contract and The Graph...`);
 
+    // Check cache first
+    const cacheKey = `market-${marketId}`;
+    const cached = marketCache.get(cacheKey);
+    if (cached && Date.now() - cached.timestamp < CACHE_TTL) {
+      console.log(`Market ${marketId} - returning cached data`);
+      return NextResponse.json(cached.data);
+    }
+
     // Try to fetch from The Graph first for real data
-    const subgraphData = await fetchMarketData(marketId.toString());
+    let subgraphData = null;
+    try {
+      subgraphData = await fetchMarketData(marketId.toString());
+    } catch (error) {
+      console.error(`Market ${marketId} - subgraph fetch failed:`, error);
+    }
     
     // Fetch market data from CTF contract as fallback
     const market = await publicClient.readContract({
@@ -73,6 +90,10 @@ export async function GET(
     };
 
     console.log(`Market ${marketId} response:`, response);
+    
+    // Cache the response
+    marketCache.set(cacheKey, { data: response, timestamp: Date.now() });
+    
     return NextResponse.json(response);
   } catch (error) {
     console.error(`Error fetching market ${marketId}:`, error);
