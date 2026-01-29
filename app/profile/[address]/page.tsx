@@ -104,20 +104,28 @@ export default function ProfilePage() {
   useEffect(() => {
     const fetchStats = async () => {
       const stats: Record<string, any> = {};
-      for (const market of marketsCreated) {
-        try {
-          const data = await fetchMarketData(market.id.toString());
-          if (data) {
-            stats[market.id] = {
-              totalVolume: data.totalVolume || '0',
-              participantCount: data.participantCount || 0,
-              tradeCount: data.tradeCount || 0,
-            };
-          }
-        } catch (error) {
-          console.error(`Error fetching stats for market ${market.id}:`, error);
-        }
-      }
+      
+      // Fetch all market stats in parallel instead of sequentially
+      const statsPromises = marketsCreated.map(market =>
+        fetchMarketData(market.id.toString())
+          .then(data => {
+            if (data) {
+              stats[market.id] = {
+                totalVolume: data.totalVolume || '0',
+                participantCount: data.participantCount || 0,
+                tradeCount: data.tradeCount || 0,
+              };
+            }
+            return stats;
+          })
+          .catch(error => {
+            console.error(`Error fetching stats for market ${market.id}:`, error);
+            return stats;
+          })
+      );
+
+      // Wait for all requests to complete
+      await Promise.all(statsPromises);
       setMarketStats(stats);
     };
 
