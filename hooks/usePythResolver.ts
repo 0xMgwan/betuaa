@@ -35,7 +35,13 @@ export function useConfigurePythMarket() {
     isAbove: boolean
   ) => {
     // Convert threshold to Pyth format (scaled by 10^8)
-    const thresholdScaled = BigInt(Math.floor(threshold * 1e8));
+    // int64 max value is 9223372036854775807
+    const thresholdScaled = Math.floor(threshold * 1e8);
+    
+    // Ensure it fits in int64
+    if (thresholdScaled > 9223372036854775807 || thresholdScaled < -9223372036854775808) {
+      throw new Error('Threshold value too large for int64');
+    }
     
     writeContract({
       address: PYTH_RESOLVER_ADDRESS,
@@ -44,7 +50,7 @@ export function useConfigurePythMarket() {
       args: [
         BigInt(marketId),
         priceId as `0x${string}`,
-        thresholdScaled,
+        BigInt(thresholdScaled),
         BigInt(expiryTime),
         isAbove,
       ],
