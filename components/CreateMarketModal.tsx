@@ -110,6 +110,7 @@ export default function CreateMarketModal({ isOpen, onClose }: CreateMarketModal
           await new Promise(resolve => setTimeout(resolve, 3000));
           
           // Get the market ID from the contract
+          console.log('📡 Fetching market count from RPC...');
           const response = await fetch(`https://sepolia.base.org`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
@@ -123,14 +124,24 @@ export default function CreateMarketModal({ isOpen, onClose }: CreateMarketModal
               id: 1
             })
           });
+          
+          if (!response.ok) {
+            console.error('❌ RPC request failed:', response.status, response.statusText);
+            throw new Error(`RPC request failed: ${response.status}`);
+          }
+          
           const data = await response.json();
+          console.log('📊 RPC response:', data);
           
           if (!data.result) {
-            throw new Error('Failed to get market count');
+            console.error('❌ No result in RPC response:', data);
+            throw new Error('Failed to get market count from RPC');
           }
           
           const marketCount = parseInt(data.result, 16);
           const marketId = marketCount - 1;
+          
+          console.log('🔢 Market count:', marketCount, 'Market ID:', marketId);
           
           console.log('📊 Market ID:', marketId, 'Price ID:', pythMarketData.priceId);
           console.log('⚙️ Calling configurePythMarket with:', {

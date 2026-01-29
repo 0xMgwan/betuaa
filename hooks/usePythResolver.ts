@@ -58,22 +58,26 @@ export function useConfigurePythMarket() {
       throw new Error('Threshold value too large for int64');
     }
     
-    const args = [
-      BigInt(marketId),
-      priceId as `0x${string}`,
-      BigInt(thresholdScaled),
-      BigInt(expiryTime),
-      isAbove,
-    ];
-    
-    console.log('📝 Calling writeContract with args:', args);
+    console.log('📝 Calling writeContract with args:', {
+      marketId: BigInt(marketId),
+      priceId,
+      thresholdScaled: BigInt(thresholdScaled),
+      expiryTime: BigInt(expiryTime),
+      isAbove
+    });
     
     try {
       writeContract({
         address: PYTH_RESOLVER_ADDRESS,
         abi: PYTH_RESOLVER_ABI,
         functionName: 'configurePythMarket',
-        args,
+        args: [
+          BigInt(marketId),
+          priceId as `0x${string}`,
+          BigInt(thresholdScaled),
+          BigInt(expiryTime),
+          isAbove,
+        ],
         chainId: baseSepolia.id,
       });
       console.log('✅ writeContract called successfully');
