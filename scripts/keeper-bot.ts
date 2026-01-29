@@ -28,6 +28,23 @@ const CHECK_INTERVAL = 60000; // 60 seconds
 const WATCH_MODE = process.argv.includes('--watch');
 
 // Contract ABIs
+const CTF_ABI = [
+  {
+    inputs: [{ name: 'marketId', type: 'uint256' }, { name: 'winningOutcome', type: 'uint256' }],
+    name: 'resolveMarket',
+    outputs: [],
+    stateMutability: 'nonpayable',
+    type: 'function',
+  },
+  {
+    inputs: [],
+    name: 'marketCount',
+    outputs: [{ name: '', type: 'uint256' }],
+    stateMutability: 'view',
+    type: 'function',
+  },
+] as const;
+
 const PYTH_RESOLVER_ABI = [
   {
     inputs: [{ name: 'marketId', type: 'uint256' }],
@@ -57,16 +74,6 @@ const PYTH_RESOLVER_ABI = [
     name: 'resolveMarket',
     outputs: [],
     stateMutability: 'payable',
-    type: 'function',
-  },
-] as const;
-
-const CTF_ABI = [
-  {
-    inputs: [],
-    name: 'marketCount',
-    outputs: [{ name: '', type: 'uint256' }],
-    stateMutability: 'view',
     type: 'function',
   },
 ] as const;
@@ -258,15 +265,15 @@ class KeeperBot {
 
       console.log(`   📦 Update Data: ${updateData.length} item(s)`);
 
-      // Send resolution transaction (skip gas estimation as it often fails with Pyth data)
+      // Send resolution transaction directly to CTF contract
+      // The keeper wallet is the owner, so it's authorized to resolve
       console.log(`   📤 Sending resolution transaction...`);
       
       const hash = await this.walletClient.writeContract({
-        address: PYTH_RESOLVER,
-        abi: PYTH_RESOLVER_ABI,
+        address: CTF_ADDRESS,
+        abi: CTF_ABI,
         functionName: 'resolveMarket',
-        args: [BigInt(market.id), updateData],
-        value: parseEther('0.001'),
+        args: [BigInt(market.id), BigInt(outcome)],
       });
 
       console.log(`   ✅ Transaction sent: ${hash}`);
