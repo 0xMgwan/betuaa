@@ -1,6 +1,7 @@
 import { GraphQLClient } from 'graphql-request';
 
-const SUBGRAPH_URL = 'https://api.studio.thegraph.com/query/1724435/betuaa-ctf/v0.0.7';
+// Production subgraph URL (unlimited queries)
+const SUBGRAPH_URL = 'https://gateway-arbitrum.network.thegraph.com/api/db13a7d04300f5a37567fb56f538a938/subgraphs/id/CCkEh8eKCHxZhaxgbHcAv7qNLCU1bu3F2A5t6zYGbMup';
 
 export const graphqlClient = new GraphQLClient(SUBGRAPH_URL);
 
