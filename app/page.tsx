@@ -54,7 +54,7 @@ export default function Home() {
   // Search and filter state
   const [searchQuery, setSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState<'all' | 'active' | 'closed' | 'resolved'>('all');
-  const [sortBy, setSortBy] = useState<'volume' | 'closing' | 'created' | 'activity'>('volume');
+  const [sortBy, setSortBy] = useState<'volume' | 'closing' | 'created' | 'activity'>('created');
   const [showFilters, setShowFilters] = useState(false);
 
   // Centralized modal state

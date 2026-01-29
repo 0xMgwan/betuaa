@@ -13,9 +13,9 @@ const publicClient = createPublicClient({
   }),
 });
 
-// Simple in-memory cache with 10 second TTL (shorter for faster updates)
+// Simple in-memory cache with 5 second TTL (shorter for faster updates)
 const marketCache = new Map<string, { data: any; timestamp: number }>();
-const CACHE_TTL = 10000; // 10 seconds
+const CACHE_TTL = 5000; // 5 seconds
 
 export async function GET(
   request: NextRequest,

@@ -32,7 +32,7 @@ export function useAllMarkets() {
     functionName: 'marketCount',
     chainId: baseSepolia.id,
     query: {
-      refetchInterval: 10000, // Refetch every 10 seconds
+      refetchInterval: 5000, // Refetch every 5 seconds for faster updates
     },
   });
 
