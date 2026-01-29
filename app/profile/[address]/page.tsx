@@ -65,7 +65,6 @@ export default function ProfilePage() {
     activeTrades: activePositions.length,
     marketsCreated: marketsCreated.length,
     followers: 0,
-    following: 0,
     rank: 42,
     badges: winRate > 60 ? ['Profit Master'] : [],
   };
@@ -83,6 +82,9 @@ export default function ProfilePage() {
 
     if (profileAddress) {
       fetchUserStatsData();
+      // Refetch every 5 seconds to get latest data
+      const interval = setInterval(fetchUserStatsData, 5000);
+      return () => clearInterval(interval);
     }
   }, [profileAddress]);
 
@@ -109,6 +111,9 @@ export default function ProfilePage() {
 
     if (marketsCreated.length > 0) {
       fetchStats();
+      // Refetch every 5 seconds to get latest data
+      const interval = setInterval(fetchStats, 5000);
+      return () => clearInterval(interval);
     }
   }, [marketsCreated]);
 
