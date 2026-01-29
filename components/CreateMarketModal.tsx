@@ -99,9 +99,13 @@ export default function CreateMarketModal({ isOpen, onClose }: CreateMarketModal
   // Automatically configure Pyth market after creation succeeds
   useEffect(() => {
     const configurePyth = async () => {
+      console.log('🔍 Checking auto-config conditions:', { isSuccess, hasPythData: !!pythMarketData, isPythMode });
+      
       if (isSuccess && pythMarketData && isPythMode) {
         try {
           console.log('🔄 Starting Pyth market configuration...');
+          console.log('📋 Pyth Market Data:', pythMarketData);
+          
           // Wait for transaction to be indexed
           await new Promise(resolve => setTimeout(resolve, 3000));
           
@@ -129,6 +133,13 @@ export default function CreateMarketModal({ isOpen, onClose }: CreateMarketModal
           const marketId = marketCount - 1;
           
           console.log('📊 Market ID:', marketId, 'Price ID:', pythMarketData.priceId);
+          console.log('⚙️ Calling configurePythMarket with:', {
+            marketId,
+            priceId: pythMarketData.priceId,
+            threshold: pythMarketData.threshold,
+            expiryTime: pythMarketData.expiryTime,
+            isAbove: pythMarketData.isAbove
+          });
           
           // Configure Pyth resolution
           configurePythMarket(
@@ -192,18 +203,27 @@ export default function CreateMarketModal({ isOpen, onClose }: CreateMarketModal
         marketDescription = `[PYTH][CATEGORY:crypto] Pyth-powered market: ${feed.name} price prediction. Auto-resolves based on ${feed.symbol} price feed.`;
         
         // Store Pyth data for configuration after market creation
-        setPythMarketData({
+        const pythData = {
           priceId: feed.id,
           threshold: parseFloat(threshold),
           expiryTime,
           isAbove,
-        });
+        };
+        console.log('💾 Storing Pyth market data:', pythData);
+        setPythMarketData(pythData);
       } else {
         closingTimestamp = BigInt(Math.floor(new Date(closingDate).getTime() / 1000));
         marketDescription = `[CATEGORY:${category}] ${description}`;
       }
 
       const liquidityAmount = parseUnits(initialLiquidity || '0', selectedStablecoin.decimals);
+
+      console.log('📤 Calling createMarket with:', {
+        title: marketTitle,
+        description: marketDescription,
+        closingTimestamp: closingTimestamp.toString(),
+        isPythMode
+      });
 
       await createMarket(
         marketTitle,
@@ -212,6 +232,8 @@ export default function CreateMarketModal({ isOpen, onClose }: CreateMarketModal
         closingTimestamp,
         selectedToken as `0x${string}`
       );
+      
+      console.log('✅ createMarket called successfully');
     } catch (error) {
       console.error('Error creating market:', error);
       setStep('form');
