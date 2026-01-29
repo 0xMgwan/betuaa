@@ -72,7 +72,7 @@ export async function GET(
     try {
       // Query TransferSingle events to calculate real volume
       const currentBlock = await publicClient.getBlockNumber();
-      const fromBlock = currentBlock - BigInt(100000); // Last 100k blocks
+      const fromBlock = currentBlock - BigInt(40000); // Last 40k blocks (within RPC limit)
       
       const logs = await publicClient.getLogs({
         address: CONTRACTS.baseSepolia.ctfPredictionMarket as `0x${string}`,
