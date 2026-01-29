@@ -10,6 +10,7 @@ import { useAllMarkets } from '@/hooks/useMarkets';
 import ResolveMarketModal from '@/components/ResolveMarketModal';
 import { TrendingUp, TrendingDown, DollarSign, Target, Award, Calendar, Users, BarChart3, Trophy, CheckCircle, Clock as ClockIcon, XCircle, Zap, Gamepad2, Mic2, Globe } from 'lucide-react';
 import { useTranslation } from '@/hooks/useTranslation';
+import { fetchMarketData } from '@/lib/graphql';
 
 export default function ProfilePage() {
   const { t } = useTranslation();
@@ -56,6 +57,33 @@ export default function ProfilePage() {
 
   const [activeTab, setActiveTab] = useState<'positions' | 'activity' | 'created'>('positions');
   const [selectedMarketToResolve, setSelectedMarketToResolve] = useState<any>(null);
+  const [marketStats, setMarketStats] = useState<Record<string, any>>({});
+
+  // Fetch market stats from The Graph
+  useEffect(() => {
+    const fetchStats = async () => {
+      const stats: Record<string, any> = {};
+      for (const market of marketsCreated) {
+        try {
+          const data = await fetchMarketData(market.id.toString());
+          if (data) {
+            stats[market.id] = {
+              totalVolume: data.totalVolume || '0',
+              participantCount: data.participantCount || 0,
+              tradeCount: data.tradeCount || 0,
+            };
+          }
+        } catch (error) {
+          console.error(`Error fetching stats for market ${market.id}:`, error);
+        }
+      }
+      setMarketStats(stats);
+    };
+
+    if (marketsCreated.length > 0) {
+      fetchStats();
+    }
+  }, [marketsCreated]);
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 via-blue-50 to-purple-50 dark:from-gray-950 dark:via-gray-900 dark:to-gray-950">
@@ -374,6 +402,36 @@ export default function ProfilePage() {
                             <p className="text-gray-500 dark:text-gray-400">Closes</p>
                             <p className="font-bold text-gray-900 dark:text-white">
                               {closingDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
+                            </p>
+                          </div>
+                        </div>
+
+                        {/* Market Stats from The Graph */}
+                        <div className="grid grid-cols-3 gap-2 text-xs mb-3 p-2 bg-gray-50 dark:bg-gray-700/50 rounded">
+                          <div className="text-center">
+                            <p className="text-gray-500 dark:text-gray-400 text-[10px]">Volume</p>
+                            <p className="font-bold text-gray-900 dark:text-white flex items-center justify-center gap-1">
+                              <DollarSign className="w-3 h-3" />
+                              {marketStats[market.id] 
+                                ? (() => {
+                                    const vol = Number(marketStats[market.id].totalVolume) / 1e6;
+                                    return vol >= 1000 ? `${(vol / 1000).toFixed(1)}K` : `${vol.toFixed(2)}`;
+                                  })()
+                                : '0'}
+                            </p>
+                          </div>
+                          <div className="text-center">
+                            <p className="text-gray-500 dark:text-gray-400 text-[10px]">Traders</p>
+                            <p className="font-bold text-gray-900 dark:text-white flex items-center justify-center gap-1">
+                              <Users className="w-3 h-3" />
+                              {marketStats[market.id]?.participantCount || 0}
+                            </p>
+                          </div>
+                          <div className="text-center">
+                            <p className="text-gray-500 dark:text-gray-400 text-[10px]">Trades</p>
+                            <p className="font-bold text-gray-900 dark:text-white flex items-center justify-center gap-1">
+                              <BarChart3 className="w-3 h-3" />
+                              {marketStats[market.id]?.tradeCount || 0}
                             </p>
                           </div>
                         </div>
