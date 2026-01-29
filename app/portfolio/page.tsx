@@ -425,7 +425,7 @@ export default function Portfolio() {
                         category="CRYPTO"
                         yesPrice={0.50}
                         noPrice={0.50}
-                        volume={`${(Number(market.totalVolume) / 1e6).toFixed(1)}K USDC`}
+                        volume={(() => { const vol = Number(market.totalVolume) / 1e6; return vol >= 1000 ? `${(vol / 1000).toFixed(1)}K USDC` : `${vol.toFixed(2)} USDC`; })()}
                         endDate={closingDate.toLocaleDateString()}
                         trend="up"
                         priceHistory={generatePriceHistory(50, 50)}
