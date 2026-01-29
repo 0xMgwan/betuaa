@@ -38,10 +38,28 @@ export function useConfigurePythMarket() {
     // int64 max value is 9223372036854775807
     const thresholdScaled = Math.floor(threshold * 1e8);
     
+    console.log('🔐 configurePythMarket hook called with:', {
+      marketId,
+      priceId,
+      threshold,
+      thresholdScaled,
+      expiryTime,
+      isAbove
+    });
+    
     // Ensure it fits in int64
     if (thresholdScaled > 9223372036854775807 || thresholdScaled < -9223372036854775808) {
+      console.error('❌ Threshold too large:', thresholdScaled);
       throw new Error('Threshold value too large for int64');
     }
+    
+    console.log('📝 Calling writeContract with args:', {
+      marketId: BigInt(marketId),
+      priceId,
+      thresholdScaled: BigInt(thresholdScaled),
+      expiryTime: BigInt(expiryTime),
+      isAbove
+    });
     
     writeContract({
       address: PYTH_RESOLVER_ADDRESS,
@@ -56,6 +74,8 @@ export function useConfigurePythMarket() {
       ],
       chainId: baseSepolia.id,
     });
+    
+    console.log('✅ writeContract called');
   };
 
   return {
