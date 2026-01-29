@@ -3,6 +3,7 @@ import { createPublicClient, http } from 'viem';
 import { baseSepolia } from 'viem/chains';
 import { CONTRACTS } from '@/lib/contracts';
 import CTFPredictionMarketABI from '@/lib/abis/CTFPredictionMarket.json';
+import { fetchMarketData } from '@/lib/graphql';
 
 const publicClient = createPublicClient({
   chain: baseSepolia,
@@ -21,9 +22,12 @@ export async function GET(
       return NextResponse.json({ error: 'Invalid market ID' }, { status: 400 });
     }
 
-    console.log(`Fetching market ${marketId} from CTF contract...`);
+    console.log(`Fetching market ${marketId} from CTF contract and The Graph...`);
 
-    // Fetch market data from CTF contract
+    // Try to fetch from The Graph first for real data
+    const subgraphData = await fetchMarketData(marketId.toString());
+    
+    // Fetch market data from CTF contract as fallback
     const market = await publicClient.readContract({
       address: CONTRACTS.baseSepolia.ctfPredictionMarket as `0x${string}`,
       abi: CTFPredictionMarketABI,
@@ -32,6 +36,7 @@ export async function GET(
     }) as any;
 
     console.log(`Market ${marketId} raw data:`, market);
+    console.log(`Market ${marketId} subgraph data:`, subgraphData);
 
     // Market struct has named fields: id, question, description, creator, collateralToken, createdAt, closingTime, resolutionTime, conditionId, outcomeCount, winningOutcome, resolved, paused
     // If market doesn't exist, question will be empty string
@@ -40,39 +45,16 @@ export async function GET(
       return NextResponse.json({ error: 'Market not found' }, { status: 404 });
     }
 
-    // Calculate volume and traders by checking if tokens have been minted
+    // Use subgraph data if available, otherwise fallback to 0
     let totalVolume = BigInt(0);
     let participantCount = 0;
     
-    try {
-      // Check each outcome token to see if it has been minted
-      // If tokens exist, we know there's been activity
-      for (let i = 0; i < Number(market.outcomeCount); i++) {
-        try {
-          const tokenId = await publicClient.readContract({
-            address: CONTRACTS.baseSepolia.ctfPredictionMarket as `0x${string}`,
-            abi: CTFPredictionMarketABI,
-            functionName: 'outcomeTokens',
-            args: [BigInt(marketId), BigInt(i)],
-          }) as bigint;
-          
-          // If tokenId exists and is greater than 0, tokens have been minted
-          if (tokenId > BigInt(0)) {
-            // Estimate volume: For demo, assume 1 USDC per outcome token minted
-            // In production, query Transfer events or use The Graph
-            totalVolume += BigInt(1000000); // 1 USDC in 6 decimals
-            participantCount = Math.max(participantCount, 1); // At least 1 trader
-          }
-        } catch (err) {
-          console.log(`Error checking outcome ${i}:`, err);
-        }
-      }
-      
-      console.log(`Market ${marketId} calculated volume: ${totalVolume.toString()}, participants: ${participantCount}`);
-    } catch (error) {
-      console.log('Could not calculate volume:', error);
-      totalVolume = BigInt(0);
-      participantCount = 0;
+    if (subgraphData) {
+      totalVolume = BigInt(subgraphData.totalVolume || 0);
+      participantCount = subgraphData.participantCount || 0;
+      console.log(`Market ${marketId} using subgraph data - volume: ${totalVolume.toString()}, participants: ${participantCount}`);
+    } else {
+      console.log(`Market ${marketId} - no subgraph data available yet, using zeros`);
     }
 
     const response = {
