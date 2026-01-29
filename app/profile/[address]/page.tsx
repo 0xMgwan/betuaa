@@ -54,7 +54,21 @@ export default function ProfilePage() {
     return sum + positionValue;
   }, 0);
 
-  const userData = {
+  const userData: {
+    address: string;
+    username: string;
+    joinedDate: Date;
+    totalVolume: number;
+    totalProfit: number;
+    winRate: number;
+    totalTrades: number;
+    activeTrades: number;
+    marketsCreated: number;
+    followers: number;
+    following: number;
+    rank: number;
+    badges: string[];
+  } = {
     address: profileAddress,
     username: profileAddress ? `${profileAddress.slice(0, 6)}...${profileAddress.slice(-4)}` : '',
     joinedDate: new Date(Date.now() - 90 * 24 * 60 * 60 * 1000),
@@ -65,6 +79,7 @@ export default function ProfilePage() {
     activeTrades: activePositions.length,
     marketsCreated: marketsCreated.length,
     followers: 0,
+    following: 0,
     rank: 42,
     badges: winRate > 60 ? ['Profit Master'] : [],
   };
@@ -82,9 +97,6 @@ export default function ProfilePage() {
 
     if (profileAddress) {
       fetchUserStatsData();
-      // Refetch every 5 seconds to get latest data
-      const interval = setInterval(fetchUserStatsData, 5000);
-      return () => clearInterval(interval);
     }
   }, [profileAddress]);
 
@@ -111,9 +123,6 @@ export default function ProfilePage() {
 
     if (marketsCreated.length > 0) {
       fetchStats();
-      // Refetch every 5 seconds to get latest data
-      const interval = setInterval(fetchStats, 5000);
-      return () => clearInterval(interval);
     }
   }, [marketsCreated]);
 
