@@ -385,16 +385,16 @@ export default function CreateMarketModal({ isOpen, onClose }: CreateMarketModal
           </button>
         </div>
 
-        <form onSubmit={handleSubmit} className="p-3 md:p-6 space-y-3 md:space-y-6">
-          {/* Market Type Toggle */}
-          <div className="flex gap-2 bg-gray-100 dark:bg-gray-700 p-1 rounded-lg">
+        <form onSubmit={handleSubmit} className="p-3 md:p-6 space-y-4 md:space-y-6">
+          {/* Market Type Toggle - Enhanced */}
+          <div className="flex gap-2 bg-gradient-to-r from-gray-100 to-gray-50 dark:from-gray-700 dark:to-gray-800 p-1.5 rounded-xl border border-gray-200 dark:border-gray-600">
             <button
               type="button"
               onClick={() => setIsPythMode(false)}
-              className={`flex-1 py-2 px-3 rounded-md font-medium text-sm transition-all ${
+              className={`flex-1 py-2.5 px-4 rounded-lg font-semibold text-sm transition-all duration-300 ${
                 !isPythMode
-                  ? 'bg-white dark:bg-gray-800 text-blue-600 dark:text-blue-400 shadow-sm'
-                  : 'text-gray-600 dark:text-gray-400'
+                  ? 'bg-white dark:bg-gray-800 text-blue-600 dark:text-blue-400 shadow-lg shadow-blue-500/20 scale-105'
+                  : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200'
               }`}
             >
               Traditional Market
@@ -402,153 +402,204 @@ export default function CreateMarketModal({ isOpen, onClose }: CreateMarketModal
             <button
               type="button"
               onClick={() => setIsPythMode(true)}
-              className={`flex-1 py-2 px-3 rounded-md font-medium text-sm transition-all flex items-center justify-center gap-1 ${
+              className={`flex-1 py-2.5 px-4 rounded-lg font-semibold text-sm transition-all duration-300 flex items-center justify-center gap-2 ${
                 isPythMode
-                  ? 'bg-white dark:bg-gray-800 text-blue-600 dark:text-blue-400 shadow-sm'
-                  : 'text-gray-600 dark:text-gray-400'
+                  ? 'bg-gradient-to-r from-blue-500 to-purple-500 text-white shadow-lg shadow-purple-500/30 scale-105'
+                  : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200'
               }`}
             >
-              <ZapIcon className="w-4 h-4" />
+              <ZapIcon className={`w-4 h-4 ${isPythMode ? 'animate-pulse' : ''}`} />
               Crypto & Commodities
             </button>
           </div>
 
           {isPythMode && (
-            <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-3 md:p-4">
-              <p className="text-xs md:text-sm text-blue-800 dark:text-blue-200 flex items-center gap-2">
-                <ZapIcon className="w-4 h-4" />
-                <strong>Auto-resolves:</strong> This market will automatically resolve based on Pyth price feeds when it expires.
-              </p>
+            <div className="relative overflow-hidden bg-gradient-to-r from-blue-50 to-purple-50 dark:from-blue-900/30 dark:to-purple-900/30 border border-blue-200 dark:border-blue-700 rounded-xl p-4 md:p-5 shadow-lg shadow-blue-500/10">
+              <div className="absolute inset-0 bg-gradient-to-r from-blue-500/5 to-purple-500/5 opacity-0 group-hover:opacity-100 transition-opacity"></div>
+              <div className="relative flex items-start gap-3">
+                <div className="flex-shrink-0">
+                  <div className="flex items-center justify-center h-8 w-8 rounded-lg bg-blue-500/20">
+                    <ZapIcon className="w-5 h-5 text-blue-600 dark:text-blue-400 animate-pulse" />
+                  </div>
+                </div>
+                <div className="flex-1">
+                  <p className="text-sm font-semibold text-blue-900 dark:text-blue-200">Auto-Resolution Enabled</p>
+                  <p className="text-xs text-blue-800 dark:text-blue-300 mt-1">This market will automatically resolve based on Pyth price feeds when it expires.</p>
+                </div>
+              </div>
             </div>
           )}
 
           {isPythMode ? (
             <>
-              {/* Pyth Price Feed Selection */}
-              <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-3 flex items-center gap-2">
-                  <TrendingUp className="w-4 h-4" />
+              {/* Pyth Price Feed Selection - Enhanced Custom Dropdown */}
+              <div className="space-y-2">
+                <label className="block text-sm font-semibold text-gray-900 dark:text-white flex items-center gap-2">
+                  <div className="flex items-center justify-center h-6 w-6 rounded-lg bg-gradient-to-br from-blue-500 to-purple-500 shadow-sm">
+                    <TrendingUp className="w-4 h-4 text-white" />
+                  </div>
                   Price Feed
                 </label>
-                <select
-                  value={selectedFeed}
-                  onChange={(e) => setSelectedFeed(e.target.value as PythFeedId)}
-                  className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                >
-                  {Object.entries(PYTH_PRICE_FEEDS).map(([key, feed]) => (
-                    <option key={key} value={key}>
-                      {feed.name} ({feed.symbol})
-                    </option>
-                  ))}
-                </select>
+                <div className="relative group">
+                  <select
+                    value={selectedFeed}
+                    onChange={(e) => setSelectedFeed(e.target.value as PythFeedId)}
+                    className="w-full px-4 py-4 pr-10 border-2 border-gray-300 dark:border-gray-600 rounded-xl bg-gradient-to-r from-white to-gray-50 dark:from-gray-800 dark:to-gray-900 text-gray-900 dark:text-white font-semibold focus:ring-2 focus:ring-blue-500 focus:border-blue-500 shadow-lg hover:shadow-xl transition-all duration-300 appearance-none cursor-pointer"
+                  >
+                    {Object.entries(PYTH_PRICE_FEEDS).map(([key, feed]) => (
+                      <option key={key} value={key} className="py-2 bg-white dark:bg-gray-800">
+                        {feed.name} ({feed.symbol})
+                      </option>
+                    ))}
+                  </select>
+                  <ChevronDown className="absolute right-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-500 dark:text-gray-400 pointer-events-none group-hover:text-blue-500 transition-colors" />
+                </div>
               </div>
 
-              {/* Current Price Display */}
+              {/* Current Price Display - Enhanced */}
               {currentPrice && (
-                <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4">
-                  <p className="text-sm text-gray-600 dark:text-gray-400">Current {PYTH_PRICE_FEEDS[selectedFeed].symbol} Price</p>
-                  <p className="text-3xl font-bold text-blue-600 dark:text-blue-400">
-                    ${currentPrice.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-                  </p>
+                <div className="relative overflow-hidden bg-gradient-to-br from-blue-500/10 to-purple-500/10 dark:from-blue-900/30 dark:to-purple-900/30 border border-blue-200 dark:border-blue-700 rounded-xl p-5 shadow-lg shadow-blue-500/10">
+                  <div className="absolute top-0 right-0 w-20 h-20 bg-blue-500/5 rounded-full blur-2xl"></div>
+                  <div className="relative">
+                    <p className="text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase tracking-wider">Current {PYTH_PRICE_FEEDS[selectedFeed].symbol} Price</p>
+                    <p className="text-4xl font-black bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent mt-2">
+                      ${currentPrice.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                    </p>
+                  </div>
                 </div>
               )}
 
-              {/* Threshold Input */}
-              <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2 flex items-center gap-2">
-                  <DollarSign className="w-4 h-4" />
+              {/* Threshold Input - Enhanced */}
+              <div className="space-y-2">
+                <label className="block text-sm font-semibold text-gray-900 dark:text-white flex items-center gap-2">
+                  <div className="flex items-center justify-center h-6 w-6 rounded-lg bg-gradient-to-br from-purple-500 to-pink-500 shadow-sm">
+                    <DollarSign className="w-4 h-4 text-white" />
+                  </div>
                   Threshold Price (${PYTH_PRICE_FEEDS[selectedFeed].symbol})
                 </label>
-                <input
-                  type="number"
-                  step="0.01"
-                  min="0"
-                  value={threshold}
-                  onChange={(e) => setThreshold(e.target.value)}
-                  placeholder={currentPrice ? currentPrice.toString() : 'Enter price'}
-                  className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                />
+                <div className="relative group">
+                  <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                    <span className="text-gray-500 dark:text-gray-400 font-bold text-lg">$</span>
+                  </div>
+                  <input
+                    type="number"
+                    step="0.01"
+                    min="0"
+                    value={threshold}
+                    onChange={(e) => setThreshold(e.target.value)}
+                    placeholder={currentPrice ? currentPrice.toString() : 'Enter price'}
+                    className="w-full pl-10 pr-4 py-4 border-2 border-gray-300 dark:border-gray-600 rounded-xl bg-gradient-to-r from-white to-gray-50 dark:from-gray-800 dark:to-gray-900 text-gray-900 dark:text-white font-bold text-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500 shadow-lg hover:shadow-xl transition-all duration-300 placeholder:text-gray-400 dark:placeholder:text-gray-500"
+                  />
+                  {threshold && (
+                    <div className="absolute inset-y-0 right-0 pr-4 flex items-center pointer-events-none">
+                      <span className="text-xs font-semibold text-purple-600 dark:text-purple-400 bg-purple-100 dark:bg-purple-900/30 px-2 py-1 rounded-lg">
+                        {PYTH_PRICE_FEEDS[selectedFeed].symbol}
+                      </span>
+                    </div>
+                  )}
+                </div>
               </div>
 
-              {/* Direction Toggle */}
-              <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">Prediction Direction</label>
-                <div className="flex gap-3">
+              {/* Direction Toggle - Enhanced */}
+              <div className="space-y-3">
+                <label className="block text-sm font-semibold text-gray-900 dark:text-white">Prediction Direction</label>
+                <div className="grid grid-cols-2 gap-3">
                   <button
                     type="button"
                     onClick={() => setIsAbove(true)}
-                    className={`flex-1 py-3 px-4 rounded-lg font-semibold transition ${
+                    className={`relative overflow-hidden py-4 px-4 rounded-xl font-bold text-sm transition-all duration-300 transform ${
                       isAbove
-                        ? 'bg-green-500 text-white'
-                        : 'bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300'
+                        ? 'bg-gradient-to-r from-green-500 to-emerald-500 text-white shadow-lg shadow-green-500/40 scale-105'
+                        : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'
                     }`}
                   >
-                    ↑ Above ${threshold || '?'}
+                    <div className="absolute inset-0 bg-white/10 opacity-0 group-hover:opacity-100 transition-opacity"></div>
+                    <div className="relative flex items-center justify-center gap-2">
+                      <span className="text-lg">📈</span>
+                      <span>Above ${threshold || '?'}</span>
+                    </div>
                   </button>
                   <button
                     type="button"
                     onClick={() => setIsAbove(false)}
-                    className={`flex-1 py-3 px-4 rounded-lg font-semibold transition ${
+                    className={`relative overflow-hidden py-4 px-4 rounded-xl font-bold text-sm transition-all duration-300 transform ${
                       !isAbove
-                        ? 'bg-red-500 text-white'
-                        : 'bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300'
+                        ? 'bg-gradient-to-r from-red-500 to-pink-500 text-white shadow-lg shadow-red-500/40 scale-105'
+                        : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'
                     }`}
                   >
-                    ↓ Below ${threshold || '?'}
+                    <div className="absolute inset-0 bg-white/10 opacity-0 group-hover:opacity-100 transition-opacity"></div>
+                    <div className="relative flex items-center justify-center gap-2">
+                      <span className="text-lg">📉</span>
+                      <span>Below ${threshold || '?'}</span>
+                    </div>
                   </button>
                 </div>
               </div>
 
-              {/* Expiry Time */}
-              <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2 flex items-center gap-2">
-                  <Calendar className="w-4 h-4" />
+              {/* Expiry Time - Enhanced Custom Dropdown */}
+              <div className="space-y-2">
+                <label className="block text-sm font-semibold text-gray-900 dark:text-white flex items-center gap-2">
+                  <div className="flex items-center justify-center h-6 w-6 rounded-lg bg-gradient-to-br from-orange-500 to-red-500 shadow-sm">
+                    <Calendar className="w-4 h-4 text-white" />
+                  </div>
                   Market Expires In
                 </label>
-                <select
-                  value={expiryDays}
-                  onChange={(e) => setExpiryDays(parseFloat(e.target.value))}
-                  className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                >
-                  <optgroup label="Short-term">
-                    <option value={5/1440}>5 Minutes</option>
-                    <option value={10/1440}>10 Minutes</option>
-                    <option value={30/1440}>30 Minutes</option>
-                    <option value={1/24}>1 Hour</option>
-                    <option value={4/24}>4 Hours</option>
-                    <option value={12/24}>12 Hours</option>
-                  </optgroup>
-                  <optgroup label="Standard">
-                    <option value={1}>1 Day</option>
-                    <option value={3}>3 Days</option>
-                    <option value={7}>1 Week</option>
-                  </optgroup>
-                  <optgroup label="Long-term">
-                    <option value={14}>2 Weeks</option>
-                    <option value={30}>1 Month</option>
-                    <option value={90}>3 Months</option>
-                    <option value={180}>6 Months</option>
-                  </optgroup>
-                </select>
+                <div className="relative group">
+                  <select
+                    value={expiryDays}
+                    onChange={(e) => setExpiryDays(parseFloat(e.target.value))}
+                    className="w-full px-4 py-4 pr-10 border-2 border-gray-300 dark:border-gray-600 rounded-xl bg-gradient-to-r from-white to-gray-50 dark:from-gray-800 dark:to-gray-900 text-gray-900 dark:text-white font-semibold focus:ring-2 focus:ring-orange-500 focus:border-orange-500 shadow-lg hover:shadow-xl transition-all duration-300 appearance-none cursor-pointer"
+                  >
+                    <optgroup label="⚡ Short-term" className="bg-white dark:bg-gray-800 font-bold">
+                      <option value={5/1440} className="py-2">5 Minutes</option>
+                      <option value={10/1440} className="py-2">10 Minutes</option>
+                      <option value={30/1440} className="py-2">30 Minutes</option>
+                      <option value={1/24} className="py-2">1 Hour</option>
+                      <option value={4/24} className="py-2">4 Hours</option>
+                      <option value={12/24} className="py-2">12 Hours</option>
+                    </optgroup>
+                    <optgroup label="📅 Standard" className="bg-white dark:bg-gray-800 font-bold">
+                      <option value={1} className="py-2">1 Day</option>
+                      <option value={3} className="py-2">3 Days</option>
+                      <option value={7} className="py-2">1 Week</option>
+                    </optgroup>
+                    <optgroup label="🗓️ Long-term" className="bg-white dark:bg-gray-800 font-bold">
+                      <option value={14} className="py-2">2 Weeks</option>
+                      <option value={30} className="py-2">1 Month</option>
+                      <option value={90} className="py-2">3 Months</option>
+                      <option value={180} className="py-2">6 Months</option>
+                    </optgroup>
+                  </select>
+                  <ChevronDown className="absolute right-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-500 dark:text-gray-400 pointer-events-none group-hover:text-orange-500 transition-colors" />
+                </div>
               </div>
 
-              {/* Market Preview */}
-              <div className="bg-gray-50 dark:bg-gray-800 rounded-lg p-4 border border-gray-200 dark:border-gray-700">
-                <p className="text-xs text-gray-500 dark:text-gray-400 mb-2">Market Question Preview</p>
-                <p className="text-lg font-semibold text-gray-900 dark:text-white">
-                  {generatePythMarketQuestion({
-                    priceId: PYTH_PRICE_FEEDS[selectedFeed].id,
-                    feedName: PYTH_PRICE_FEEDS[selectedFeed].name,
-                    marketType: 'threshold',
-                    threshold: threshold ? parseFloat(threshold) : 0,
-                    expiryTime: Math.floor(Date.now() / 1000) + expiryDays * 86400,
-                    isAbove,
-                  })}
-                </p>
-                <p className="text-sm text-green-600 dark:text-green-400 mt-2 flex items-center gap-1">
-                  <ZapIcon className="w-4 h-4" />
-                  ✅ Auto-resolves when market expires
-                </p>
+              {/* Market Preview - Enhanced */}
+              <div className="relative overflow-hidden bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-800 dark:to-gray-900 rounded-xl p-5 border border-gray-200 dark:border-gray-700 shadow-lg">
+                <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-purple-500/10 to-blue-500/10 rounded-full blur-3xl"></div>
+                <div className="relative space-y-3">
+                  <div className="flex items-center gap-2">
+                    <div className="flex items-center justify-center h-5 w-5 rounded-lg bg-purple-500/20">
+                      <ZapIcon className="w-3 h-3 text-purple-600 dark:text-purple-400" />
+                    </div>
+                    <p className="text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase tracking-wider">Market Preview</p>
+                  </div>
+                  <p className="text-base font-bold text-gray-900 dark:text-white leading-relaxed">
+                    {generatePythMarketQuestion({
+                      priceId: PYTH_PRICE_FEEDS[selectedFeed].id,
+                      feedName: PYTH_PRICE_FEEDS[selectedFeed].name,
+                      marketType: 'threshold',
+                      threshold: threshold ? parseFloat(threshold) : 0,
+                      expiryTime: Math.floor(Date.now() / 1000) + expiryDays * 86400,
+                      isAbove,
+                    })}
+                  </p>
+                  <div className="flex items-center gap-2 pt-2">
+                    <div className="h-1 w-1 rounded-full bg-green-500"></div>
+                    <p className="text-xs font-semibold text-green-600 dark:text-green-400">Auto-resolves when market expires</p>
+                  </div>
+                </div>
               </div>
             </>
           ) : (
