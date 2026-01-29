@@ -34,7 +34,4 @@ dataSources:
           handler: handleTransferSingle
         - event: TokensRedeemed(indexed uint256,indexed address,uint256,uint256,uint256)
           handler: handleTokensRedeemed
-      callHandlers:
-        - function: mintPositionTokens(uint256,uint256)
-          handler: handleMintPositionTokens
       file: ./src/mapping.ts

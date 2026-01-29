@@ -4,7 +4,6 @@ import {
   MarketResolved,
   TransferSingle,
   TokensRedeemed,
-  MintPositionTokensCall,
 } from "../generated/CTFPredictionMarket/CTFPredictionMarket";
 import { Market, User, Position, Trade, GlobalStats, Outcome } from "../generated/schema";
 
@@ -55,7 +54,7 @@ export function handleMarketCreated(event: MarketCreated): void {
   market.collateralToken = Bytes.fromHexString("0x036CbD53842c5426634e7929541eC2318f3dCF7e"); // USDC on Base Sepolia
   market.createdAt = event.block.timestamp;
   market.closingTime = event.params.closingTime;
-  market.resolutionTime = ZERO_BI; // Not in event, set to 0
+  market.resolutionTime = ZERO_BI;
   market.conditionId = event.params.conditionId;
   market.outcomeCount = event.params.outcomeCount.toI32();
   market.winningOutcome = null;
@@ -70,13 +69,13 @@ export function handleMarketCreated(event: MarketCreated): void {
   
   market.save();
 
-  // Create outcome entities
+  // Create outcome entities and store tokenId mapping
   for (let i = 0; i < 2; i++) {
     let outcomeId = marketId + "-" + i.toString();
     let outcome = new Outcome(outcomeId);
     outcome.market = marketId;
     outcome.outcomeId = i;
-    outcome.tokenId = ZERO_BI; // Will be set on first mint
+    outcome.tokenId = ZERO_BI; // Will be set when we see first transfer
     outcome.totalSupply = ZERO_BI;
     outcome.holders = 0;
     outcome.save();
@@ -109,36 +108,73 @@ export function handleTransferSingle(event: TransferSingle): void {
   let isMint = from.toHexString() == "0x0000000000000000000000000000000000000000";
   let isBurn = to.toHexString() == "0x0000000000000000000000000000000000000000";
 
-  // Handle minting (buying tokens)
+  // Handle minting (buying tokens) - this is where volume is tracked
   if (isMint && !isBurn) {
     let user = getOrCreateUser(to);
-    updatePosition(to, tokenId, amount, true);
     
-    // Try to find the market by iterating through all markets and checking their outcome tokens
-    // This is not ideal but necessary since TransferSingle doesn't include market info
-    // In practice, we'll track the most recent markets and check those
-    let markets = Market.load("1");
-    if (markets == null) {
-      markets = Market.load("2");
-    }
-    if (markets == null) {
-      markets = Market.load("3");
+    // Find which market this token belongs to by checking all outcomes
+    // We need to iterate through markets to find the matching tokenId
+    let foundMarket: Market | null = null;
+    let foundOutcomeId = 0;
+    
+    // Check recent markets (last 100 markets should be enough)
+    for (let marketNum = 1; marketNum <= 100; marketNum++) {
+      let market = Market.load(marketNum.toString());
+      if (market == null) continue;
+      
+      // Check each outcome for this market
+      for (let outcomeNum = 0; outcomeNum < market.outcomeCount; outcomeNum++) {
+        let outcomeId = marketNum.toString() + "-" + outcomeNum.toString();
+        let outcome = Outcome.load(outcomeId);
+        
+        if (outcome != null && outcome.tokenId == tokenId) {
+          foundMarket = market;
+          foundOutcomeId = outcomeNum;
+          break;
+        }
+        
+        // If tokenId not set yet, this might be the first mint - store it
+        if (outcome != null && outcome.tokenId == ZERO_BI) {
+          outcome.tokenId = tokenId;
+          outcome.save();
+          foundMarket = market;
+          foundOutcomeId = outcomeNum;
+          break;
+        }
+      }
+      
+      if (foundMarket != null) break;
     }
     
-    // For now, track the trade without market linkage
-    // The volume will be tracked at user level
-    let tradeId = event.transaction.hash.toHexString() + "-" + event.logIndex.toString();
-    let trade = new Trade(tradeId);
-    trade.user = user.id;
-    trade.market = "0"; // Unknown market
-    trade.outcomeId = 0;
-    trade.tokenId = tokenId;
-    trade.amount = amount;
-    trade.type = "MINT";
-    trade.timestamp = event.block.timestamp;
-    trade.blockNumber = event.block.number;
-    trade.transactionHash = event.transaction.hash;
-    trade.save();
+    // Update market stats if we found the market
+    if (foundMarket != null) {
+      foundMarket.totalVolume = foundMarket.totalVolume.plus(amount);
+      foundMarket.totalLiquidity = foundMarket.totalLiquidity.plus(amount);
+      foundMarket.tradeCount = foundMarket.tradeCount + 1;
+      
+      // Check if this is a new participant
+      let positionId = foundMarket.id + "-" + to.toHexString() + "-" + foundOutcomeId.toString();
+      let existingPosition = Position.load(positionId);
+      if (existingPosition == null) {
+        foundMarket.participantCount = foundMarket.participantCount + 1;
+      }
+      
+      foundMarket.save();
+      
+      // Create trade record
+      let tradeId = event.transaction.hash.toHexString() + "-" + event.logIndex.toString();
+      let trade = new Trade(tradeId);
+      trade.user = user.id;
+      trade.market = foundMarket.id;
+      trade.outcomeId = foundOutcomeId;
+      trade.tokenId = tokenId;
+      trade.amount = amount;
+      trade.type = "MINT";
+      trade.timestamp = event.block.timestamp;
+      trade.blockNumber = event.block.number;
+      trade.transactionHash = event.transaction.hash;
+      trade.save();
+    }
     
     // Update user stats
     user.totalVolume = user.totalVolume.plus(amount);
@@ -221,52 +257,3 @@ function updatePosition(
   // For now, we'll skip detailed position tracking in transfers
 }
 
-export function handleMintPositionTokens(call: MintPositionTokensCall): void {
-  let marketId = call.inputs.marketId.toString();
-  let amount = call.inputs.amount;
-  let user = getOrCreateUser(call.from);
-  
-  // Load market
-  let market = Market.load(marketId);
-  if (market == null) return;
-  
-  // Update market stats
-  market.totalVolume = market.totalVolume.plus(amount);
-  market.totalLiquidity = market.totalLiquidity.plus(amount);
-  market.tradeCount = market.tradeCount + 1;
-  
-  // Update participant count (check if user is new to this market)
-  let positionId = marketId + "-" + user.id + "-0";
-  let existingPosition = Position.load(positionId);
-  if (existingPosition == null) {
-    market.participantCount = market.participantCount + 1;
-  }
-  market.save();
-  
-  // Update user stats
-  user.totalVolume = user.totalVolume.plus(amount);
-  if (existingPosition == null) {
-    user.marketsTraded = user.marketsTraded + 1;
-  }
-  user.save();
-  
-  // Create trade record
-  let tradeId = call.transaction.hash.toHexString() + "-" + call.transaction.index.toString();
-  let trade = new Trade(tradeId);
-  trade.user = user.id;
-  trade.market = marketId;
-  trade.outcomeId = 0; // Both outcomes are minted
-  trade.tokenId = ZERO_BI;
-  trade.amount = amount;
-  trade.type = "MINT";
-  trade.timestamp = call.block.timestamp;
-  trade.blockNumber = call.block.number;
-  trade.transactionHash = call.transaction.hash;
-  trade.save();
-  
-  // Update global stats
-  let stats = getOrCreateGlobalStats();
-  stats.totalTrades = stats.totalTrades + 1;
-  stats.totalVolume = stats.totalVolume.plus(amount);
-  stats.save();
-}

@@ -36,22 +36,34 @@ export default function BlockchainMarketModal({
   const [showTradingModal, setShowTradingModal] = useState(false);
   const [selectedOutcome, setSelectedOutcome] = useState<{ id: number; name: string; price: number } | null>(null);
   
-  // Calculate real volume from user positions in this market
-  const realVolume = useMemo(() => {
-    const marketPositions = positions.filter(p => p.marketId === market.id);
-    if (marketPositions.length === 0) return 0;
+  // Use Graph data as primary source, positions as fallback
+  const displayVolume = useMemo(() => {
+    // Primary: Use subgraph data (total volume from all users)
+    if (Number(market.totalVolume) > 0) {
+      return (Number(market.totalVolume) / 1e6).toFixed(2);
+    }
     
-    return marketPositions.reduce((sum, pos) => {
-      const positionValue = Number(pos.shares) / 1e6; // USDC has 6 decimals
-      return sum + positionValue;
-    }, 0);
-  }, [positions, market.id]);
-  
-  // Count unique traders in this market
-  const traderCount = useMemo(() => {
+    // Fallback: Calculate from current user's positions only
     const marketPositions = positions.filter(p => p.marketId === market.id);
-    return marketPositions.length > 0 ? 1 : 0; // Current user has positions
-  }, [positions, market.id]);
+    if (marketPositions.length === 0) return '0';
+    
+    const userVolume = marketPositions.reduce((sum, pos) => {
+      return sum + (Number(pos.shares) / 1e6);
+    }, 0);
+    
+    return userVolume.toFixed(2);
+  }, [market.totalVolume, positions, market.id]);
+  
+  const displayTraders = useMemo(() => {
+    // Primary: Use subgraph data (total unique traders)
+    if (market.participantCount > 0) {
+      return market.participantCount;
+    }
+    
+    // Fallback: Show 1 if current user has positions
+    const marketPositions = positions.filter(p => p.marketId === market.id);
+    return marketPositions.length > 0 ? 1 : 0;
+  }, [market.participantCount, positions, market.id]);
   
   if (!isOpen) return null;
 
@@ -118,19 +130,14 @@ export default function BlockchainMarketModal({
                   height={16}
                   className="w-4 h-4 rounded-full"
                 />
-                {realVolume > 0 
-                  ? realVolume.toFixed(2) + ' USDC'
-                  : Number(market.totalVolume) > 0
-                  ? (Number(market.totalVolume) / 1e6).toFixed(2) + ' USDC'
-                  : '0 USDC'
-                }
+                {displayVolume} USDC
               </div>
             </div>
             <div>
               <div className="text-xs text-gray-600 dark:text-gray-400 mb-0.5">Traders</div>
               <div className="text-sm md:text-xl font-bold text-gray-900 dark:text-white flex items-center gap-0.5">
                 <Users className="w-3 h-3 md:w-5 md:h-5" />
-                {market.participantCount.toLocaleString()}
+                {displayTraders.toLocaleString()}
               </div>
             </div>
             <div>

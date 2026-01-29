@@ -1,6 +1,6 @@
 import { GraphQLClient } from 'graphql-request';
 
-const SUBGRAPH_URL = 'https://api.studio.thegraph.com/query/1724435/betuaa-ctf/v0.0.5';
+const SUBGRAPH_URL = 'https://api.studio.thegraph.com/query/1724435/betuaa-ctf/v0.0.6';
 
 export const graphqlClient = new GraphQLClient(SUBGRAPH_URL);
 
@@ -109,15 +109,30 @@ export const GET_GLOBAL_STATS_QUERY = `
   }
 `;
 
-// Helper function to fetch market data
-export async function fetchMarketData(marketId: string) {
-  try {
-    const data = await graphqlClient.request(GET_MARKET_QUERY, { marketId });
-    return data.market;
-  } catch (error) {
-    console.error('Error fetching market data from subgraph:', error);
-    return null;
+// Helper function to fetch market data with retry logic
+export async function fetchMarketData(marketId: string, retries = 3) {
+  for (let i = 0; i < retries; i++) {
+    try {
+      const data = await graphqlClient.request(GET_MARKET_QUERY, { marketId });
+      return data.market;
+    } catch (error: any) {
+      console.error(`Error fetching market data from subgraph (attempt ${i + 1}/${retries}):`, error);
+      
+      // If rate limited, wait and retry
+      if (error?.message?.includes('Too many requests') && i < retries - 1) {
+        const waitTime = Math.pow(2, i) * 1000; // Exponential backoff: 1s, 2s, 4s
+        console.log(`Rate limited, waiting ${waitTime}ms before retry...`);
+        await new Promise(resolve => setTimeout(resolve, waitTime));
+        continue;
+      }
+      
+      // If last retry or other error, return null
+      if (i === retries - 1) {
+        return null;
+      }
+    }
   }
+  return null;
 }
 
 // Helper function to fetch all markets

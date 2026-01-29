@@ -7,12 +7,15 @@ import { fetchMarketData } from '@/lib/graphql';
 
 const publicClient = createPublicClient({
   chain: baseSepolia,
-  transport: http(),
+  transport: http('https://base-sepolia-rpc.publicnode.com', {
+    retryCount: 3,
+    retryDelay: 1000,
+  }),
 });
 
-// Simple in-memory cache with 30 second TTL
+// Simple in-memory cache with 10 second TTL (shorter for faster updates)
 const marketCache = new Map<string, { data: any; timestamp: number }>();
-const CACHE_TTL = 30000; // 30 seconds
+const CACHE_TTL = 10000; // 10 seconds
 
 export async function GET(
   request: NextRequest,
@@ -62,16 +65,70 @@ export async function GET(
       return NextResponse.json({ error: 'Market not found' }, { status: 404 });
     }
 
-    // Use subgraph data - this is the source of truth for volume
+    // Calculate volume from blockchain events as primary source
     let totalVolume = BigInt(0);
     let participantCount = 0;
     
-    if (subgraphData) {
-      totalVolume = BigInt(subgraphData.totalVolume || 0);
-      participantCount = subgraphData.participantCount || 0;
-      console.log(`Market ${marketId} using subgraph data - volume: ${totalVolume.toString()}, participants: ${participantCount}`);
-    } else {
-      console.log(`Market ${marketId} - subgraph data not available, showing 0 (subgraph still indexing)`);
+    try {
+      // Query TransferSingle events to calculate real volume
+      const currentBlock = await publicClient.getBlockNumber();
+      const fromBlock = currentBlock - BigInt(100000); // Last 100k blocks
+      
+      const logs = await publicClient.getLogs({
+        address: CONTRACTS.baseSepolia.ctfPredictionMarket as `0x${string}`,
+        event: {
+          type: 'event',
+          name: 'TransferSingle',
+          inputs: [
+            { type: 'address', indexed: true, name: 'operator' },
+            { type: 'address', indexed: true, name: 'from' },
+            { type: 'address', indexed: true, name: 'to' },
+            { type: 'uint256', indexed: false, name: 'id' },
+            { type: 'uint256', indexed: false, name: 'value' }
+          ]
+        },
+        fromBlock,
+        toBlock: 'latest',
+      });
+
+      // Get outcome token IDs for this market
+      const outcomeTokenIds: bigint[] = [];
+      for (let i = 0; i < Number(market.outcomeCount); i++) {
+        const tokenId = await publicClient.readContract({
+          address: CONTRACTS.baseSepolia.ctfPredictionMarket as `0x${string}`,
+          abi: CTFPredictionMarketABI,
+          functionName: 'outcomeTokens',
+          args: [BigInt(marketId), BigInt(i)],
+        }) as bigint;
+        outcomeTokenIds.push(tokenId);
+      }
+
+      // Filter logs for this market's tokens and calculate volume
+      const uniqueTraders = new Set<string>();
+      
+      for (const log of logs) {
+        const { from, to, id, value } = log.args as any;
+        
+        // Check if this is a mint for this market's tokens
+        if (from === '0x0000000000000000000000000000000000000000' && 
+            outcomeTokenIds.some(tokenId => tokenId === id)) {
+          totalVolume = totalVolume + (value || BigInt(0));
+          if (to) uniqueTraders.add(to.toLowerCase());
+        }
+      }
+      
+      participantCount = uniqueTraders.size;
+      console.log(`Market ${marketId} calculated from blockchain - volume: ${totalVolume.toString()}, participants: ${participantCount}`);
+      
+    } catch (error) {
+      console.error(`Market ${marketId} - failed to calculate volume from blockchain:`, error);
+      
+      // Fallback to subgraph if available
+      if (subgraphData) {
+        totalVolume = BigInt(subgraphData.totalVolume || 0);
+        participantCount = subgraphData.participantCount || 0;
+        console.log(`Market ${marketId} using subgraph fallback - volume: ${totalVolume.toString()}, participants: ${participantCount}`);
+      }
     }
 
     const response = {
