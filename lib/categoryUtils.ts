@@ -24,10 +24,10 @@ export function extractCategory(description: string): CategoryKey {
 }
 
 /**
- * Remove category tag from description for display
+ * Remove category tag and Pyth marker from description for display
  */
 export function cleanDescription(description: string): string {
-  return description.replace(/^\[CATEGORY:\w+\]\s*/, '');
+  return description.replace(/^\[PYTH\]\[CATEGORY:\w+\]\s*/, '').replace(/^\[CATEGORY:\w+\]\s*/, '');
 }
 
 /**
