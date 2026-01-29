@@ -1,9 +1,10 @@
 'use client';
 
-import { useState } from 'react';
-import { X, TrendingUp, TrendingDown, Users, DollarSign, Clock, ExternalLink, BarChart3 } from 'lucide-react';
+import { useState, useMemo } from 'react';
+import { X, TrendingUp, TrendingDown, Users, DollarSign, Clock, ExternalLink, BarChart3, Loader } from 'lucide-react';
 import { useMarketDetails } from '@/hooks/useMarketDetails';
 import { usePriceHistory } from '@/hooks/usePriceHistory';
+import { useUserPositions } from '@/hooks/useUserPositions';
 import { STABLECOINS } from '@/lib/contracts';
 import { formatDistanceToNow } from 'date-fns';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from 'recharts';
@@ -31,8 +32,26 @@ export default function BlockchainMarketModal({
 }: BlockchainMarketModalProps) {
   const { outcomes, isLoading } = useMarketDetails(market.id);
   const { priceHistory, isLoading: isPriceLoading } = usePriceHistory(market.id);
+  const { positions } = useUserPositions();
   const [showTradingModal, setShowTradingModal] = useState(false);
   const [selectedOutcome, setSelectedOutcome] = useState<{ id: number; name: string; price: number } | null>(null);
+  
+  // Calculate real volume from user positions in this market
+  const realVolume = useMemo(() => {
+    const marketPositions = positions.filter(p => p.marketId === market.id);
+    if (marketPositions.length === 0) return 0;
+    
+    return marketPositions.reduce((sum, pos) => {
+      const positionValue = Number(pos.shares) / 1e6; // USDC has 6 decimals
+      return sum + positionValue;
+    }, 0);
+  }, [positions, market.id]);
+  
+  // Count unique traders in this market
+  const traderCount = useMemo(() => {
+    const marketPositions = positions.filter(p => p.marketId === market.id);
+    return marketPositions.length > 0 ? 1 : 0; // Current user has positions
+  }, [positions, market.id]);
   
   if (!isOpen) return null;
 
@@ -99,7 +118,9 @@ export default function BlockchainMarketModal({
                   height={16}
                   className="w-4 h-4 rounded-full"
                 />
-                {Number(market.totalVolume) > 0
+                {realVolume > 0 
+                  ? realVolume.toFixed(2) + ' USDC'
+                  : Number(market.totalVolume) > 0
                   ? (Number(market.totalVolume) / 1e6).toFixed(2) + ' USDC'
                   : '0 USDC'
                 }

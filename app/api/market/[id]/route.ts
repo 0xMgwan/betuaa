@@ -62,7 +62,7 @@ export async function GET(
       return NextResponse.json({ error: 'Market not found' }, { status: 404 });
     }
 
-    // Use subgraph data if available, otherwise fallback to 0
+    // Use subgraph data - this is the source of truth for volume
     let totalVolume = BigInt(0);
     let participantCount = 0;
     
@@ -71,7 +71,7 @@ export async function GET(
       participantCount = subgraphData.participantCount || 0;
       console.log(`Market ${marketId} using subgraph data - volume: ${totalVolume.toString()}, participants: ${participantCount}`);
     } else {
-      console.log(`Market ${marketId} - no subgraph data available yet, using zeros`);
+      console.log(`Market ${marketId} - subgraph data not available, showing 0 (subgraph still indexing)`);
     }
 
     const response = {
