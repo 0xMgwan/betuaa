@@ -11,7 +11,7 @@ interface DropdownOption {
 }
 
 interface CustomDropdownProps {
-  options: DropdownOption[];
+  options?: DropdownOption[];
   value: string | number;
   onChange: (value: string | number) => void;
   placeholder?: string;
@@ -65,7 +65,7 @@ export default function CustomDropdown({
   const dropdownRef = useRef<HTMLDivElement>(null);
   const colors = accentColors[accentColor];
 
-  const allOptions = groupedOptions ? Object.values(groupedOptions).flat() : options;
+  const allOptions = groupedOptions ? Object.values(groupedOptions).flat() : (options || []);
   const selectedOption = allOptions.find(opt => opt.value === value);
   const filteredOptions = allOptions.filter(opt =>
     opt.label.toLowerCase().includes(searchTerm.toLowerCase())

@@ -270,35 +270,81 @@ export default function CreateMarketModal({ isOpen, onClose }: CreateMarketModal
 
   if (isSuccess) {
     return (
-      <div className="fixed inset-0 bg-black/50 dark:bg-black/70 flex items-center justify-center z-50 p-4">
-        <div className="bg-white dark:bg-gray-800 rounded-xl md:rounded-2xl max-w-md w-full p-4 md:p-6">
+      <div className="fixed inset-0 bg-black/50 dark:bg-black/70 backdrop-blur-sm flex items-center justify-center z-50 p-4 animate-in fade-in duration-300">
+        <div className="bg-gradient-to-br from-white via-white to-gray-50 dark:from-gray-800 dark:via-gray-800 dark:to-gray-900 rounded-2xl max-w-md w-full p-6 md:p-8 shadow-2xl border border-gray-200 dark:border-gray-700 animate-in zoom-in-95 duration-300">
           <div className="text-center">
-            <div className="w-12 h-12 md:w-16 md:h-16 bg-green-100 dark:bg-green-900/30 rounded-full flex items-center justify-center mx-auto mb-3 md:mb-4">
-              <span className="text-2xl md:text-3xl">✅</span>
+            {/* Success Icon with Animation */}
+            <div className="relative mb-6">
+              {/* Glow effect */}
+              <div className="absolute inset-0 flex items-center justify-center">
+                <div className="w-24 h-24 bg-gradient-to-r from-green-400 to-emerald-500 rounded-full blur-2xl opacity-40 animate-pulse"></div>
+              </div>
+              
+              {/* Icon container */}
+              <div className="relative w-20 h-20 md:w-24 md:h-24 bg-gradient-to-br from-green-400 via-green-500 to-emerald-600 rounded-full flex items-center justify-center mx-auto shadow-lg shadow-green-500/50 animate-bounce">
+                <div className="absolute inset-0 bg-gradient-to-t from-white/20 to-transparent rounded-full"></div>
+                <span className="text-4xl md:text-5xl relative z-10 drop-shadow-lg">✅</span>
+              </div>
             </div>
-            <h3 className="text-lg md:text-xl font-bold text-gray-900 dark:text-white mb-2">
-              Market Created!
+
+            {/* Title with gradient */}
+            <h3 className="text-2xl md:text-3xl font-black bg-gradient-to-r from-green-600 via-emerald-600 to-green-600 bg-clip-text text-transparent mb-3 animate-in slide-in-from-bottom-4 duration-500">
+              Market Created Successfully! 🎉
             </h3>
-            <p className="text-sm md:text-base text-gray-600 dark:text-gray-400 mb-4 md:mb-6">
-              Your prediction market has been successfully created on Base Sepolia.
+            
+            {/* Description */}
+            <p className="text-sm md:text-base text-gray-600 dark:text-gray-400 mb-6 leading-relaxed">
+              Your prediction market has been successfully deployed on <span className="font-semibold text-blue-600 dark:text-blue-400">Base Sepolia</span>
             </p>
+
+            {/* Pyth Configuration Status */}
             {isPythMode && isConfiguringPyth && (
-              <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-3 mb-4">
-                <p className="text-xs md:text-sm text-blue-800 dark:text-blue-200 flex items-center justify-center gap-2">
-                  <ZapIcon className="w-4 h-4 animate-pulse" />
-                  Configuring auto-resolution...
-                </p>
+              <div className="relative overflow-hidden bg-gradient-to-r from-blue-50 to-purple-50 dark:from-blue-900/30 dark:to-purple-900/30 border border-blue-200 dark:border-blue-700 rounded-xl p-4 mb-4 shadow-lg">
+                <div className="absolute inset-0 bg-gradient-to-r from-blue-500/5 to-purple-500/5"></div>
+                <div className="relative flex items-center justify-center gap-2">
+                  <div className="flex items-center justify-center h-6 w-6 rounded-lg bg-blue-500/20">
+                    <ZapIcon className="w-4 h-4 text-blue-600 dark:text-blue-400 animate-pulse" />
+                  </div>
+                  <p className="text-sm font-semibold text-blue-800 dark:text-blue-200">
+                    Configuring auto-resolution...
+                  </p>
+                </div>
               </div>
             )}
+            
             {isPythMode && isPythConfigured && (
-              <div className="bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg p-3 mb-4">
-                <p className="text-xs md:text-sm text-green-800 dark:text-green-200 flex items-center justify-center gap-2">
-                  <ZapIcon className="w-4 h-4" />
-                  ✅ Auto-resolution configured!
-                </p>
+              <div className="relative overflow-hidden bg-gradient-to-r from-green-50 to-emerald-50 dark:from-green-900/30 dark:to-emerald-900/30 border border-green-200 dark:border-green-700 rounded-xl p-4 mb-4 shadow-lg animate-in slide-in-from-top duration-500">
+                <div className="absolute inset-0 bg-gradient-to-r from-green-500/5 to-emerald-500/5"></div>
+                <div className="relative flex items-center justify-center gap-2">
+                  <div className="flex items-center justify-center h-6 w-6 rounded-lg bg-green-500/20">
+                    <ZapIcon className="w-4 h-4 text-green-600 dark:text-green-400" />
+                  </div>
+                  <p className="text-sm font-semibold text-green-800 dark:text-green-200">
+                    ✨ Auto-resolution configured!
+                  </p>
+                </div>
               </div>
             )}
-            <div className="flex flex-col md:flex-row gap-2 md:gap-3">
+
+            {/* Transaction Hash */}
+            {createHash && (
+              <div className="bg-gray-50 dark:bg-gray-900/50 rounded-xl p-4 mb-6 border border-gray-200 dark:border-gray-700">
+                <p className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-2">
+                  Transaction Hash
+                </p>
+                <a
+                  href={`https://sepolia.basescan.org/tx/${createHash}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-xs font-mono text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 break-all underline decoration-dotted"
+                >
+                  {createHash}
+                </a>
+              </div>
+            )}
+
+            {/* Action Buttons */}
+            <div className="flex flex-col md:flex-row gap-3">
               <button
                 onClick={() => {
                   onClose();
@@ -307,8 +353,9 @@ export default function CreateMarketModal({ isOpen, onClose }: CreateMarketModal
                   setDescription('');
                   setClosingDate('');
                   setInitialLiquidity('');
+                  setPythMarketData(null);
                 }}
-                className="flex-1 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-sm md:text-base font-medium"
+                className="flex-1 px-6 py-3 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white rounded-xl font-bold text-sm md:text-base shadow-lg shadow-blue-500/30 hover:shadow-xl hover:shadow-blue-500/40 transition-all duration-300 hover:scale-105 active:scale-95"
               >
                 Create Another Market
               </button>
@@ -320,8 +367,9 @@ export default function CreateMarketModal({ isOpen, onClose }: CreateMarketModal
                   setDescription('');
                   setClosingDate('');
                   setInitialLiquidity('');
+                  setPythMarketData(null);
                 }}
-                className="flex-1 px-4 py-2 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 rounded-lg text-sm md:text-base font-medium"
+                className="flex-1 px-6 py-3 border-2 border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 hover:border-gray-400 dark:hover:border-gray-500 rounded-xl font-bold text-sm md:text-base transition-all duration-300 hover:scale-105 active:scale-95"
               >
                 Close
               </button>
