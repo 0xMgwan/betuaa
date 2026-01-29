@@ -140,10 +140,10 @@ export function useUserPositions() {
             )
           );
 
-          results.forEach((balance, idx) => {
+          results.forEach((balance: any, idx) => {
             const meta = batchMeta[idx];
-            if (balance > BigInt(0)) {
-              const shares = Number(balance) / 1e6;
+            if ((balance as bigint) > BigInt(0)) {
+              const shares = Number(balance as bigint) / 1e6;
               const outcomeName = meta.outcomeId === 0 ? 'Yes' : 'No';
               const averageBuyPrice = 50;
               const costBasis = shares * (averageBuyPrice / 100);
