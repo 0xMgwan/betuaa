@@ -4,11 +4,14 @@
  * Pyth Keeper Bot - Production Ready
  * Automatically resolves expired Pyth markets using current price data
  * 
- * Usage:
- * PRIVATE_KEY=0x... MARKET_IDS=1,2,3 npm run keeper-bot
+ * Usage (runs continuously by default):
+ * PRIVATE_KEY=0x... npm run keeper-bot
  * 
- * Or run continuously:
- * PRIVATE_KEY=0x... npm run keeper-bot -- --watch
+ * Or run a single check and exit:
+ * PRIVATE_KEY=0x... npm run keeper-bot -- --once
+ * 
+ * The keeper bot checks for resolvable markets every 60 seconds and resolves them automatically.
+ * Markets are auto-resolved based on Pyth price feeds when they expire.
  */
 
 import { createPublicClient, createWalletClient, http, parseEther, formatEther } from 'viem';
@@ -25,7 +28,9 @@ const PYTH_RESOLVER = '0xc3c8523FaC61b6E35DC553BB5a1F542982753F62' as `0x${strin
 const CTF_ADDRESS = '0xA5Bf04D3D079BE92981EE8208b18B0514eBd370C' as `0x${string}`;
 const HERMES_API = 'https://hermes.pyth.network';
 const CHECK_INTERVAL = 60000; // 60 seconds
-const WATCH_MODE = process.argv.includes('--watch');
+// Watch mode is ON by default - keeper bot runs continuously
+// Use --once to run a single check and exit
+const WATCH_MODE = !process.argv.includes('--once');
 
 // Contract ABIs
 const CTF_ABI = [
