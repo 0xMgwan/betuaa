@@ -4,15 +4,9 @@ import {
   MarketResolved,
   TransferSingle,
   TokensRedeemed,
+  MintPositionTokensCall,
 } from "../generated/CTFPredictionMarket/CTFPredictionMarket";
-import {
-  Market,
-  User,
-  Position,
-  Trade,
-  Outcome,
-  GlobalStats,
-} from "../generated/schema";
+import { Market, User, Position, Trade, GlobalStats, Outcome } from "../generated/schema";
 
 const ZERO_BI = BigInt.fromI32(0);
 const ONE_BI = BigInt.fromI32(1);
@@ -111,20 +105,63 @@ export function handleTransferSingle(event: TransferSingle): void {
   let tokenId = event.params.id;
   let amount = event.params.value;
 
-  // Skip if it's a mint (from zero address) or burn (to zero address)
-  // These are handled by PositionsMinted and PositionsRedeemed events
-  if (from.toHexString() == "0x0000000000000000000000000000000000000000" ||
-      to.toHexString() == "0x0000000000000000000000000000000000000000") {
+  // Determine if this is a mint (from zero address) or burn (to zero address)
+  let isMint = from.toHexString() == "0x0000000000000000000000000000000000000000";
+  let isBurn = to.toHexString() == "0x0000000000000000000000000000000000000000";
+
+  // Handle minting (buying tokens)
+  if (isMint && !isBurn) {
+    let user = getOrCreateUser(to);
+    updatePosition(to, tokenId, amount, true);
+    
+    // Try to find the market by iterating through all markets and checking their outcome tokens
+    // This is not ideal but necessary since TransferSingle doesn't include market info
+    // In practice, we'll track the most recent markets and check those
+    let markets = Market.load("1");
+    if (markets == null) {
+      markets = Market.load("2");
+    }
+    if (markets == null) {
+      markets = Market.load("3");
+    }
+    
+    // For now, track the trade without market linkage
+    // The volume will be tracked at user level
+    let tradeId = event.transaction.hash.toHexString() + "-" + event.logIndex.toString();
+    let trade = new Trade(tradeId);
+    trade.user = user.id;
+    trade.market = "0"; // Unknown market
+    trade.outcomeId = 0;
+    trade.tokenId = tokenId;
+    trade.amount = amount;
+    trade.type = "MINT";
+    trade.timestamp = event.block.timestamp;
+    trade.blockNumber = event.block.number;
+    trade.transactionHash = event.transaction.hash;
+    trade.save();
+    
+    // Update user stats
+    user.totalVolume = user.totalVolume.plus(amount);
+    user.save();
+    
+    // Update global stats
+    let stats = getOrCreateGlobalStats();
+    stats.totalTrades = stats.totalTrades + 1;
+    stats.totalVolume = stats.totalVolume.plus(amount);
+    stats.save();
+    
     return;
   }
 
-  // Update sender position
-  if (from.toHexString() != "0x0000000000000000000000000000000000000000") {
+  // Handle burning (selling/redeeming tokens)
+  if (isBurn && !isMint) {
     updatePosition(from, tokenId, amount, false);
+    return;
   }
 
-  // Update receiver position
-  if (to.toHexString() != "0x0000000000000000000000000000000000000000") {
+  // Handle regular transfers (secondary market)
+  if (!isMint && !isBurn) {
+    updatePosition(from, tokenId, amount, false);
     updatePosition(to, tokenId, amount, true);
   }
 }
@@ -182,4 +219,54 @@ function updatePosition(
 ): void {
   // This is a simplified version - you'd need to decode tokenId to get marketId and outcomeId
   // For now, we'll skip detailed position tracking in transfers
+}
+
+export function handleMintPositionTokens(call: MintPositionTokensCall): void {
+  let marketId = call.inputs.marketId.toString();
+  let amount = call.inputs.amount;
+  let user = getOrCreateUser(call.from);
+  
+  // Load market
+  let market = Market.load(marketId);
+  if (market == null) return;
+  
+  // Update market stats
+  market.totalVolume = market.totalVolume.plus(amount);
+  market.totalLiquidity = market.totalLiquidity.plus(amount);
+  market.tradeCount = market.tradeCount + 1;
+  
+  // Update participant count (check if user is new to this market)
+  let positionId = marketId + "-" + user.id + "-0";
+  let existingPosition = Position.load(positionId);
+  if (existingPosition == null) {
+    market.participantCount = market.participantCount + 1;
+  }
+  market.save();
+  
+  // Update user stats
+  user.totalVolume = user.totalVolume.plus(amount);
+  if (existingPosition == null) {
+    user.marketsTraded = user.marketsTraded + 1;
+  }
+  user.save();
+  
+  // Create trade record
+  let tradeId = call.transaction.hash.toHexString() + "-" + call.transaction.index.toString();
+  let trade = new Trade(tradeId);
+  trade.user = user.id;
+  trade.market = marketId;
+  trade.outcomeId = 0; // Both outcomes are minted
+  trade.tokenId = ZERO_BI;
+  trade.amount = amount;
+  trade.type = "MINT";
+  trade.timestamp = call.block.timestamp;
+  trade.blockNumber = call.block.number;
+  trade.transactionHash = call.transaction.hash;
+  trade.save();
+  
+  // Update global stats
+  let stats = getOrCreateGlobalStats();
+  stats.totalTrades = stats.totalTrades + 1;
+  stats.totalVolume = stats.totalVolume.plus(amount);
+  stats.save();
 }
