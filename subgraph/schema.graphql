@@ -1,0 +1,89 @@
+type Market @entity(immutable: false) {
+  id: ID! # marketId
+  marketId: BigInt!
+  question: String!
+  description: String!
+  creator: Bytes!
+  collateralToken: Bytes!
+  createdAt: BigInt!
+  closingTime: BigInt!
+  resolutionTime: BigInt!
+  conditionId: Bytes!
+  outcomeCount: Int!
+  winningOutcome: Int
+  resolved: Boolean!
+  paused: Boolean!
+  
+  # Calculated fields
+  totalVolume: BigInt!
+  totalLiquidity: BigInt!
+  participantCount: Int!
+  tradeCount: Int!
+  
+  # Relations
+  positions: [Position!]! @derivedFrom(field: "market")
+  trades: [Trade!]! @derivedFrom(field: "market")
+  outcomes: [Outcome!]! @derivedFrom(field: "market")
+}
+
+type Outcome @entity(immutable: false) {
+  id: ID! # marketId-outcomeId
+  market: Market!
+  outcomeId: Int!
+  tokenId: BigInt!
+  totalSupply: BigInt!
+  holders: Int!
+}
+
+type User @entity(immutable: false) {
+  id: ID! # user address
+  address: Bytes!
+  totalVolume: BigInt!
+  totalPnL: BigInt!
+  marketsTraded: Int!
+  positionCount: Int!
+  
+  # Relations
+  positions: [Position!]! @derivedFrom(field: "user")
+  trades: [Trade!]! @derivedFrom(field: "user")
+}
+
+type Position @entity(immutable: false) {
+  id: ID! # user-marketId-outcomeId
+  user: User!
+  market: Market!
+  outcomeId: Int!
+  tokenId: BigInt!
+  balance: BigInt!
+  averageCost: BigInt!
+  realizedPnL: BigInt!
+  lastUpdated: BigInt!
+}
+
+type Trade @entity(immutable: true) {
+  id: ID! # txHash-logIndex
+  user: User!
+  market: Market!
+  outcomeId: Int!
+  tokenId: BigInt!
+  amount: BigInt!
+  type: TradeType!
+  timestamp: BigInt!
+  blockNumber: BigInt!
+  transactionHash: Bytes!
+}
+
+enum TradeType {
+  MINT
+  REDEEM
+  CLAIM
+  TRANSFER
+}
+
+type GlobalStats @entity(immutable: false) {
+  id: ID! # "global"
+  totalVolume: BigInt!
+  totalMarkets: Int!
+  totalUsers: Int!
+  totalTrades: Int!
+}

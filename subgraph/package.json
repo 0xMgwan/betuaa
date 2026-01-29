@@ -1,0 +1,21 @@
+{
+  "name": "subgraph",
+  "version": "1.0.0",
+  "main": "index.js",
+  "scripts": {
+    "codegen": "graph codegen",
+    "build": "graph build",
+    "deploy": "graph deploy --studio betuaa-ctf",
+    "create-local": "graph create --node http://localhost:8020/ betuaa-ctf",
+    "remove-local": "graph remove --node http://localhost:8020/ betuaa-ctf",
+    "deploy-local": "graph deploy --node http://localhost:8020/ --ipfs http://localhost:5001 betuaa-ctf"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "description": "",
+  "devDependencies": {
+    "@graphprotocol/graph-cli": "^0.98.1",
+    "@graphprotocol/graph-ts": "^0.38.2"
+  }
+}
