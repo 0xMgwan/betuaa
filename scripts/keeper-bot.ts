@@ -1,3 +1,5 @@
+/// <reference types="node" />
+
 /**
  * Pyth Keeper Bot - Production Ready
  * Automatically resolves expired Pyth markets using current price data
@@ -12,7 +14,6 @@
 import { createPublicClient, createWalletClient, http, parseEther, formatEther } from 'viem';
 import { privateKeyToAccount } from 'viem/accounts';
 import { baseSepolia, base } from 'viem/chains';
-import fetch from 'node-fetch';
 
 // Configuration
 const PRIVATE_KEY = process.env.PRIVATE_KEY as `0x${string}`;
