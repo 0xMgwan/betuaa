@@ -72,6 +72,8 @@ export default function CreateMarketModal({ isOpen, onClose }: CreateMarketModal
     isAbove: boolean;
   } | null>(null);
 
+  // Remove auto-switch effect since crypto is now only in Pyth mode
+
   // Fetch current price when feed changes
   useEffect(() => {
     if (isPythMode) {
@@ -407,7 +409,7 @@ export default function CreateMarketModal({ isOpen, onClose }: CreateMarketModal
               }`}
             >
               <ZapIcon className="w-4 h-4" />
-              Pyth Market
+              Crypto & Commodities
             </button>
           </div>
 
@@ -558,7 +560,7 @@ export default function CreateMarketModal({ isOpen, onClose }: CreateMarketModal
               {t('createMarket.category')}
             </label>
             <div className="grid grid-cols-3 gap-1.5 md:gap-3">
-              {CATEGORIES.map((cat) => {
+              {CATEGORIES.filter(cat => cat.value !== 'crypto').map((cat) => {
                 const IconComponent = iconMap[cat.icon as keyof typeof iconMap];
                 return (
                   <button
