@@ -98,63 +98,79 @@ export default function CreateMarketModal({ isOpen, onClose }: CreateMarketModal
 
   // Automatically configure Pyth market after creation succeeds
   useEffect(() => {
+    let isMounted = true;
+    let hasConfigured = false;
+
     const configurePyth = async () => {
-      console.log('🔍 Checking auto-config conditions:', { isSuccess, hasPythData: !!pythMarketData, isPythMode });
-      
-      if (isSuccess && pythMarketData && isPythMode) {
-        try {
-          console.log('🔄 Starting Pyth market configuration...');
-          console.log('📋 Pyth Market Data:', pythMarketData);
-          
-          // Wait for transaction to be indexed
-          await new Promise(resolve => setTimeout(resolve, 3000));
-          
-          // Fetch market count from API
-          console.log('📡 Fetching market count from API...');
-          const response = await fetch('/api/market-count');
+      // Prevent multiple calls
+      if (hasConfigured || !isSuccess || !pythMarketData || !isPythMode) {
+        return;
+      }
 
-          if (!response.ok) {
-            throw new Error(`API request failed: ${response.status}`);
-          }
+      hasConfigured = true;
 
-          const apiData = await response.json();
-          console.log('📊 API Response:', apiData);
+      try {
+        console.log('🔄 Starting Pyth market configuration...');
+        console.log('📋 Pyth Market Data:', pythMarketData);
+        
+        // Wait for transaction to be indexed
+        await new Promise(resolve => setTimeout(resolve, 3000));
+        
+        if (!isMounted) return;
 
-          if (!apiData.success) {
-            throw new Error(`API Error: ${apiData.error}`);
-          }
+        // Fetch market count from API
+        console.log('📡 Fetching market count from API...');
+        const response = await fetch('/api/market-count');
 
-          const marketCount = apiData.marketCount;
-          const marketId = apiData.marketId;
+        if (!response.ok) {
+          throw new Error(`API request failed: ${response.status}`);
+        }
 
-          console.log('🔢 Market count:', marketCount, 'Latest Market ID:', marketId);
-          console.log('⚙️ Calling configurePythMarket with:', {
-            marketId,
-            priceId: pythMarketData.priceId,
-            threshold: pythMarketData.threshold,
-            expiryTime: pythMarketData.expiryTime,
-            isAbove: pythMarketData.isAbove,
-          });
+        const apiData = await response.json();
+        console.log('📊 API Response:', apiData);
 
-          // Configure Pyth resolution
-          configurePythMarket(
-            marketId,
-            pythMarketData.priceId,
-            pythMarketData.threshold,
-            pythMarketData.expiryTime,
-            pythMarketData.isAbove
-          );
+        if (!apiData.success) {
+          throw new Error(`API Error: ${apiData.error}`);
+        }
 
-          console.log('✅ Pyth configuration transaction submitted');
-        } catch (error) {
-          console.error('❌ Error configuring Pyth market:', error);
-          // Still clear the data even if configuration fails
+        if (!isMounted) return;
+
+        const marketCount = apiData.marketCount;
+        const marketId = apiData.marketId;
+
+        console.log('🔢 Market count:', marketCount, 'Latest Market ID:', marketId);
+        console.log('⚙️ Calling configurePythMarket with:', {
+          marketId,
+          priceId: pythMarketData.priceId,
+          threshold: pythMarketData.threshold,
+          expiryTime: pythMarketData.expiryTime,
+          isAbove: pythMarketData.isAbove,
+        });
+
+        // Configure Pyth resolution - only call once
+        configurePythMarket(
+          marketId,
+          pythMarketData.priceId,
+          pythMarketData.threshold,
+          pythMarketData.expiryTime,
+          pythMarketData.isAbove
+        );
+
+        console.log('✅ Pyth configuration transaction submitted');
+      } catch (error) {
+        console.error('❌ Error configuring Pyth market:', error);
+        // Still clear the data even if configuration fails
+        if (isMounted) {
           setPythMarketData(null);
         }
       }
     };
 
     configurePyth();
+
+    return () => {
+      isMounted = false;
+    };
   }, [isSuccess, pythMarketData, isPythMode, configurePythMarket]);
 
   const handleApprove = async () => {
