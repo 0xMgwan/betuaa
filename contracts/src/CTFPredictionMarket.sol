@@ -84,6 +84,9 @@ contract CTFPredictionMarket is ERC1155, ERC1155Holder, Ownable, ReentrancyGuard
     
     // User => Market ID => outcome => balance (for tracking)
     mapping(address => mapping(uint256 => mapping(uint256 => uint256))) public userPositions;
+    
+    // Authorized resolvers (e.g., PythResolver for automated resolution)
+    mapping(address => bool) public authorizedResolvers;
 
     /*//////////////////////////////////////////////////////////////
                                 EVENTS
@@ -117,6 +120,8 @@ contract CTFPredictionMarket is ERC1155, ERC1155Holder, Ownable, ReentrancyGuard
         uint256 amount,
         uint256 payout
     );
+    
+    event ResolverAuthorized(address indexed resolver, bool authorized);
 
     /*//////////////////////////////////////////////////////////////
                             CONSTRUCTOR
@@ -364,7 +369,9 @@ contract CTFPredictionMarket is ERC1155, ERC1155Holder, Ownable, ReentrancyGuard
     {
         Market storage market = markets[marketId];
         require(
-            msg.sender == market.creator || msg.sender == owner(),
+            msg.sender == market.creator || 
+            msg.sender == owner() || 
+            authorizedResolvers[msg.sender],
             "Not authorized"
         );
         require(!market.resolved, "Already resolved");
@@ -376,6 +383,19 @@ contract CTFPredictionMarket is ERC1155, ERC1155Holder, Ownable, ReentrancyGuard
         market.winningOutcome = winningOutcome;
         
         emit MarketResolved(marketId, winningOutcome);
+    }
+    
+    /**
+     * @notice Authorize or revoke resolver contracts (e.g., PythResolver)
+     * @param resolver Address of resolver contract
+     * @param authorized True to authorize, false to revoke
+     */
+    function setAuthorizedResolver(address resolver, bool authorized) 
+        external 
+        onlyOwner 
+    {
+        authorizedResolvers[resolver] = authorized;
+        emit ResolverAuthorized(resolver, authorized);
     }
 
     /**

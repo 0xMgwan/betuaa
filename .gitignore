@@ -46,3 +46,4 @@ contracts/broadcast/
 subgraph/node_modules/
 subgraph/build/
 subgraph/generated/
+contracts/node_modules/

@@ -1,8 +1,9 @@
 // Contract addresses for Stretch platform
 export const CONTRACTS = {
   baseSepolia: {
-    // CTF Prediction Market (New)
-    ctfPredictionMarket: '0x692C052Ca3765FCf24a38Ea0c1F653259dF2E8e7',
+    // CTF Prediction Market (New - with Pyth resolver support)
+    ctfPredictionMarket: '0xA5Bf04D3D079BE92981EE8208b18B0514eBd370C',
+    pythResolver: '0xc3c8523FaC61b6E35DC553BB5a1F542982753F62',
     mockUSDC: '0x7c476223C59E2106511C7238c1A3f78C4d8AF7a1',
     
     // Legacy contracts (kept for reference)
