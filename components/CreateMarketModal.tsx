@@ -383,13 +383,28 @@ export default function CreateMarketModal({ isOpen, onClose }: CreateMarketModal
                 </label>
                 <select
                   value={expiryDays}
-                  onChange={(e) => setExpiryDays(parseInt(e.target.value))}
+                  onChange={(e) => setExpiryDays(parseFloat(e.target.value))}
                   className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                 >
-                  <option value={1}>1 Day</option>
-                  <option value={7}>1 Week</option>
-                  <option value={30}>1 Month</option>
-                  <option value={90}>3 Months</option>
+                  <optgroup label="Short-term">
+                    <option value={5/1440}>5 Minutes</option>
+                    <option value={10/1440}>10 Minutes</option>
+                    <option value={30/1440}>30 Minutes</option>
+                    <option value={1/24}>1 Hour</option>
+                    <option value={4/24}>4 Hours</option>
+                    <option value={12/24}>12 Hours</option>
+                  </optgroup>
+                  <optgroup label="Standard">
+                    <option value={1}>1 Day</option>
+                    <option value={3}>3 Days</option>
+                    <option value={7}>1 Week</option>
+                  </optgroup>
+                  <optgroup label="Long-term">
+                    <option value={14}>2 Weeks</option>
+                    <option value={30}>1 Month</option>
+                    <option value={90}>3 Months</option>
+                    <option value={180}>6 Months</option>
+                  </optgroup>
                 </select>
               </div>
 
