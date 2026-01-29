@@ -1,7 +1,7 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { TrendingUp, TrendingDown, Clock, Users } from "lucide-react";
+import { TrendingUp, TrendingDown, Clock, Users, Zap } from "lucide-react";
 import { Card, CardContent } from "./ui/card";
 import { Button } from "./ui/button";
 
@@ -15,6 +15,7 @@ interface MarketCardProps {
   participants: number;
   trend: "up" | "down";
   index: number;
+  description?: string;
 }
 
 export default function MarketCard({
@@ -27,7 +28,10 @@ export default function MarketCard({
   participants,
   trend,
   index,
+  description = "",
 }: MarketCardProps) {
+  const isPythMarket = description?.includes("[PYTH]");
+  
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
@@ -39,9 +43,17 @@ export default function MarketCard({
         <CardContent className="p-6">
           <div className="flex items-start justify-between mb-4">
             <div className="flex-1">
-              <span className="inline-block px-3 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300 mb-2">
-                {category}
-              </span>
+              <div className="flex items-center gap-2 mb-2">
+                <span className="inline-block px-3 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300">
+                  {category}
+                </span>
+                {isPythMarket && (
+                  <span className="inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-300">
+                    <Zap className="w-3 h-3" />
+                    Auto-resolves
+                  </span>
+                )}
+              </div>
               <h3 className="text-lg font-semibold mb-2 line-clamp-2">
                 {title}
               </h3>

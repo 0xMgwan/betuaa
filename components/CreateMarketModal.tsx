@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { X, Zap, Calendar, DollarSign, Tag, FileText, TrendingUp, ChevronDown, Wallet, Bitcoin, Trophy, Building2, Clapperboard, Cpu, BarChart3 } from 'lucide-react';
+import { X, Zap, Calendar, DollarSign, Tag, FileText, TrendingUp, ChevronDown, Wallet, Bitcoin, Trophy, Building2, Clapperboard, Cpu, BarChart3, Zap as ZapIcon } from 'lucide-react';
 import { useAccount } from 'wagmi';
 import { ConnectButton } from '@rainbow-me/rainbowkit';
 import { STABLECOINS } from '@/lib/contracts';
@@ -12,6 +12,7 @@ import { parseUnits } from 'viem';
 import { useTranslation } from '@/hooks/useTranslation';
 import Image from 'next/image';
 import { CATEGORIES as CATEGORY_CONFIG } from '@/lib/categoryUtils';
+import { PYTH_PRICE_FEEDS, fetchPythPrice, generatePythMarketQuestion, type PythFeedId } from '@/lib/pyth';
 
 const iconMap = {
   Bitcoin,
@@ -47,11 +48,35 @@ export default function CreateMarketModal({ isOpen, onClose }: CreateMarketModal
   const [category, setCategory] = useState('crypto');
   const [step, setStep] = useState<'form' | 'approve' | 'create'>('form');
   const [isTokenDropdownOpen, setIsTokenDropdownOpen] = useState(false);
+  
+  // Pyth market mode
+  const [isPythMode, setIsPythMode] = useState(false);
+  const [selectedFeed, setSelectedFeed] = useState<PythFeedId>('ETH/USD');
+  const [currentPrice, setCurrentPrice] = useState<number | null>(null);
+  const [threshold, setThreshold] = useState('');
+  const [isAbove, setIsAbove] = useState(true);
+  const [expiryDays, setExpiryDays] = useState(1);
 
   const { createMarket, isPending: isCreating, isSuccess } = useCTFCreateMarket();
   const { approve, isPending: isApproving, isSuccess: isApproved } = useApproveToken();
 
   const selectedStablecoin = STABLECOINS.baseSepolia.find(t => t.address === selectedToken);
+
+  // Fetch current price when feed changes
+  useEffect(() => {
+    if (isPythMode) {
+      const fetchPrice = async () => {
+        const feed = PYTH_PRICE_FEEDS[selectedFeed];
+        try {
+          const priceData = await fetchPythPrice(feed.id);
+          setCurrentPrice(parseFloat(priceData.formattedPrice.replace(/,/g, '')));
+        } catch (err) {
+          console.error('Error fetching price:', err);
+        }
+      };
+      fetchPrice();
+    }
+  }, [selectedFeed, isPythMode]);
 
   // Automatically create market after approval succeeds
   useEffect(() => {
@@ -81,15 +106,35 @@ export default function CreateMarketModal({ isOpen, onClose }: CreateMarketModal
     if (!selectedStablecoin) return;
 
     try {
-      const closingTimestamp = BigInt(Math.floor(new Date(closingDate).getTime() / 1000));
+      let marketTitle = title;
+      let marketDescription = description;
+      let closingTimestamp: bigint;
+
+      if (isPythMode) {
+        const feed = PYTH_PRICE_FEEDS[selectedFeed];
+        const expiryTime = Math.floor(Date.now() / 1000) + expiryDays * 86400;
+        closingTimestamp = BigInt(expiryTime);
+        
+        marketTitle = generatePythMarketQuestion({
+          priceId: feed.id,
+          feedName: feed.name,
+          marketType: 'threshold',
+          threshold: parseFloat(threshold),
+          expiryTime,
+          isAbove,
+        });
+        
+        marketDescription = `[PYTH][CATEGORY:crypto] Pyth-powered market: ${feed.name} price prediction. Auto-resolves based on ${feed.symbol} price feed.`;
+      } else {
+        closingTimestamp = BigInt(Math.floor(new Date(closingDate).getTime() / 1000));
+        marketDescription = `[CATEGORY:${category}] ${description}`;
+      }
+
       const liquidityAmount = parseUnits(initialLiquidity || '0', selectedStablecoin.decimals);
 
-      // Encode category in description with special format
-      const descriptionWithCategory = `[CATEGORY:${category}] ${description}`;
-
       await createMarket(
-        title,
-        descriptionWithCategory,
+        marketTitle,
+        marketDescription,
         BigInt(2), // Binary market (2 outcomes)
         closingTimestamp,
         selectedToken as `0x${string}`
@@ -217,7 +262,159 @@ export default function CreateMarketModal({ isOpen, onClose }: CreateMarketModal
         </div>
 
         <form onSubmit={handleSubmit} className="p-3 md:p-6 space-y-3 md:space-y-6">
-          {/* Category Selector */}
+          {/* Market Type Toggle */}
+          <div className="flex gap-2 bg-gray-100 dark:bg-gray-700 p-1 rounded-lg">
+            <button
+              type="button"
+              onClick={() => setIsPythMode(false)}
+              className={`flex-1 py-2 px-3 rounded-md font-medium text-sm transition-all ${
+                !isPythMode
+                  ? 'bg-white dark:bg-gray-800 text-blue-600 dark:text-blue-400 shadow-sm'
+                  : 'text-gray-600 dark:text-gray-400'
+              }`}
+            >
+              Traditional Market
+            </button>
+            <button
+              type="button"
+              onClick={() => setIsPythMode(true)}
+              className={`flex-1 py-2 px-3 rounded-md font-medium text-sm transition-all flex items-center justify-center gap-1 ${
+                isPythMode
+                  ? 'bg-white dark:bg-gray-800 text-blue-600 dark:text-blue-400 shadow-sm'
+                  : 'text-gray-600 dark:text-gray-400'
+              }`}
+            >
+              <ZapIcon className="w-4 h-4" />
+              Pyth Market
+            </button>
+          </div>
+
+          {isPythMode && (
+            <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-3 md:p-4">
+              <p className="text-xs md:text-sm text-blue-800 dark:text-blue-200 flex items-center gap-2">
+                <ZapIcon className="w-4 h-4" />
+                <strong>Auto-resolves:</strong> This market will automatically resolve based on Pyth price feeds when it expires.
+              </p>
+            </div>
+          )}
+
+          {isPythMode ? (
+            <>
+              {/* Pyth Price Feed Selection */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-3 flex items-center gap-2">
+                  <TrendingUp className="w-4 h-4" />
+                  Price Feed
+                </label>
+                <select
+                  value={selectedFeed}
+                  onChange={(e) => setSelectedFeed(e.target.value as PythFeedId)}
+                  className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                >
+                  {Object.entries(PYTH_PRICE_FEEDS).map(([key, feed]) => (
+                    <option key={key} value={key}>
+                      {feed.name} ({feed.symbol})
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              {/* Current Price Display */}
+              {currentPrice && (
+                <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4">
+                  <p className="text-sm text-gray-600 dark:text-gray-400">Current {PYTH_PRICE_FEEDS[selectedFeed].symbol} Price</p>
+                  <p className="text-3xl font-bold text-blue-600 dark:text-blue-400">
+                    ${currentPrice.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                  </p>
+                </div>
+              )}
+
+              {/* Threshold Input */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2 flex items-center gap-2">
+                  <DollarSign className="w-4 h-4" />
+                  Threshold Price (${PYTH_PRICE_FEEDS[selectedFeed].symbol})
+                </label>
+                <input
+                  type="number"
+                  step="0.01"
+                  min="0"
+                  value={threshold}
+                  onChange={(e) => setThreshold(e.target.value)}
+                  placeholder={currentPrice ? currentPrice.toString() : 'Enter price'}
+                  className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                />
+              </div>
+
+              {/* Direction Toggle */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">Prediction Direction</label>
+                <div className="flex gap-3">
+                  <button
+                    type="button"
+                    onClick={() => setIsAbove(true)}
+                    className={`flex-1 py-3 px-4 rounded-lg font-semibold transition ${
+                      isAbove
+                        ? 'bg-green-500 text-white'
+                        : 'bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300'
+                    }`}
+                  >
+                    ↑ Above ${threshold || '?'}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setIsAbove(false)}
+                    className={`flex-1 py-3 px-4 rounded-lg font-semibold transition ${
+                      !isAbove
+                        ? 'bg-red-500 text-white'
+                        : 'bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300'
+                    }`}
+                  >
+                    ↓ Below ${threshold || '?'}
+                  </button>
+                </div>
+              </div>
+
+              {/* Expiry Time */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2 flex items-center gap-2">
+                  <Calendar className="w-4 h-4" />
+                  Market Expires In
+                </label>
+                <select
+                  value={expiryDays}
+                  onChange={(e) => setExpiryDays(parseInt(e.target.value))}
+                  className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                >
+                  <option value={1}>1 Day</option>
+                  <option value={7}>1 Week</option>
+                  <option value={30}>1 Month</option>
+                  <option value={90}>3 Months</option>
+                </select>
+              </div>
+
+              {/* Market Preview */}
+              <div className="bg-gray-50 dark:bg-gray-800 rounded-lg p-4 border border-gray-200 dark:border-gray-700">
+                <p className="text-xs text-gray-500 dark:text-gray-400 mb-2">Market Question Preview</p>
+                <p className="text-lg font-semibold text-gray-900 dark:text-white">
+                  {generatePythMarketQuestion({
+                    priceId: PYTH_PRICE_FEEDS[selectedFeed].id,
+                    feedName: PYTH_PRICE_FEEDS[selectedFeed].name,
+                    marketType: 'threshold',
+                    threshold: threshold ? parseFloat(threshold) : 0,
+                    expiryTime: Math.floor(Date.now() / 1000) + expiryDays * 86400,
+                    isAbove,
+                  })}
+                </p>
+                <p className="text-sm text-green-600 dark:text-green-400 mt-2 flex items-center gap-1">
+                  <ZapIcon className="w-4 h-4" />
+                  ✅ Auto-resolves when market expires
+                </p>
+              </div>
+            </>
+          ) : (
+            <>
+              {/* Category Selector */}
           <div>
             <label className="block text-xs md:text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5 md:mb-3 flex items-center gap-1.5 md:gap-2">
               <Tag className="w-3 h-3 md:w-4 md:h-4" />
@@ -387,6 +584,8 @@ export default function CreateMarketModal({ isOpen, onClose }: CreateMarketModal
               Add initial liquidity to help bootstrap your market
             </p>
           </div>
+            </>
+          )}
 
           <div className="flex flex-col md:flex-row gap-2 md:gap-3 pt-2 md:pt-4">
             <button
