@@ -156,7 +156,7 @@ export default function Portfolio() {
                   {t('portfolio.totalValue')}
                 </div>
               </div>
-              <div className="text-2xl md:text-4xl font-black bg-gradient-to-br from-blue-600 to-cyan-600 bg-clip-text text-transparent">
+              <div className="text-2xl md:text-4xl font-black bg-gradient-to-br from-blue-600 to-cyan-600 bg-clip-text text-transparent truncate">
                 ${totalValue.toFixed(2)}
               </div>
             </div>
@@ -179,7 +179,7 @@ export default function Portfolio() {
                       {t('portfolio.unrealizedPL')}
                     </div>
                   </div>
-                  <div className={`text-2xl md:text-4xl font-black ${totalPnL >= 0 ? 'bg-gradient-to-br from-green-600 to-emerald-600' : 'bg-gradient-to-br from-red-600 to-orange-600'} bg-clip-text text-transparent`}>
+                  <div className={`text-2xl md:text-4xl font-black ${totalPnL >= 0 ? 'bg-gradient-to-br from-green-600 to-emerald-600' : 'bg-gradient-to-br from-red-600 to-orange-600'} bg-clip-text text-transparent truncate`}>
                     {totalPnL >= 0 ? '+' : ''}{totalPnL.toFixed(2)} ({totalPnLPercent.toFixed(2)}%)
                   </div>
                 </div>

@@ -240,8 +240,8 @@ export default function ProfilePage() {
               </div>
               <span className="text-[10px] md:text-sm font-medium text-gray-600 dark:text-gray-400">{t('profile.winRate')}</span>
             </div>
-            <p className="text-sm md:text-3xl font-black text-purple-600 dark:text-purple-400 font-mono">
-              {userData.winRate}%
+            <p className="text-sm md:text-3xl font-black text-purple-600 dark:text-purple-400 font-mono truncate">
+              {userData.winRate.toFixed(2)}%
             </p>
           </div>
 
