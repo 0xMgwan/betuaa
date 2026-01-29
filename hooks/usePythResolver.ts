@@ -1,6 +1,7 @@
 import { useWriteContract, useWaitForTransactionReceipt } from 'wagmi';
 import { CONTRACTS } from '../lib/contracts';
 import { baseSepolia } from 'wagmi/chains';
+import { useCallback } from 'react';
 
 const PYTH_RESOLVER_ABI = [
   {
@@ -27,7 +28,7 @@ export function useConfigurePythMarket() {
     hash,
   });
 
-  const configurePythMarket = (
+  const configurePythMarket = useCallback((
     marketId: number,
     priceId: string,
     threshold: number,
@@ -46,7 +47,7 @@ export function useConfigurePythMarket() {
     // int64 max value is 9223372036854775807
     const thresholdScaled = Math.floor(threshold * 1e8);
     
-    console.log('� Threshold scaling:', {
+    console.log('💰 Threshold scaling:', {
       original: threshold,
       scaled: thresholdScaled,
       max: 9223372036854775807
@@ -85,7 +86,7 @@ export function useConfigurePythMarket() {
       console.error('❌ Error calling writeContract:', error);
       throw error;
     }
-  };
+  }, [writeContract]);
 
   return {
     configurePythMarket,
