@@ -152,16 +152,65 @@ export default function TradingModal({
         </div>
 
         {mintSuccess ? (
-          <div className="text-center py-8">
-            <div className="w-16 h-16 bg-green-100 dark:bg-green-900/30 rounded-full flex items-center justify-center mx-auto mb-4">
-              <span className="text-3xl">✅</span>
+          <div className="text-center py-8 space-y-6">
+            {/* Success Icon with Animation */}
+            <div className="flex justify-center">
+              <div className="w-20 h-20 bg-gradient-to-br from-green-400 to-emerald-500 rounded-full flex items-center justify-center mx-auto shadow-lg shadow-green-500/30 animate-pulse">
+                <span className="text-4xl">✅</span>
+              </div>
             </div>
-            <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-2">
-              Position Tokens Minted!
-            </h3>
-            <p className="text-gray-600 dark:text-gray-400">
-              You minted {amount} {tokenSymbol} worth of {outcomeName} tokens
-            </p>
+
+            {/* Success Message */}
+            <div>
+              <h3 className="text-2xl font-bold bg-gradient-to-r from-green-600 to-emerald-600 bg-clip-text text-transparent mb-2">
+                Position Tokens Minted!
+              </h3>
+              <p className="text-gray-600 dark:text-gray-400 text-sm">
+                Your position has been successfully created
+              </p>
+            </div>
+
+            {/* Details Card */}
+            <div className="bg-gradient-to-br from-green-50 to-emerald-50 dark:from-green-900/20 dark:to-emerald-900/20 rounded-lg p-4 space-y-3 border border-green-200 dark:border-green-800">
+              <div className="flex items-center justify-between">
+                <span className="text-sm text-gray-600 dark:text-gray-400">Outcome</span>
+                <span className="font-semibold text-gray-900 dark:text-white">{outcomeName}</span>
+              </div>
+              <div className="h-px bg-green-200 dark:bg-green-800"></div>
+              <div className="flex items-center justify-between">
+                <span className="text-sm text-gray-600 dark:text-gray-400">Amount Invested</span>
+                <span className="font-semibold text-gray-900 dark:text-white flex items-center gap-1">
+                  <span>💵</span> {amount} {tokenSymbol}
+                </span>
+              </div>
+              <div className="h-px bg-green-200 dark:bg-green-800"></div>
+              <div className="flex items-center justify-between">
+                <span className="text-sm text-gray-600 dark:text-gray-400">Price per Share</span>
+                <span className="font-semibold text-gray-900 dark:text-white">{currentPrice}¢</span>
+              </div>
+              <div className="h-px bg-green-200 dark:bg-green-800"></div>
+              <div className="flex items-center justify-between">
+                <span className="text-sm text-gray-600 dark:text-gray-400">Tokens Received</span>
+                <span className="font-bold text-green-600 dark:text-green-400">
+                  {(parseFloat(amount) / (currentPrice / 100)).toFixed(2)} tokens
+                </span>
+              </div>
+            </div>
+
+            {/* Info Message */}
+            <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-3">
+              <p className="text-xs text-blue-800 dark:text-blue-200">
+                💡 Your position tokens will be worth more if {outcomeName.toLowerCase()} wins the market
+              </p>
+            </div>
+
+            {/* Action Button */}
+            <button
+              onClick={onClose}
+              className="w-full px-6 py-3 bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white rounded-lg font-semibold transition-all duration-300 shadow-lg shadow-green-500/30 hover:shadow-xl hover:shadow-green-500/40"
+            >
+              Done
+            </button>
           </div>
         ) : (
           <form onSubmit={handleSubmit} className="space-y-4">
