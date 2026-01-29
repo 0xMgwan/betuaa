@@ -552,9 +552,9 @@ export default function Home() {
                 ) : (
                   marketsWithHistory.length > 0 &&
                   <div key={renderKey} className="grid grid-cols-1 md:grid-cols-2 gap-3 md:gap-6">
-                    {marketsWithHistory.map((market) => (
+                    {marketsWithHistory.map((market, index) => (
                       <CompactMarketCard
-                        key={`${activeCategory}-${market.id}`}
+                        key={`market-${market.id}-${market.title}-${index}`}
                         id={market.id}
                         question={market.title}
                         category={market.category}

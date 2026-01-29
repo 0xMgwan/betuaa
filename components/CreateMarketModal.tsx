@@ -14,6 +14,7 @@ import Image from 'next/image';
 import { CATEGORIES as CATEGORY_CONFIG } from '@/lib/categoryUtils';
 import { PYTH_PRICE_FEEDS, fetchPythPrice, generatePythMarketQuestion, type PythFeedId } from '@/lib/pyth';
 import { useConfigurePythMarket } from '@/hooks/usePythResolver';
+import CustomDropdown from '@/components/CustomDropdown';
 
 const iconMap = {
   Bitcoin,
@@ -432,7 +433,7 @@ export default function CreateMarketModal({ isOpen, onClose }: CreateMarketModal
 
           {isPythMode ? (
             <>
-              {/* Pyth Price Feed Selection - Enhanced Custom Dropdown */}
+              {/* Pyth Price Feed Selection - Custom Dropdown */}
               <div className="space-y-2">
                 <label className="block text-sm font-semibold text-gray-900 dark:text-white flex items-center gap-2">
                   <div className="flex items-center justify-center h-6 w-6 rounded-lg bg-gradient-to-br from-blue-500 to-purple-500 shadow-sm">
@@ -440,20 +441,18 @@ export default function CreateMarketModal({ isOpen, onClose }: CreateMarketModal
                   </div>
                   Price Feed
                 </label>
-                <div className="relative group">
-                  <select
-                    value={selectedFeed}
-                    onChange={(e) => setSelectedFeed(e.target.value as PythFeedId)}
-                    className="w-full px-4 py-4 pr-10 border-2 border-gray-300 dark:border-gray-600 rounded-xl bg-gradient-to-r from-white to-gray-50 dark:from-gray-800 dark:to-gray-900 text-gray-900 dark:text-white font-semibold focus:ring-2 focus:ring-blue-500 focus:border-blue-500 shadow-lg hover:shadow-xl transition-all duration-300 appearance-none cursor-pointer"
-                  >
-                    {Object.entries(PYTH_PRICE_FEEDS).map(([key, feed]) => (
-                      <option key={key} value={key} className="py-2 bg-white dark:bg-gray-800">
-                        {feed.name} ({feed.symbol})
-                      </option>
-                    ))}
-                  </select>
-                  <ChevronDown className="absolute right-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-500 dark:text-gray-400 pointer-events-none group-hover:text-blue-500 transition-colors" />
-                </div>
+                <CustomDropdown
+                  options={Object.entries(PYTH_PRICE_FEEDS).map(([key, feed]) => ({
+                    value: key,
+                    label: `${feed.name} (${feed.symbol})`,
+                    icon: feed.symbol === 'BTC' ? '₿' : feed.symbol === 'ETH' ? 'Ξ' : '💱',
+                    description: `Current: $${feed.symbol}`,
+                  }))}
+                  value={selectedFeed}
+                  onChange={(value) => setSelectedFeed(value as PythFeedId)}
+                  placeholder="Select a price feed..."
+                  accentColor="blue"
+                />
               </div>
 
               {/* Current Price Display - Enhanced */}
@@ -537,7 +536,7 @@ export default function CreateMarketModal({ isOpen, onClose }: CreateMarketModal
                 </div>
               </div>
 
-              {/* Expiry Time - Enhanced Custom Dropdown */}
+              {/* Expiry Time - Custom Dropdown */}
               <div className="space-y-2">
                 <label className="block text-sm font-semibold text-gray-900 dark:text-white flex items-center gap-2">
                   <div className="flex items-center justify-center h-6 w-6 rounded-lg bg-gradient-to-br from-orange-500 to-red-500 shadow-sm">
@@ -545,34 +544,33 @@ export default function CreateMarketModal({ isOpen, onClose }: CreateMarketModal
                   </div>
                   Market Expires In
                 </label>
-                <div className="relative group">
-                  <select
-                    value={expiryDays}
-                    onChange={(e) => setExpiryDays(parseFloat(e.target.value))}
-                    className="w-full px-4 py-4 pr-10 border-2 border-gray-300 dark:border-gray-600 rounded-xl bg-gradient-to-r from-white to-gray-50 dark:from-gray-800 dark:to-gray-900 text-gray-900 dark:text-white font-semibold focus:ring-2 focus:ring-orange-500 focus:border-orange-500 shadow-lg hover:shadow-xl transition-all duration-300 appearance-none cursor-pointer"
-                  >
-                    <optgroup label="⚡ Short-term" className="bg-white dark:bg-gray-800 font-bold">
-                      <option value={5/1440} className="py-2">5 Minutes</option>
-                      <option value={10/1440} className="py-2">10 Minutes</option>
-                      <option value={30/1440} className="py-2">30 Minutes</option>
-                      <option value={1/24} className="py-2">1 Hour</option>
-                      <option value={4/24} className="py-2">4 Hours</option>
-                      <option value={12/24} className="py-2">12 Hours</option>
-                    </optgroup>
-                    <optgroup label="📅 Standard" className="bg-white dark:bg-gray-800 font-bold">
-                      <option value={1} className="py-2">1 Day</option>
-                      <option value={3} className="py-2">3 Days</option>
-                      <option value={7} className="py-2">1 Week</option>
-                    </optgroup>
-                    <optgroup label="🗓️ Long-term" className="bg-white dark:bg-gray-800 font-bold">
-                      <option value={14} className="py-2">2 Weeks</option>
-                      <option value={30} className="py-2">1 Month</option>
-                      <option value={90} className="py-2">3 Months</option>
-                      <option value={180} className="py-2">6 Months</option>
-                    </optgroup>
-                  </select>
-                  <ChevronDown className="absolute right-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-500 dark:text-gray-400 pointer-events-none group-hover:text-orange-500 transition-colors" />
-                </div>
+                <CustomDropdown
+                  groupedOptions={{
+                    '⚡ Short-term': [
+                      { value: 5/1440, label: '5 Minutes', icon: '⚡' },
+                      { value: 10/1440, label: '10 Minutes', icon: '⚡' },
+                      { value: 30/1440, label: '30 Minutes', icon: '⚡' },
+                      { value: 1/24, label: '1 Hour', icon: '⏱️' },
+                      { value: 4/24, label: '4 Hours', icon: '⏱️' },
+                      { value: 12/24, label: '12 Hours', icon: '⏱️' },
+                    ],
+                    '📅 Standard': [
+                      { value: 1, label: '1 Day', icon: '📅' },
+                      { value: 3, label: '3 Days', icon: '📅' },
+                      { value: 7, label: '1 Week', icon: '📅' },
+                    ],
+                    '🗓️ Long-term': [
+                      { value: 14, label: '2 Weeks', icon: '🗓️' },
+                      { value: 30, label: '1 Month', icon: '🗓️' },
+                      { value: 90, label: '3 Months', icon: '🗓️' },
+                      { value: 180, label: '6 Months', icon: '🗓️' },
+                    ],
+                  }}
+                  value={expiryDays}
+                  onChange={(value) => setExpiryDays(value as number)}
+                  placeholder="Select expiry time..."
+                  accentColor="orange"
+                />
               </div>
 
               {/* Market Preview - Enhanced */}
