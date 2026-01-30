@@ -136,7 +136,7 @@ function CompactMarketCard({
       className="cursor-pointer"
     >
       <Card 
-        className="relative p-2.5 md:p-3 overflow-hidden border border-gray-200/50 dark:border-gray-700/50 bg-white/80 dark:bg-gray-900/80 backdrop-blur-xl shadow-lg hover:shadow-2xl hover:shadow-blue-500/20 dark:hover:shadow-blue-500/30 transition-all duration-500 group"
+        className="relative p-2 md:p-2.5 overflow-hidden border border-gray-200/50 dark:border-gray-700/50 bg-white/80 dark:bg-gray-900/80 backdrop-blur-xl shadow-lg hover:shadow-2xl hover:shadow-blue-500/20 dark:hover:shadow-blue-500/30 transition-all duration-500 group"
       >
         {/* Animated gradient background */}
         <div className="absolute inset-0 bg-gradient-to-br from-blue-500/5 via-purple-500/5 to-pink-500/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
@@ -145,21 +145,21 @@ function CompactMarketCard({
         <div className="absolute -inset-1 bg-gradient-to-r from-blue-500/20 via-purple-500/20 to-pink-500/20 rounded-xl opacity-0 group-hover:opacity-100 blur-xl transition-opacity duration-500" />
         
         <div className="relative z-10">
-          <div className="flex items-start gap-1.5 md:gap-2 mb-1.5 md:mb-2">
+          <div className="flex items-start gap-1 md:gap-1.5 mb-1 md:mb-1.5">
             {/* Category Icon with enhanced gradient and animation */}
             <motion.div 
-              className={`w-9 h-9 md:w-10 md:h-10 rounded-lg md:rounded-xl bg-gradient-to-br ${getCategoryColor()} flex items-center justify-center flex-shrink-0 shadow-lg group-hover:shadow-2xl relative overflow-hidden`}
+              className={`w-8 h-8 md:w-9 md:h-9 rounded md:rounded-lg bg-gradient-to-br ${getCategoryColor()} flex items-center justify-center flex-shrink-0 shadow-lg group-hover:shadow-2xl relative overflow-hidden`}
               whileHover={{ rotate: [0, -10, 10, -10, 0], scale: 1.1 }}
               transition={{ duration: 0.5 }}
             >
               <div className="absolute inset-0 bg-white/20 group-hover:bg-white/30 transition-colors" />
-              <CategoryIcon className="w-4 h-4 md:w-5 md:h-5 text-white drop-shadow-lg relative z-10" />
+              <CategoryIcon className="w-3.5 h-3.5 md:w-4 md:h-4 text-white drop-shadow-lg relative z-10" />
             </motion.div>
             
             <div className="flex-1 min-w-0">
-              <div className="flex items-center gap-1 md:gap-1.5 mb-0.5 md:mb-1 flex-wrap">
+              <div className="flex items-center gap-0.5 md:gap-1 mb-0.5 flex-wrap">
                 <motion.span 
-                  className="text-[8px] md:text-[10px] font-black text-blue-600 dark:text-blue-400 uppercase tracking-wider px-1.5 py-0.5 rounded-md bg-blue-50 dark:bg-blue-900/30"
+                  className="text-[7px] md:text-[9px] font-black text-blue-600 dark:text-blue-400 uppercase tracking-wide px-1 py-0.5 rounded bg-blue-50 dark:bg-blue-900/30"
                   whileHover={{ scale: 1.05 }}
                 >
                   {actualCategory}
@@ -168,7 +168,7 @@ function CompactMarketCard({
                   <motion.span 
                     initial={{ scale: 0 }}
                     animate={{ scale: 1 }}
-                    className={`px-1 md:px-1.5 py-0.5 rounded-full text-[8px] md:text-[9px] font-bold shadow-md flex items-center gap-0.5 ${
+                    className={`px-0.5 md:px-1 py-0.5 rounded-full text-[7px] md:text-[8px] font-bold shadow-md flex items-center gap-0.5 ${
                       status === 'resolved'
                         ? 'bg-gradient-to-r from-gray-100 to-gray-200 dark:from-gray-700 dark:to-gray-600 text-gray-700 dark:text-gray-300'
                         : status === 'active'
@@ -180,12 +180,12 @@ function CompactMarketCard({
                     {status.charAt(0).toUpperCase() + status.slice(1)}
                   </motion.span>
                 )}
-                <span className="text-[8px] md:text-[9px] text-gray-500 dark:text-gray-400 flex items-center gap-0.5 font-medium">
-                  <Clock className="h-2 w-2 md:h-2.5 md:w-2.5" />
+                <span className="text-[7px] md:text-[8px] text-gray-500 dark:text-gray-400 flex items-center gap-0.5 font-medium">
+                  <Clock className="h-1.5 w-1.5 md:h-2 md:w-2" />
                   {endDate}
                 </span>
               </div>
-              <h3 className="font-bold text-[11px] md:text-xs mb-1 md:mb-1.5 line-clamp-2 text-gray-900 dark:text-white group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors leading-tight">
+              <h3 className="font-bold text-[10px] md:text-[11px] mb-0.5 md:mb-1 line-clamp-2 text-gray-900 dark:text-white group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors leading-tight">
                 {question}
               </h3>
             </div>
@@ -197,12 +197,12 @@ function CompactMarketCard({
               transition={{ duration: 0.5 }}
             >
               {trend === "up" ? (
-                <div className="p-0.5 md:p-1 rounded-md md:rounded-lg bg-gradient-to-br from-green-100 to-emerald-100 dark:from-green-900/40 dark:to-emerald-900/40 shadow-md">
-                  <TrendingUp className="h-3 w-3 md:h-3.5 md:w-3.5 text-green-600 dark:text-green-400" />
+                <div className="p-0.5 rounded bg-gradient-to-br from-green-100 to-emerald-100 dark:from-green-900/40 dark:to-emerald-900/40 shadow-md">
+                  <TrendingUp className="h-2.5 w-2.5 md:h-3 md:w-3 text-green-600 dark:text-green-400" />
                 </div>
               ) : (
-                <div className="p-0.5 md:p-1 rounded-md md:rounded-lg bg-gradient-to-br from-red-100 to-rose-100 dark:from-red-900/40 dark:to-rose-900/40 shadow-md">
-                  <TrendingDown className="h-3 w-3 md:h-3.5 md:w-3.5 text-red-600 dark:text-red-400" />
+                <div className="p-0.5 rounded bg-gradient-to-br from-red-100 to-rose-100 dark:from-red-900/40 dark:to-rose-900/40 shadow-md">
+                  <TrendingDown className="h-2.5 w-2.5 md:h-3 md:w-3 text-red-600 dark:text-red-400" />
                 </div>
               )}
             </motion.div>
@@ -210,10 +210,10 @@ function CompactMarketCard({
 
           {/* Enhanced Mini Chart with gradient fill */}
           <motion.div 
-            className="mb-1.5 md:mb-2 bg-gradient-to-br from-gray-50/80 to-gray-100/80 dark:from-gray-800/50 dark:to-gray-900/50 rounded-lg md:rounded-xl p-1.5 md:p-2 overflow-hidden border border-gray-200/50 dark:border-gray-700/50 group-hover:border-blue-500/50 transition-all shadow-inner backdrop-blur-sm"
+            className="mb-1 md:mb-1.5 bg-gradient-to-br from-gray-50/80 to-gray-100/80 dark:from-gray-800/50 dark:to-gray-900/50 rounded md:rounded-lg p-1 md:p-1.5 overflow-hidden border border-gray-200/50 dark:border-gray-700/50 group-hover:border-blue-500/50 transition-all shadow-inner backdrop-blur-sm"
             whileHover={{ scale: 1.02 }}
           >
-            <svg viewBox="0 0 200 50" className="w-full h-6 md:h-8">
+            <svg viewBox="0 0 200 50" className="w-full h-5 md:h-6">
               {/* Grid lines */}
               <line x1="0" y1="10" x2="200" y2="10" stroke="currentColor" strokeWidth="0.3" className="text-gray-300 dark:text-gray-600" strokeDasharray="2 2" opacity="0.5" />
               <line x1="0" y1="25" x2="200" y2="25" stroke="currentColor" strokeWidth="0.3" className="text-gray-300 dark:text-gray-600" strokeDasharray="2 2" opacity="0.5" />
@@ -289,17 +289,17 @@ function CompactMarketCard({
           </motion.div>
 
           {/* Enhanced price buttons with animations */}
-          <div className="flex items-center gap-1.5 md:gap-2 mb-1.5 md:mb-2">
+          <div className="flex items-center gap-1 md:gap-1.5 mb-1 md:mb-1.5">
             <motion.button
               type="button"
               onClick={(e) => handleButtonClick(e, 0, 'Yes', yesPrice)}
               disabled={status !== 'active'}
               whileHover={{ scale: 1.05, y: -2 }}
               whileTap={{ scale: 0.95 }}
-              className="flex-1 bg-gradient-to-br from-green-50 via-emerald-50 to-green-50 dark:from-green-900/30 dark:via-emerald-900/30 dark:to-green-900/30 rounded-lg md:rounded-xl px-2 py-1.5 md:py-2 hover:from-green-100 hover:via-emerald-100 hover:to-green-100 dark:hover:from-green-900/50 dark:hover:via-emerald-900/50 dark:hover:to-green-900/50 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed border-2 border-green-200/70 dark:border-green-700/50 hover:border-green-400 dark:hover:border-green-600 hover:shadow-lg hover:shadow-green-500/30 group/yes backdrop-blur-sm"
+              className="flex-1 bg-gradient-to-br from-green-50 via-emerald-50 to-green-50 dark:from-green-900/30 dark:via-emerald-900/30 dark:to-green-900/30 rounded md:rounded-lg px-1.5 py-1 md:py-1.5 hover:from-green-100 hover:via-emerald-100 hover:to-green-100 dark:hover:from-green-900/50 dark:hover:via-emerald-900/50 dark:hover:to-green-900/50 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed border-2 border-green-200/70 dark:border-green-700/50 hover:border-green-400 dark:hover:border-green-600 hover:shadow-lg hover:shadow-green-500/30 group/yes backdrop-blur-sm"
             >
-              <div className="text-[9px] md:text-[10px] text-gray-600 dark:text-gray-400 font-semibold mb-0.5">Yes</div>
-              <div className="text-base md:text-lg font-black text-green-600 dark:text-green-400 group-hover/yes:scale-110 transition-transform">
+              <div className="text-[8px] md:text-[9px] text-gray-600 dark:text-gray-400 font-semibold mb-0.5">Yes</div>
+              <div className="text-sm md:text-base font-black text-green-600 dark:text-green-400 group-hover/yes:scale-110 transition-transform">
                 {(yesPrice * 100).toFixed(0)}¢
               </div>
             </motion.button>
@@ -309,10 +309,10 @@ function CompactMarketCard({
               disabled={status !== 'active'}
               whileHover={{ scale: 1.05, y: -2 }}
               whileTap={{ scale: 0.95 }}
-              className="flex-1 bg-gradient-to-br from-red-50 via-rose-50 to-red-50 dark:from-red-900/30 dark:via-rose-900/30 dark:to-red-900/30 rounded-lg md:rounded-xl px-2 py-1.5 md:py-2 hover:from-red-100 hover:via-rose-100 hover:to-red-100 dark:hover:from-red-900/50 dark:hover:via-rose-900/50 dark:hover:to-red-900/50 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed border-2 border-red-200/70 dark:border-red-700/50 hover:border-red-400 dark:hover:border-red-600 hover:shadow-lg hover:shadow-red-500/30 group/no backdrop-blur-sm"
+              className="flex-1 bg-gradient-to-br from-red-50 via-rose-50 to-red-50 dark:from-red-900/30 dark:via-rose-900/30 dark:to-red-900/30 rounded md:rounded-lg px-1.5 py-1 md:py-1.5 hover:from-red-100 hover:via-rose-100 hover:to-red-100 dark:hover:from-red-900/50 dark:hover:via-rose-900/50 dark:hover:to-red-900/50 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed border-2 border-red-200/70 dark:border-red-700/50 hover:border-red-400 dark:hover:border-red-600 hover:shadow-lg hover:shadow-red-500/30 group/no backdrop-blur-sm"
             >
-              <div className="text-[9px] md:text-[10px] text-gray-600 dark:text-gray-400 font-semibold mb-0.5">No</div>
-              <div className="text-base md:text-lg font-black text-red-600 dark:text-red-400 group-hover/no:scale-110 transition-transform">
+              <div className="text-[8px] md:text-[9px] text-gray-600 dark:text-gray-400 font-semibold mb-0.5">No</div>
+              <div className="text-sm md:text-base font-black text-red-600 dark:text-red-400 group-hover/no:scale-110 transition-transform">
                 {(noPrice * 100).toFixed(0)}¢
               </div>
             </motion.button>
@@ -320,7 +320,7 @@ function CompactMarketCard({
 
           {/* Enhanced volume display */}
           <div className="flex items-center justify-between px-0.5">
-            <span className="text-[9px] md:text-[10px] text-gray-500 dark:text-gray-400 font-semibold">Volume</span>
+            <span className="text-[8px] md:text-[9px] text-gray-500 dark:text-gray-400 font-semibold">Volume</span>
             <div className="flex items-center gap-1">
               <Image 
                 src="/USDC logo.png" 
@@ -329,7 +329,7 @@ function CompactMarketCard({
                 height={12}
                 className="rounded-full md:w-3 md:h-3"
               />
-              <span className="font-black text-[10px] md:text-xs text-gray-900 dark:text-white">{volume}</span>
+              <span className="font-black text-[9px] md:text-[10px] text-gray-900 dark:text-white">{volume}</span>
             </div>
           </div>
         </div>
