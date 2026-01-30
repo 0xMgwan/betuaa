@@ -397,8 +397,8 @@ export default function ProfilePage() {
                       initial={{ opacity: 0, y: 20 }}
                       animate={{ opacity: 1, y: 0 }}
                       transition={{ delay: 0.7 + index * 0.05 }}
-                      whileHover={{ y: -4, shadow: "0 20px 25px -5px rgba(0, 0, 0, 0.1)" }}
-                      className="group relative overflow-hidden bg-gradient-to-br from-white to-gray-50 dark:from-gray-800 dark:to-gray-900 rounded-xl p-4 border border-gray-200/50 dark:border-gray-700/50 backdrop-blur-sm shadow-md hover:shadow-lg transition-all duration-200"
+                      whileHover={{ y: -4 }}
+                      className="group relative overflow-hidden bg-gradient-to-br from-white to-gray-50 dark:from-gray-800 dark:to-gray-900 rounded-xl p-4 border border-gray-200/50 dark:border-gray-700/50 backdrop-blur-sm transition-all duration-200 hover:shadow-lg"
                     >
                       {/* Gradient overlay */}
                       <div className={`absolute top-0 right-0 w-32 h-32 ${
@@ -475,12 +475,15 @@ export default function ProfilePage() {
 
           {activeTab === 'created' && (
             <div>
-              <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-4">Markets Created</h3>
+              <h3 className="text-xl font-black text-gray-900 dark:text-white mb-4 flex items-center gap-2">
+                <Award className="w-5 h-5 text-purple-600 dark:text-purple-400" />
+                Markets Created
+              </h3>
               {marketsCreated.length === 0 ? (
                 <p className="text-gray-600 dark:text-gray-400 text-center py-8">No markets created yet</p>
               ) : (
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                  {marketsCreated.map((market) => {
+                  {marketsCreated.map((market, index) => {
                     const closingDate = new Date(Number(market.closingDate) * 1000);
                     const isActive = closingDate > new Date();
                     const isClosed = closingDate <= new Date() && !market.resolved;
@@ -513,100 +516,137 @@ export default function ProfilePage() {
                     };
 
                     return (
-                      <div key={market.id} className="bg-white dark:bg-gray-800 rounded-lg p-4 border border-gray-200 dark:border-gray-700">
-                        <div className="flex items-start justify-between mb-2">
-                          <span className={`text-xs font-semibold uppercase flex items-center gap-1 ${getCategoryColor(categoryName)}`}>
-                            {getCategoryIcon(categoryName)}
-                            {category}
-                          </span>
-                          <span className={`px-2 py-0.5 rounded text-xs font-bold flex items-center gap-1 ${
-                            market.resolved
-                              ? 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300'
-                              : isActive
-                              ? 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400'
-                              : 'bg-orange-100 dark:bg-orange-900/30 text-orange-700 dark:text-orange-400'
-                          }`}>
-                            {market.resolved ? (
-                              <>
-                                <CheckCircle className="w-3 h-3" />
-                                Resolved
-                              </>
-                            ) : isActive ? (
-                              <>
-                                <ClockIcon className="w-3 h-3" />
-                                Active
-                              </>
-                            ) : (
-                              <>
-                                <XCircle className="w-3 h-3" />
-                                Closed
-                              </>
-                            )}
-                          </span>
-                        </div>
+                      <motion.div 
+                        key={market.id}
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ delay: 0.7 + index * 0.05 }}
+                        whileHover={{ y: -4 }}
+                        className="group relative overflow-hidden bg-gradient-to-br from-white to-gray-50 dark:from-gray-800 dark:to-gray-900 rounded-xl p-4 border border-gray-200/50 dark:border-gray-700/50 backdrop-blur-sm shadow-md hover:shadow-lg transition-all duration-200"
+                      >
+                        {/* Gradient overlay */}
+                        <div className={`absolute top-0 right-0 w-32 h-32 ${
+                          categoryName === 'crypto'
+                            ? 'bg-gradient-to-br from-blue-500/15 to-cyan-500/15'
+                            : categoryName === 'sports'
+                            ? 'bg-gradient-to-br from-orange-500/15 to-red-500/15'
+                            : categoryName === 'entertainment'
+                            ? 'bg-gradient-to-br from-purple-500/15 to-pink-500/15'
+                            : 'bg-gradient-to-br from-green-500/15 to-emerald-500/15'
+                        } rounded-full blur-3xl group-hover:scale-150 transition-transform duration-300`}></div>
                         
-                        <h4 className="font-semibold text-sm mb-2 line-clamp-2 text-gray-900 dark:text-white">
-                          {market.title}
-                        </h4>
-                        
-                        <p className="text-xs text-gray-600 dark:text-gray-400 mb-3 line-clamp-2">
-                          {market.description.replace(/\[CATEGORY:\w+\]\s*/, '')}
-                        </p>
-                        
-                        <div className="grid grid-cols-2 gap-2 text-xs mb-3">
-                          <div>
-                            <p className="text-gray-500 dark:text-gray-400">Status</p>
-                            <p className="font-bold text-gray-900 dark:text-white">
-                              {market.resolved ? 'Resolved' : isActive ? 'Active' : 'Closed'}
-                            </p>
+                        <div className="relative z-10">
+                          {/* Header */}
+                          <div className="flex items-start justify-between mb-3">
+                            <span className={`text-[11px] font-black uppercase tracking-widest px-2 py-1 rounded-lg flex items-center gap-1 ${
+                              categoryName === 'crypto'
+                                ? 'bg-blue-100/50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400'
+                                : categoryName === 'sports'
+                                ? 'bg-orange-100/50 dark:bg-orange-900/30 text-orange-600 dark:text-orange-400'
+                                : categoryName === 'entertainment'
+                                ? 'bg-purple-100/50 dark:bg-purple-900/30 text-purple-600 dark:text-purple-400'
+                                : 'bg-green-100/50 dark:bg-green-900/30 text-green-600 dark:text-green-400'
+                            }`}>
+                              {getCategoryIcon(categoryName)}
+                              {category}
+                            </span>
+                            <motion.span 
+                              initial={{ scale: 0.8 }}
+                              animate={{ scale: 1 }}
+                              className={`px-2.5 py-1 rounded-lg text-[11px] font-black whitespace-nowrap shadow-lg flex items-center gap-1 ${
+                              market.resolved
+                                ? 'bg-gray-500 text-white'
+                                : isActive
+                                ? 'bg-gradient-to-r from-green-500 to-emerald-500 text-white'
+                                : 'bg-gradient-to-r from-orange-500 to-red-500 text-white'
+                            }`}
+                            >
+                              {market.resolved ? (
+                                <>
+                                  <CheckCircle className="w-3 h-3" />
+                                  Resolved
+                                </>
+                              ) : isActive ? (
+                                <>
+                                  <ClockIcon className="w-3 h-3" />
+                                  Active
+                                </>
+                              ) : (
+                                <>
+                                  <XCircle className="w-3 h-3" />
+                                  Closed
+                                </>
+                              )}
+                            </motion.span>
                           </div>
-                          <div>
-                            <p className="text-gray-500 dark:text-gray-400">Closes</p>
-                            <p className="font-bold text-gray-900 dark:text-white">
-                              {closingDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
-                            </p>
+                          
+                          {/* Market Title */}
+                          <h4 className="font-black text-sm mb-3 line-clamp-2 text-gray-900 dark:text-white leading-snug">
+                            {market.title}
+                          </h4>
+                          
+                          <p className="text-xs text-gray-600 dark:text-gray-400 mb-3 line-clamp-2">
+                            {market.description.replace(/\[CATEGORY:\w+\]\s*/, '')}
+                          </p>
+                          
+                          {/* Status Grid */}
+                          <div className="grid grid-cols-2 gap-2 text-xs mb-3">
+                            <div className="px-3 py-2 bg-gray-100/50 dark:bg-gray-800/50 rounded-lg border border-gray-200/50 dark:border-gray-700/50">
+                              <p className="text-[10px] font-semibold text-gray-600 dark:text-gray-400 uppercase tracking-wide">Status</p>
+                              <p className="font-black text-sm text-gray-900 dark:text-white">
+                                {market.resolved ? 'Resolved' : isActive ? 'Active' : 'Closed'}
+                              </p>
+                            </div>
+                            <div className="px-3 py-2 bg-gray-100/50 dark:bg-gray-800/50 rounded-lg border border-gray-200/50 dark:border-gray-700/50">
+                              <p className="text-[10px] font-semibold text-gray-600 dark:text-gray-400 uppercase tracking-wide">Closes</p>
+                              <p className="font-black text-sm text-gray-900 dark:text-white">
+                                {closingDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
+                              </p>
+                            </div>
                           </div>
-                        </div>
 
-                        {/* Market Stats from The Graph */}
-                        <div className="grid grid-cols-3 gap-2 text-xs mb-3 p-2 bg-gray-50 dark:bg-gray-700/50 rounded">
-                          <div className="text-center">
-                            <p className="text-gray-500 dark:text-gray-400 text-[10px]">Volume</p>
-                            <p className="font-bold text-gray-900 dark:text-white flex items-center justify-center gap-1">
-                              <DollarSign className="w-3 h-3" />
-                              {marketStats[market.id] 
-                                ? (() => {
-                                    const vol = Number(marketStats[market.id].totalVolume) / 1e6;
-                                    return vol >= 1000 ? `${(vol / 1000).toFixed(1)}K` : `${vol.toFixed(2)}`;
-                                  })()
-                                : '0'}
-                            </p>
+                          {/* Market Stats from The Graph */}
+                          <div className="grid grid-cols-3 gap-2 text-xs mb-3 p-3 bg-gradient-to-br from-gray-100/50 to-gray-50/50 dark:from-gray-800/50 dark:to-gray-700/50 rounded-lg border border-gray-200/50 dark:border-gray-700/50">
+                            <div className="text-center">
+                              <p className="text-gray-600 dark:text-gray-400 text-[10px] font-semibold uppercase tracking-wide">Volume</p>
+                              <p className="font-black text-sm text-gray-900 dark:text-white flex items-center justify-center gap-1 mt-1">
+                                <DollarSign className="w-3 h-3" />
+                                {marketStats[market.id] 
+                                  ? (() => {
+                                      const vol = Number(marketStats[market.id].totalVolume) / 1e6;
+                                      return vol >= 1000 ? `${(vol / 1000).toFixed(1)}K` : `${vol.toFixed(2)}`;
+                                    })()
+                                  : '0'}
+                              </p>
+                            </div>
+                            <div className="text-center">
+                              <p className="text-gray-600 dark:text-gray-400 text-[10px] font-semibold uppercase tracking-wide">Traders</p>
+                              <p className="font-black text-sm text-gray-900 dark:text-white flex items-center justify-center gap-1 mt-1">
+                                <Users className="w-3 h-3" />
+                                {marketStats[market.id]?.participantCount || 0}
+                              </p>
+                            </div>
+                            <div className="text-center">
+                              <p className="text-gray-600 dark:text-gray-400 text-[10px] font-semibold uppercase tracking-wide">Trades</p>
+                              <p className="font-black text-sm text-gray-900 dark:text-white flex items-center justify-center gap-1 mt-1">
+                                <BarChart3 className="w-3 h-3" />
+                                {marketStats[market.id]?.tradeCount || 0}
+                              </p>
+                            </div>
                           </div>
-                          <div className="text-center">
-                            <p className="text-gray-500 dark:text-gray-400 text-[10px]">Traders</p>
-                            <p className="font-bold text-gray-900 dark:text-white flex items-center justify-center gap-1">
-                              <Users className="w-3 h-3" />
-                              {marketStats[market.id]?.participantCount || 0}
-                            </p>
-                          </div>
-                          <div className="text-center">
-                            <p className="text-gray-500 dark:text-gray-400 text-[10px]">Trades</p>
-                            <p className="font-bold text-gray-900 dark:text-white flex items-center justify-center gap-1">
-                              <BarChart3 className="w-3 h-3" />
-                              {marketStats[market.id]?.tradeCount || 0}
-                            </p>
-                          </div>
-                        </div>
 
-                        {isClosed && isOwnProfile && (
-                          <button 
-                            onClick={() => setSelectedMarketToResolve(market)}
-                            className="w-full px-3 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-bold text-sm transition-colors"
-                          >
-                            Resolve Market
-                          </button>
-                        )}
-                      </div>
+                          {isClosed && isOwnProfile && (
+                            <motion.button 
+                              onClick={() => setSelectedMarketToResolve(market)}
+                              whileHover={{ scale: 1.02 }}
+                              whileTap={{ scale: 0.98 }}
+                              className="w-full px-4 py-2.5 bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white rounded-xl font-black text-sm shadow-lg hover:shadow-xl transition-all"
+                            >
+                              Resolve Market
+                            </motion.button>
+                          )}
+                        </div>
+                      </motion.div>
                     );
                   })}
                 </div>
