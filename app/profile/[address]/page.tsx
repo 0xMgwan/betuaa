@@ -3,12 +3,13 @@
 import { useState, useEffect } from 'react';
 import { useParams } from 'next/navigation';
 import { useAccount } from 'wagmi';
+import { motion, AnimatePresence } from 'framer-motion';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 import { useUserPositions } from '@/hooks/useUserPositions';
 import { useAllMarkets } from '@/hooks/useMarkets';
 import ResolveMarketModal from '@/components/ResolveMarketModal';
-import { TrendingUp, TrendingDown, DollarSign, Target, Award, Calendar, Users, BarChart3, Trophy, CheckCircle, Clock as ClockIcon, XCircle, Zap, Gamepad2, Mic2, Globe } from 'lucide-react';
+import { TrendingUp, TrendingDown, DollarSign, Target, Award, Calendar, Users, BarChart3, Trophy, CheckCircle, Clock as ClockIcon, XCircle, Zap, Gamepad2, Mic2, Globe, Sparkles } from 'lucide-react';
 import { useTranslation } from '@/hooks/useTranslation';
 import { fetchMarketData, fetchUserStats } from '@/lib/graphql';
 
@@ -139,124 +140,199 @@ export default function ProfilePage() {
       <Navbar />
       
       <div className="pt-24 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-12">
-        {/* Profile Header */}
-        <div className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-xl rounded-xl md:rounded-2xl p-4 md:p-8 border border-gray-200 dark:border-gray-700 shadow-xl mb-4 md:mb-8">
-          <div className="flex flex-col md:flex-row items-start md:items-center gap-3 md:gap-6">
+        {/* Profile Header with Gradient Background */}
+        <motion.div 
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5 }}
+          className="bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600 rounded-2xl p-6 md:p-8 border border-white/10 shadow-2xl mb-6 md:mb-8 relative overflow-hidden"
+        >
+          {/* Animated background elements */}
+          <div className="absolute inset-0 overflow-hidden">
+            <div className="absolute -top-40 -right-40 w-80 h-80 bg-white/10 rounded-full blur-3xl"></div>
+            <div className="absolute -bottom-40 -left-40 w-80 h-80 bg-white/10 rounded-full blur-3xl"></div>
+          </div>
+
+          <div className="relative z-10 flex flex-col md:flex-row items-start md:items-center gap-4 md:gap-6">
             {/* Avatar */}
-            <div className="relative">
-              <div className="w-16 h-16 md:w-24 md:h-24 rounded-full bg-gradient-to-br from-blue-500 via-purple-500 to-pink-500 flex items-center justify-center text-white text-xl md:text-3xl font-bold shadow-lg">
+            <motion.div 
+              initial={{ scale: 0.8, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              transition={{ delay: 0.2, type: 'spring' }}
+              className="relative"
+            >
+              <div className="w-20 h-20 md:w-28 md:h-28 rounded-full bg-gradient-to-br from-white via-blue-100 to-purple-100 flex items-center justify-center text-2xl md:text-4xl font-black bg-white/20 backdrop-blur-xl border-2 border-white/30 shadow-xl">
                 {userData.username.slice(0, 2).toUpperCase()}
               </div>
               {userData.rank <= 10 && (
-                <div className="absolute -bottom-1 -right-1 md:-bottom-2 md:-right-2 w-7 h-7 md:w-10 md:h-10 bg-yellow-500 rounded-full flex items-center justify-center shadow-lg">
-                  <Trophy className="w-3 h-3 md:w-5 md:h-5 text-white" />
-                </div>
+                <motion.div 
+                  animate={{ rotate: 360 }}
+                  transition={{ duration: 4, repeat: Infinity, ease: 'linear' }}
+                  className="absolute -bottom-2 -right-2 md:-bottom-3 md:-right-3 w-8 h-8 md:w-12 md:h-12 bg-gradient-to-br from-yellow-400 to-yellow-600 rounded-full flex items-center justify-center shadow-lg border-2 border-white"
+                >
+                  <Trophy className="w-4 h-4 md:w-6 md:h-6 text-white" />
+                </motion.div>
               )}
-            </div>
+            </motion.div>
 
             {/* User Info */}
-            <div className="flex-1">
-              <div className="flex items-center gap-2 md:gap-3 mb-1 md:mb-2">
-                <h1 className="text-xl md:text-3xl font-black text-gray-900 dark:text-white">
+            <motion.div 
+              initial={{ opacity: 0, x: -20 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ delay: 0.3 }}
+              className="flex-1"
+            >
+              <div className="flex items-center gap-2 md:gap-3 mb-2 md:mb-3">
+                <h1 className="text-2xl md:text-4xl font-black text-white">
                   {userData.username}
                 </h1>
                 {isOwnProfile && (
-                  <span className="px-2 md:px-3 py-0.5 md:py-1 bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400 rounded-full text-xs md:text-sm font-medium">
+                  <span className="px-3 md:px-4 py-1 md:py-1.5 bg-white/20 backdrop-blur-xl text-white rounded-full text-xs md:text-sm font-bold border border-white/30">
                     You
                   </span>
                 )}
               </div>
               
-              <div className="flex flex-wrap items-center gap-2 md:gap-4 text-xs md:text-sm text-gray-600 dark:text-gray-400 mb-2 md:mb-4">
-                <div className="flex items-center gap-1 md:gap-1.5">
+              <div className="flex flex-wrap items-center gap-2 md:gap-4 text-xs md:text-sm text-white/90 mb-3 md:mb-4">
+                <motion.div 
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  transition={{ delay: 0.4 }}
+                  className="flex items-center gap-1 md:gap-1.5"
+                >
                   <Calendar className="w-3 h-3 md:w-4 md:h-4" />
                   {t('profile.joined')} {userData.joinedDate.toLocaleDateString('en-US', { month: 'short', year: 'numeric' })}
-                </div>
-                <div className="flex items-center gap-1 md:gap-1.5">
+                </motion.div>
+                <motion.div 
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  transition={{ delay: 0.45 }}
+                  className="flex items-center gap-1 md:gap-1.5"
+                >
                   <Trophy className="w-3 h-3 md:w-4 md:h-4" />
                   {t('profile.rank')} #{userData.rank}
-                </div>
-                <div className="flex items-center gap-1 md:gap-1.5">
+                </motion.div>
+                <motion.div 
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  transition={{ delay: 0.5 }}
+                  className="flex items-center gap-1 md:gap-1.5"
+                >
                   <Users className="w-3 h-3 md:w-4 md:h-4" />
                   {userData.followers} {t('profile.followers')} · {userData.following} {t('profile.following')}
-                </div>
+                </motion.div>
               </div>
 
               {/* Badges */}
-              <div className="flex flex-wrap gap-1.5 md:gap-2">
+              <motion.div 
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ delay: 0.55 }}
+                className="flex flex-wrap gap-2"
+              >
                 {userData.badges.map((badge, index) => (
-                  <span
+                  <motion.span
                     key={index}
-                    className="px-2 md:px-3 py-0.5 md:py-1 bg-gradient-to-r from-purple-500 to-pink-500 text-white rounded-full text-[10px] md:text-xs font-bold shadow-lg"
+                    initial={{ scale: 0 }}
+                    animate={{ scale: 1 }}
+                    transition={{ delay: 0.6 + index * 0.1 }}
+                    className="px-3 md:px-4 py-1 md:py-1.5 bg-white/20 backdrop-blur-xl text-white rounded-full text-[10px] md:text-xs font-bold border border-white/30"
                   >
-                    🏆 {badge}
-                  </span>
+                    ✨ {badge}
+                  </motion.span>
                 ))}
-              </div>
-            </div>
+              </motion.div>
+            </motion.div>
 
             {/* Follow Button (if not own profile) */}
             {!isOwnProfile && (
-              <button className="px-4 md:px-6 py-2 md:py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-sm md:text-base font-bold transition-colors shadow-lg">
+              <motion.button 
+                initial={{ opacity: 0, scale: 0.8 }}
+                animate={{ opacity: 1, scale: 1 }}
+                transition={{ delay: 0.6 }}
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+                className="px-6 md:px-8 py-2.5 md:py-3 bg-white/20 hover:bg-white/30 backdrop-blur-xl text-white rounded-xl text-sm md:text-base font-bold transition-all border border-white/30 shadow-lg"
+              >
                 Follow
-              </button>
+              </motion.button>
             )}
           </div>
-        </div>
+        </motion.div>
 
         {/* Stats Grid */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-2 md:gap-6 mb-4 md:mb-8">
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-6 mb-6 md:mb-8">
           {/* Total Volume */}
-          <div className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-xl rounded-lg md:rounded-xl p-3 md:p-6 border border-gray-200 dark:border-gray-700 shadow-lg">
-            <div className="flex flex-col md:flex-row items-start md:items-center gap-1 md:gap-3 mb-1 md:mb-2">
-              <div className="p-1 md:p-2 bg-gradient-to-br from-blue-500 to-cyan-600 rounded-lg">
-                <DollarSign className="w-3 h-3 md:w-5 md:h-5 text-white" />
+          <motion.div 
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.2 }}
+            className="bg-gradient-to-br from-blue-50 to-cyan-50 dark:from-blue-900/20 dark:to-cyan-900/20 backdrop-blur-xl rounded-xl p-3 md:p-5 border border-blue-200/50 dark:border-blue-700/50 shadow-lg hover:shadow-xl transition-shadow"
+          >
+            <div className="flex items-center gap-2 md:gap-3 mb-2 md:mb-3">
+              <div className="p-2 md:p-2.5 bg-gradient-to-br from-blue-500 to-cyan-600 rounded-lg">
+                <DollarSign className="w-4 h-4 md:w-5 md:h-5 text-white" />
               </div>
-              <span className="text-[10px] md:text-sm font-medium text-gray-600 dark:text-gray-400">{t('profile.totalVolume')}</span>
+              <span className="text-xs md:text-sm font-semibold text-gray-600 dark:text-gray-400">{t('profile.totalVolume')}</span>
             </div>
-            <p className="text-sm md:text-3xl font-black text-gray-900 dark:text-white font-mono">
+            <p className="text-base md:text-2xl font-black text-gray-900 dark:text-white font-mono">
               ${userData.totalVolume.toLocaleString()}
             </p>
-          </div>
+          </motion.div>
 
           {/* Total Profit */}
-          <div className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-xl rounded-lg md:rounded-xl p-3 md:p-6 border border-gray-200 dark:border-gray-700 shadow-lg">
-            <div className="flex flex-col md:flex-row items-start md:items-center gap-1 md:gap-3 mb-1 md:mb-2">
-              <div className="p-1 md:p-2 bg-gradient-to-br from-green-500 to-emerald-600 rounded-lg">
-                <TrendingUp className="w-3 h-3 md:w-5 md:h-5 text-white" />
+          <motion.div 
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.3 }}
+            className="bg-gradient-to-br from-green-50 to-emerald-50 dark:from-green-900/20 dark:to-emerald-900/20 backdrop-blur-xl rounded-xl p-3 md:p-5 border border-green-200/50 dark:border-green-700/50 shadow-lg hover:shadow-xl transition-shadow"
+          >
+            <div className="flex items-center gap-2 md:gap-3 mb-2 md:mb-3">
+              <div className="p-2 md:p-2.5 bg-gradient-to-br from-green-500 to-emerald-600 rounded-lg">
+                <TrendingUp className="w-4 h-4 md:w-5 md:h-5 text-white" />
               </div>
-              <span className="text-[10px] md:text-sm font-medium text-gray-600 dark:text-gray-400">{t('profile.totalProfit')}</span>
+              <span className="text-xs md:text-sm font-semibold text-gray-600 dark:text-gray-400">{t('profile.totalProfit')}</span>
             </div>
-            <p className="text-sm md:text-3xl font-black text-green-600 dark:text-green-400 font-mono">
+            <p className="text-base md:text-2xl font-black text-green-600 dark:text-green-400 font-mono">
               +${userData.totalProfit.toLocaleString()}
             </p>
-          </div>
+          </motion.div>
 
           {/* Win Rate */}
-          <div className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-xl rounded-lg md:rounded-xl p-3 md:p-6 border border-gray-200 dark:border-gray-700 shadow-lg">
-            <div className="flex flex-col md:flex-row items-start md:items-center gap-1 md:gap-3 mb-1 md:mb-2">
-              <div className="p-1 md:p-2 bg-gradient-to-br from-purple-500 to-pink-600 rounded-lg">
-                <Award className="w-3 h-3 md:w-5 md:h-5 text-white" />
+          <motion.div 
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.4 }}
+            className="bg-gradient-to-br from-purple-50 to-pink-50 dark:from-purple-900/20 dark:to-pink-900/20 backdrop-blur-xl rounded-xl p-3 md:p-5 border border-purple-200/50 dark:border-purple-700/50 shadow-lg hover:shadow-xl transition-shadow"
+          >
+            <div className="flex items-center gap-2 md:gap-3 mb-2 md:mb-3">
+              <div className="p-2 md:p-2.5 bg-gradient-to-br from-purple-500 to-pink-600 rounded-lg">
+                <Award className="w-4 h-4 md:w-5 md:h-5 text-white" />
               </div>
-              <span className="text-[10px] md:text-sm font-medium text-gray-600 dark:text-gray-400">{t('profile.winRate')}</span>
+              <span className="text-xs md:text-sm font-semibold text-gray-600 dark:text-gray-400">{t('profile.winRate')}</span>
             </div>
-            <p className="text-sm md:text-3xl font-black text-purple-600 dark:text-purple-400 font-mono truncate">
+            <p className="text-base md:text-2xl font-black text-purple-600 dark:text-purple-400 font-mono truncate">
               {userData.winRate.toFixed(2)}%
             </p>
-          </div>
+          </motion.div>
 
           {/* Total Trades */}
-          <div className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-xl rounded-lg md:rounded-xl p-3 md:p-6 border border-gray-200 dark:border-gray-700 shadow-lg">
-            <div className="flex flex-col md:flex-row items-start md:items-center gap-1 md:gap-3 mb-1 md:mb-2">
-              <div className="p-1 md:p-2 bg-gradient-to-br from-orange-500 to-red-600 rounded-lg">
-                <BarChart3 className="w-3 h-3 md:w-5 md:h-5 text-white" />
+          <motion.div 
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.5 }}
+            className="bg-gradient-to-br from-orange-50 to-red-50 dark:from-orange-900/20 dark:to-red-900/20 backdrop-blur-xl rounded-xl p-3 md:p-5 border border-orange-200/50 dark:border-orange-700/50 shadow-lg hover:shadow-xl transition-shadow"
+          >
+            <div className="flex items-center gap-2 md:gap-3 mb-2 md:mb-3">
+              <div className="p-2 md:p-2.5 bg-gradient-to-br from-orange-500 to-red-600 rounded-lg">
+                <BarChart3 className="w-4 h-4 md:w-5 md:h-5 text-white" />
               </div>
-              <span className="text-[10px] md:text-sm font-medium text-gray-600 dark:text-gray-400">Total Trades</span>
+              <span className="text-xs md:text-sm font-semibold text-gray-600 dark:text-gray-400">Total Trades</span>
             </div>
-            <p className="text-sm md:text-3xl font-black text-gray-900 dark:text-white font-mono">
+            <p className="text-base md:text-2xl font-black text-gray-900 dark:text-white font-mono">
               {userData.totalTrades}
             </p>
-          </div>
+          </motion.div>
         </div>
 
         {/* Tab Navigation */}
@@ -299,58 +375,81 @@ export default function ProfilePage() {
         </div>
 
         {/* Tab Content */}
-        <div className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-xl rounded-2xl p-6 border border-gray-200 dark:border-gray-700 shadow-lg">
+        <motion.div 
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.6 }}
+          className="bg-gradient-to-br from-white/80 to-gray-50/80 dark:from-gray-800/80 dark:to-gray-900/80 backdrop-blur-xl rounded-2xl p-6 border border-gray-200/50 dark:border-gray-700/50 shadow-lg"
+        >
           {activeTab === 'positions' && (
             <div>
-              <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-4">{t('profile.activePositions')}</h3>
+              <h3 className="text-xl font-black text-gray-900 dark:text-white mb-4 flex items-center gap-2">
+                <Target className="w-5 h-5 text-blue-600 dark:text-blue-400" />
+                {t('profile.activePositions')}
+              </h3>
               {activePositions.length === 0 ? (
                 <p className="text-gray-600 dark:text-gray-400 text-center py-8">No active positions</p>
               ) : (
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                   {activePositions.map((position, index) => (
-                    <div key={index} className="group relative overflow-hidden bg-gradient-to-br from-white to-gray-50 dark:from-gray-800 dark:to-gray-900 rounded-lg p-3 border border-gray-200 dark:border-gray-700 hover:shadow-lg hover:scale-[1.01] transition-all duration-200">
+                    <motion.div 
+                      key={index}
+                      initial={{ opacity: 0, y: 20 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ delay: 0.7 + index * 0.05 }}
+                      whileHover={{ y: -4, shadow: "0 20px 25px -5px rgba(0, 0, 0, 0.1)" }}
+                      className="group relative overflow-hidden bg-gradient-to-br from-white to-gray-50 dark:from-gray-800 dark:to-gray-900 rounded-xl p-4 border border-gray-200/50 dark:border-gray-700/50 backdrop-blur-sm shadow-md hover:shadow-lg transition-all duration-200"
+                    >
                       {/* Gradient overlay */}
-                      <div className={`absolute top-0 right-0 w-24 h-24 ${
+                      <div className={`absolute top-0 right-0 w-32 h-32 ${
                         position.outcomeName.toLowerCase().includes('yes')
-                          ? 'bg-gradient-to-br from-green-500/10 to-emerald-500/10'
-                          : 'bg-gradient-to-br from-red-500/10 to-orange-500/10'
-                      } rounded-full blur-2xl group-hover:scale-125 transition-transform duration-300`}></div>
+                          ? 'bg-gradient-to-br from-green-500/15 to-emerald-500/15'
+                          : 'bg-gradient-to-br from-red-500/15 to-orange-500/15'
+                      } rounded-full blur-3xl group-hover:scale-150 transition-transform duration-300`}></div>
                       
-                      <div className="relative">
+                      <div className="relative z-10">
                         {/* Header */}
-                        <div className="flex items-start justify-between mb-2">
-                          <span className="text-[10px] font-bold text-blue-600 dark:text-blue-400 uppercase tracking-wide">
+                        <div className="flex items-start justify-between mb-3">
+                          <span className="text-[11px] font-black text-blue-600 dark:text-blue-400 uppercase tracking-widest bg-blue-100/50 dark:bg-blue-900/30 px-2 py-1 rounded-lg">
                             CRYPTO
                           </span>
-                          <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold whitespace-nowrap ${
-                            position.outcomeName.toLowerCase().includes('yes') 
-                              ? 'bg-gradient-to-r from-green-500 to-emerald-500 text-white'
-                              : 'bg-gradient-to-r from-red-500 to-orange-500 text-white'
-                          }`}>
+                          <motion.span 
+                            initial={{ scale: 0.8 }}
+                            animate={{ scale: 1 }}
+                            className={`px-2.5 py-1 rounded-lg text-[11px] font-black whitespace-nowrap shadow-lg ${
+                              position.outcomeName.toLowerCase().includes('yes') 
+                                ? 'bg-gradient-to-r from-green-500 to-emerald-500 text-white'
+                                : 'bg-gradient-to-r from-red-500 to-orange-500 text-white'
+                            }`}
+                          >
                             {position.outcomeName}
-                          </span>
+                          </motion.span>
                         </div>
                         
                         {/* Market Title */}
-                        <h4 className="font-semibold text-sm mb-2 line-clamp-2 text-gray-900 dark:text-white leading-snug">
+                        <h4 className="font-black text-sm mb-3 line-clamp-2 text-gray-900 dark:text-white leading-snug">
                           {position.marketTitle}
                         </h4>
                         
                         {/* Stats Grid */}
-                        <div className="space-y-1.5">
-                          <div className="flex justify-between items-center px-2 py-1 bg-gray-50 dark:bg-gray-800/50 rounded">
-                            <span className="text-[10px] font-medium text-gray-600 dark:text-gray-400">Shares</span>
-                            <span className="font-bold text-xs text-gray-900 dark:text-white">
+                        <div className="space-y-2">
+                          <div className="flex justify-between items-center px-3 py-2 bg-gray-100/50 dark:bg-gray-800/50 rounded-lg border border-gray-200/50 dark:border-gray-700/50">
+                            <span className="text-[10px] font-semibold text-gray-600 dark:text-gray-400 uppercase tracking-wide">Shares</span>
+                            <span className="font-black text-sm text-gray-900 dark:text-white">
                               {(Number(position.shares) / 1e6).toFixed(2)}
                             </span>
                           </div>
-                          <div className="flex justify-between items-center px-2 py-1 bg-gray-50 dark:bg-gray-800/50 rounded">
-                            <span className="text-[10px] font-medium text-gray-600 dark:text-gray-400">Price</span>
-                            <span className="font-bold text-xs text-gray-900 dark:text-white">{position.currentPrice.toFixed(1)}¢</span>
+                          <div className="flex justify-between items-center px-3 py-2 bg-gray-100/50 dark:bg-gray-800/50 rounded-lg border border-gray-200/50 dark:border-gray-700/50">
+                            <span className="text-[10px] font-semibold text-gray-600 dark:text-gray-400 uppercase tracking-wide">Price</span>
+                            <span className="font-black text-sm text-gray-900 dark:text-white">{position.currentPrice.toFixed(1)}¢</span>
                           </div>
-                          <div className="flex justify-between items-center px-2 py-1 bg-gradient-to-r from-gray-50 to-gray-100 dark:from-gray-800/50 dark:to-gray-700/50 rounded">
-                            <span className="text-[10px] font-medium text-gray-600 dark:text-gray-400">P&L</span>
-                            <span className={`font-bold text-sm ${
+                          <div className={`flex justify-between items-center px-3 py-2 rounded-lg border backdrop-blur-sm ${
+                            position.unrealizedPnL >= 0
+                              ? 'bg-gradient-to-r from-green-100/50 to-emerald-100/50 dark:from-green-900/20 dark:to-emerald-900/20 border-green-200/50 dark:border-green-700/50'
+                              : 'bg-gradient-to-r from-red-100/50 to-orange-100/50 dark:from-red-900/20 dark:to-orange-900/20 border-red-200/50 dark:border-red-700/50'
+                          }`}>
+                            <span className="text-[10px] font-semibold text-gray-600 dark:text-gray-400 uppercase tracking-wide">P&L</span>
+                            <span className={`font-black text-sm ${
                               position.unrealizedPnL >= 0 
                                 ? 'text-green-600 dark:text-green-400' 
                                 : 'text-red-600 dark:text-red-400'
@@ -360,7 +459,7 @@ export default function ProfilePage() {
                           </div>
                         </div>
                       </div>
-                    </div>
+                    </motion.div>
                   ))}
                 </div>
               )}
@@ -514,7 +613,7 @@ export default function ProfilePage() {
               )}
             </div>
           )}
-        </div>
+        </motion.div>
       </div>
 
       {selectedMarketToResolve && (
