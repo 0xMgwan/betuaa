@@ -8,5 +8,10 @@
   "solidity.packageDefaultDependenciesDirectory": "node_modules",
   "solidity.remappings": [
     "@openzeppelin/contracts/=./contracts/lib/openzeppelin-contracts/contracts/"
-  ]
+  ],
+  "typescript.tsdk": "node_modules/typescript/lib",
+  "typescript.enablePromptUseWorkspaceTsdk": true,
+  "files.exclude": {
+    "**/node_modules/**/tsconfig.json": true
+  }
 }
