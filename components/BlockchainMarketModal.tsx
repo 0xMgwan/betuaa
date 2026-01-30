@@ -88,7 +88,7 @@ export default function BlockchainMarketModal({
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         exit={{ opacity: 0 }}
-        className="fixed inset-0 bg-black/60 dark:bg-black/80 backdrop-blur-sm flex items-center justify-center z-50 p-4"
+        className="fixed inset-0 bg-black/60 dark:bg-black/80 backdrop-blur-sm flex items-center justify-center z-50 p-3 md:p-4"
         onClick={onClose}
       >
         <motion.div 
@@ -100,14 +100,14 @@ export default function BlockchainMarketModal({
           className="bg-gradient-to-br from-white via-white to-gray-50 dark:from-gray-800 dark:via-gray-800 dark:to-gray-900 rounded-2xl max-w-4xl w-full md:h-auto md:max-h-[90vh] max-h-[90vh] overflow-y-auto shadow-2xl border border-gray-200/50 dark:border-gray-700/50"
         >
           {/* Header with gradient background */}
-          <div className="sticky top-0 bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600 border-b border-white/10 p-4 md:p-6 backdrop-blur-xl">
-            <div className="flex items-start justify-between mb-3">
+          <div className="sticky top-0 bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600 border-b border-white/10 p-3.5 md:p-6 backdrop-blur-xl">
+            <div className="flex items-start justify-between mb-2 md:mb-3">
               <div className="flex items-center gap-2 flex-wrap">
                 <CategoryBadge category={categoryKey} size="sm" />
                 <motion.span 
                   initial={{ opacity: 0, x: -10 }}
                   animate={{ opacity: 1, x: 0 }}
-                  className="text-white/90 text-xs flex items-center gap-1 bg-white/10 px-2 py-1 rounded-lg backdrop-blur-sm"
+                  className="text-white/90 text-[11px] md:text-xs flex items-center gap-1 bg-white/10 px-2 py-1 rounded-lg backdrop-blur-sm"
                 >
                   <Clock className="w-3 h-3" />
                   {closingDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
@@ -123,7 +123,7 @@ export default function BlockchainMarketModal({
                   whileHover={{ scale: 1.1, rotate: 90 }}
                   whileTap={{ scale: 0.9 }}
                   onClick={onClose}
-                  className="p-2 hover:bg-white/20 rounded-xl transition-colors backdrop-blur-sm"
+                  className="p-1.5 md:p-2 hover:bg-white/20 rounded-xl transition-colors backdrop-blur-sm"
                 >
                   <X className="w-5 h-5 text-white" />
                 </motion.button>
@@ -133,7 +133,7 @@ export default function BlockchainMarketModal({
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.1 }}
-              className="text-lg md:text-2xl font-black text-white mb-2 leading-tight"
+              className="text-base md:text-2xl font-black text-white mb-1.5 md:mb-2 leading-tight"
             >
               {market.title}
             </motion.h2>
@@ -141,24 +141,24 @@ export default function BlockchainMarketModal({
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.2 }}
-              className="text-xs md:text-sm text-white/80 leading-relaxed"
+              className="text-[11px] md:text-sm text-white/80 leading-relaxed"
             >
               {cleanDescription(market.description)}
             </motion.p>
           </div>
 
           {/* Content */}
-          <div className="p-4 md:p-6 space-y-4 md:space-y-6">
+          <div className="p-3.5 md:p-6 space-y-3 md:space-y-6">
             {/* Enhanced Stats Row with glass morphism */}
-            <div className="grid grid-cols-3 gap-3 md:gap-4">
+            <div className="grid grid-cols-3 gap-2 md:gap-4">
               <motion.div 
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.3 }}
-                className="bg-gradient-to-br from-blue-50 to-cyan-50 dark:from-blue-900/20 dark:to-cyan-900/20 rounded-xl p-3 md:p-4 border border-blue-200/50 dark:border-blue-700/50 backdrop-blur-sm"
+                className="bg-gradient-to-br from-blue-50 to-cyan-50 dark:from-blue-900/20 dark:to-cyan-900/20 rounded-xl p-2.5 md:p-4 border border-blue-200/50 dark:border-blue-700/50 backdrop-blur-sm"
               >
                 <div className="text-xs text-gray-600 dark:text-gray-400 mb-1 font-semibold">Volume</div>
-                <div className="text-base md:text-xl font-black text-gray-900 dark:text-white flex items-center gap-1.5">
+                <div className="text-sm md:text-xl font-black text-gray-900 dark:text-white flex items-center gap-1.5">
                   <Image 
                     src="/USDC logo.png" 
                     alt="USDC"
@@ -173,10 +173,10 @@ export default function BlockchainMarketModal({
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.4 }}
-                className="bg-gradient-to-br from-purple-50 to-pink-50 dark:from-purple-900/20 dark:to-pink-900/20 rounded-xl p-3 md:p-4 border border-purple-200/50 dark:border-purple-700/50 backdrop-blur-sm"
+                className="bg-gradient-to-br from-purple-50 to-pink-50 dark:from-purple-900/20 dark:to-pink-900/20 rounded-xl p-2.5 md:p-4 border border-purple-200/50 dark:border-purple-700/50 backdrop-blur-sm"
               >
                 <div className="text-xs text-gray-600 dark:text-gray-400 mb-1 font-semibold">Traders</div>
-                <div className="text-base md:text-xl font-black text-gray-900 dark:text-white flex items-center gap-1.5">
+                <div className="text-sm md:text-xl font-black text-gray-900 dark:text-white flex items-center gap-1.5">
                   <Users className="w-4 h-4 md:w-5 md:h-5" />
                   {displayTraders.toLocaleString()}
                 </div>
@@ -185,14 +185,14 @@ export default function BlockchainMarketModal({
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.5 }}
-                className={`bg-gradient-to-br rounded-xl p-3 md:p-4 border backdrop-blur-sm ${
+                className={`bg-gradient-to-br rounded-xl p-2.5 md:p-4 border backdrop-blur-sm ${
                   change24h >= 0 
                     ? 'from-green-50 to-emerald-50 dark:from-green-900/20 dark:to-emerald-900/20 border-green-200/50 dark:border-green-700/50' 
                     : 'from-red-50 to-rose-50 dark:from-red-900/20 dark:to-rose-900/20 border-red-200/50 dark:border-red-700/50'
                 }`}
               >
                 <div className="text-xs text-gray-600 dark:text-gray-400 mb-1 font-semibold">24h Change</div>
-                <div className={`text-base md:text-xl font-black flex items-center gap-1.5 ${
+                <div className={`text-sm md:text-xl font-black flex items-center gap-1.5 ${
                   change24h >= 0 ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'
                 }`}>
                   {change24h >= 0 ? <TrendingUp className="w-4 h-4 md:w-5 md:h-5" /> : <TrendingDown className="w-4 h-4 md:w-5 md:h-5" />}
@@ -206,9 +206,9 @@ export default function BlockchainMarketModal({
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.6 }}
-              className="bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-800/50 dark:to-gray-900/50 rounded-xl p-4 md:p-5 border border-gray-200/50 dark:border-gray-700/50 backdrop-blur-sm"
+              className="bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-800/50 dark:to-gray-900/50 rounded-xl p-3 md:p-5 border border-gray-200/50 dark:border-gray-700/50 backdrop-blur-sm"
             >
-              <div className="flex items-center justify-between mb-3">
+              <div className="flex items-center justify-between mb-2 md:mb-3">
                 <h3 className="font-black text-gray-900 dark:text-white text-sm md:text-base flex items-center gap-2">
                   <BarChart3 className="w-4 h-4 md:w-5 md:h-5 text-blue-600 dark:text-blue-400" />
                   Price History
@@ -228,22 +228,22 @@ export default function BlockchainMarketModal({
             </motion.div>
 
             {/* Enhanced Trading Section */}
-            <div className="grid grid-cols-2 gap-3 md:gap-4">
+            <div className="grid grid-cols-2 gap-2 md:gap-4">
               {/* Yes Option */}
               <motion.div 
                 initial={{ opacity: 0, x: -20 }}
                 animate={{ opacity: 1, x: 0 }}
                 transition={{ delay: 0.7 }}
-                className="bg-gradient-to-br from-green-50 via-emerald-50 to-green-50 dark:from-green-900/30 dark:via-emerald-900/30 dark:to-green-900/30 rounded-xl p-4 md:p-5 border-2 border-green-200/70 dark:border-green-700/50 backdrop-blur-sm relative overflow-hidden"
+                className="bg-gradient-to-br from-green-50 via-emerald-50 to-green-50 dark:from-green-900/30 dark:via-emerald-900/30 dark:to-green-900/30 rounded-xl p-3 md:p-5 border-2 border-green-200/70 dark:border-green-700/50 backdrop-blur-sm relative overflow-hidden"
               >
                 <div className="absolute inset-0 bg-gradient-to-br from-green-500/5 to-emerald-500/5"></div>
                 <div className="relative z-10">
-                  <div className="mb-3">
+                  <div className="mb-2 md:mb-3">
                     <div className="text-xs text-gray-600 dark:text-gray-400 mb-1 font-semibold flex items-center gap-1">
                       <Sparkles className="w-3 h-3" />
                       Mint Yes Tokens
                     </div>
-                    <div className="text-3xl md:text-4xl font-black text-green-600 dark:text-green-400">
+                    <div className="text-2xl md:text-4xl font-black text-green-600 dark:text-green-400">
                       {yesOutcome?.price || 50}¢
                     </div>
                   </div>
@@ -255,7 +255,7 @@ export default function BlockchainMarketModal({
                     }}
                     whileHover={{ scale: 1.05, y: -2 }}
                     whileTap={{ scale: 0.95 }}
-                    className="w-full px-4 py-3 bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 disabled:from-gray-400 disabled:to-gray-500 disabled:cursor-not-allowed text-white rounded-xl font-black text-sm shadow-lg hover:shadow-xl hover:shadow-green-500/30 transition-all"
+                    className="w-full px-4 py-2.5 md:py-3 bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 disabled:from-gray-400 disabled:to-gray-500 disabled:cursor-not-allowed text-white rounded-xl font-black text-sm shadow-lg hover:shadow-xl hover:shadow-green-500/30 transition-all"
                   >
                     {isActive ? 'Mint Yes' : 'Closed'}
                   </motion.button>
@@ -267,16 +267,16 @@ export default function BlockchainMarketModal({
                 initial={{ opacity: 0, x: 20 }}
                 animate={{ opacity: 1, x: 0 }}
                 transition={{ delay: 0.7 }}
-                className="bg-gradient-to-br from-red-50 via-rose-50 to-red-50 dark:from-red-900/30 dark:via-rose-900/30 dark:to-red-900/30 rounded-xl p-4 md:p-5 border-2 border-red-200/70 dark:border-red-700/50 backdrop-blur-sm relative overflow-hidden"
+                className="bg-gradient-to-br from-red-50 via-rose-50 to-red-50 dark:from-red-900/30 dark:via-rose-900/30 dark:to-red-900/30 rounded-xl p-3 md:p-5 border-2 border-red-200/70 dark:border-red-700/50 backdrop-blur-sm relative overflow-hidden"
               >
                 <div className="absolute inset-0 bg-gradient-to-br from-red-500/5 to-rose-500/5"></div>
                 <div className="relative z-10">
-                  <div className="mb-3">
+                  <div className="mb-2 md:mb-3">
                     <div className="text-xs text-gray-600 dark:text-gray-400 mb-1 font-semibold flex items-center gap-1">
                       <Sparkles className="w-3 h-3" />
                       Mint No Tokens
                     </div>
-                    <div className="text-3xl md:text-4xl font-black text-red-600 dark:text-red-400">
+                    <div className="text-2xl md:text-4xl font-black text-red-600 dark:text-red-400">
                       {noOutcome?.price || 50}¢
                     </div>
                   </div>
@@ -288,7 +288,7 @@ export default function BlockchainMarketModal({
                     }}
                     whileHover={{ scale: 1.05, y: -2 }}
                     whileTap={{ scale: 0.95 }}
-                    className="w-full px-4 py-3 bg-gradient-to-r from-red-600 to-rose-600 hover:from-red-700 hover:to-rose-700 disabled:from-gray-400 disabled:to-gray-500 disabled:cursor-not-allowed text-white rounded-xl font-black text-sm shadow-lg hover:shadow-xl hover:shadow-red-500/30 transition-all"
+                    className="w-full px-4 py-2.5 md:py-3 bg-gradient-to-r from-red-600 to-rose-600 hover:from-red-700 hover:to-rose-700 disabled:from-gray-400 disabled:to-gray-500 disabled:cursor-not-allowed text-white rounded-xl font-black text-sm shadow-lg hover:shadow-xl hover:shadow-red-500/30 transition-all"
                   >
                     {isActive ? 'Mint No' : 'Closed'}
                   </motion.button>
@@ -319,9 +319,9 @@ export default function BlockchainMarketModal({
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.8 }}
-              className="bg-gradient-to-br from-amber-50 to-orange-50 dark:from-amber-900/20 dark:to-orange-900/20 rounded-xl p-4 border border-amber-200/50 dark:border-amber-700/50 backdrop-blur-sm"
+              className="bg-gradient-to-br from-amber-50 to-orange-50 dark:from-amber-900/20 dark:to-orange-900/20 rounded-xl p-3 md:p-4 border border-amber-200/50 dark:border-amber-700/50 backdrop-blur-sm"
             >
-              <h3 className="font-black text-gray-900 dark:text-white mb-2 text-sm flex items-center gap-2">
+              <h3 className="font-black text-gray-900 dark:text-white mb-1.5 md:mb-2 text-sm flex items-center gap-2">
                 <BarChart3 className="w-4 h-4 text-amber-600 dark:text-amber-400" />
                 Rules Summary
               </h3>
