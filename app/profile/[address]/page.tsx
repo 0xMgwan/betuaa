@@ -398,7 +398,7 @@ export default function ProfilePage() {
                       animate={{ opacity: 1, y: 0 }}
                       transition={{ delay: 0.7 + index * 0.05 }}
                       whileHover={{ y: -4 }}
-                      className="group relative overflow-hidden bg-gradient-to-br from-white to-gray-50 dark:from-gray-800 dark:to-gray-900 rounded-xl p-4 border border-gray-200/50 dark:border-gray-700/50 backdrop-blur-sm transition-all duration-200 hover:shadow-lg"
+                      className="group relative overflow-hidden bg-gradient-to-br from-white to-gray-50 dark:from-gray-800 dark:to-gray-900 rounded-lg p-3 border border-gray-200/50 dark:border-gray-700/50 backdrop-blur-sm transition-all duration-200 hover:shadow-lg"
                     >
                       {/* Gradient overlay */}
                       <div className={`absolute top-0 right-0 w-32 h-32 ${
@@ -409,14 +409,14 @@ export default function ProfilePage() {
                       
                       <div className="relative z-10">
                         {/* Header */}
-                        <div className="flex items-start justify-between mb-3">
-                          <span className="text-[11px] font-black text-blue-600 dark:text-blue-400 uppercase tracking-widest bg-blue-100/50 dark:bg-blue-900/30 px-2 py-1 rounded-lg">
+                        <div className="flex items-start justify-between mb-2">
+                          <span className="text-[10px] font-black text-blue-600 dark:text-blue-400 uppercase tracking-wide bg-blue-100/50 dark:bg-blue-900/30 px-1.5 py-0.5 rounded">
                             CRYPTO
                           </span>
                           <motion.span 
                             initial={{ scale: 0.8 }}
                             animate={{ scale: 1 }}
-                            className={`px-2.5 py-1 rounded-lg text-[11px] font-black whitespace-nowrap shadow-lg ${
+                            className={`px-2 py-0.5 rounded text-[10px] font-black whitespace-nowrap shadow-lg ${
                               position.outcomeName.toLowerCase().includes('yes') 
                                 ? 'bg-gradient-to-r from-green-500 to-emerald-500 text-white'
                                 : 'bg-gradient-to-r from-red-500 to-orange-500 text-white'
@@ -427,29 +427,29 @@ export default function ProfilePage() {
                         </div>
                         
                         {/* Market Title */}
-                        <h4 className="font-black text-sm mb-3 line-clamp-2 text-gray-900 dark:text-white leading-snug">
+                        <h4 className="font-black text-xs mb-2 line-clamp-2 text-gray-900 dark:text-white leading-tight">
                           {position.marketTitle}
                         </h4>
                         
                         {/* Stats Grid */}
-                        <div className="space-y-2">
-                          <div className="flex justify-between items-center px-3 py-2 bg-gray-100/50 dark:bg-gray-800/50 rounded-lg border border-gray-200/50 dark:border-gray-700/50">
-                            <span className="text-[10px] font-semibold text-gray-600 dark:text-gray-400 uppercase tracking-wide">Shares</span>
-                            <span className="font-black text-sm text-gray-900 dark:text-white">
+                        <div className="space-y-1.5">
+                          <div className="flex justify-between items-center px-2.5 py-1.5 bg-gray-100/50 dark:bg-gray-800/50 rounded border border-gray-200/50 dark:border-gray-700/50">
+                            <span className="text-[9px] font-semibold text-gray-600 dark:text-gray-400 uppercase tracking-wide">Shares</span>
+                            <span className="font-black text-xs text-gray-900 dark:text-white">
                               {(Number(position.shares) / 1e6).toFixed(2)}
                             </span>
                           </div>
-                          <div className="flex justify-between items-center px-3 py-2 bg-gray-100/50 dark:bg-gray-800/50 rounded-lg border border-gray-200/50 dark:border-gray-700/50">
-                            <span className="text-[10px] font-semibold text-gray-600 dark:text-gray-400 uppercase tracking-wide">Price</span>
-                            <span className="font-black text-sm text-gray-900 dark:text-white">{position.currentPrice.toFixed(1)}¢</span>
+                          <div className="flex justify-between items-center px-2.5 py-1.5 bg-gray-100/50 dark:bg-gray-800/50 rounded border border-gray-200/50 dark:border-gray-700/50">
+                            <span className="text-[9px] font-semibold text-gray-600 dark:text-gray-400 uppercase tracking-wide">Price</span>
+                            <span className="font-black text-xs text-gray-900 dark:text-white">{position.currentPrice.toFixed(1)}¢</span>
                           </div>
-                          <div className={`flex justify-between items-center px-3 py-2 rounded-lg border backdrop-blur-sm ${
+                          <div className={`flex justify-between items-center px-2.5 py-1.5 rounded border backdrop-blur-sm ${
                             position.unrealizedPnL >= 0
                               ? 'bg-gradient-to-r from-green-100/50 to-emerald-100/50 dark:from-green-900/20 dark:to-emerald-900/20 border-green-200/50 dark:border-green-700/50'
                               : 'bg-gradient-to-r from-red-100/50 to-orange-100/50 dark:from-red-900/20 dark:to-orange-900/20 border-red-200/50 dark:border-red-700/50'
                           }`}>
-                            <span className="text-[10px] font-semibold text-gray-600 dark:text-gray-400 uppercase tracking-wide">P&L</span>
-                            <span className={`font-black text-sm ${
+                            <span className="text-[9px] font-semibold text-gray-600 dark:text-gray-400 uppercase tracking-wide">P&L</span>
+                            <span className={`font-black text-xs ${
                               position.unrealizedPnL >= 0 
                                 ? 'text-green-600 dark:text-green-400' 
                                 : 'text-red-600 dark:text-red-400'
