@@ -514,15 +514,17 @@ function CompactMarketCard({
           {/* Enhanced volume display with share button */}
           <div className="flex items-center justify-between px-0.5">
             <div className="flex items-center gap-1">
-              <Image 
-                src="/USDC logo.png" 
-                alt="USDC"
-                width={12}
-                height={12}
-                className="rounded-full md:w-3 md:h-3"
-              />
               <span className="text-[9px] md:text-[10px] text-gray-500 dark:text-gray-400 font-semibold">Volume</span>
-              <span className="font-black text-[10px] md:text-xs text-gray-900 dark:text-white">{volume}</span>
+              <div className="flex items-center gap-1">
+                <span className="font-black text-[10px] md:text-xs text-gray-900 dark:text-white">{volume}</span>
+                <Image 
+                  src="/USDC logo.png" 
+                  alt="USDC"
+                  width={12}
+                  height={12}
+                  className="rounded-full md:w-3 md:h-3"
+                />
+              </div>
             </div>
             <div className="relative">
               <motion.button
