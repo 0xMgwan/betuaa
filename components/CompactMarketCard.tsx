@@ -387,9 +387,8 @@ function CompactMarketCard({
             </div>
           )}
 
-          {/* Enhanced volume display */}
+          {/* Enhanced volume display with share button */}
           <div className="flex items-center justify-between px-0.5">
-            <span className="text-[9px] md:text-[10px] text-gray-500 dark:text-gray-400 font-semibold">Volume</span>
             <div className="flex items-center gap-1">
               <Image 
                 src="/USDC logo.png" 
@@ -398,8 +397,32 @@ function CompactMarketCard({
                 height={12}
                 className="rounded-full md:w-3 md:h-3"
               />
+              <span className="text-[9px] md:text-[10px] text-gray-500 dark:text-gray-400 font-semibold">Volume</span>
               <span className="font-black text-[10px] md:text-xs text-gray-900 dark:text-white">{volume}</span>
             </div>
+            <motion.button
+              type="button"
+              onClick={(e) => {
+                e.stopPropagation();
+                if (navigator.share) {
+                  navigator.share({
+                    title: question,
+                    text: `Check out this prediction market: ${question}`,
+                    url: window.location.href
+                  });
+                } else {
+                  navigator.clipboard.writeText(window.location.href);
+                }
+              }}
+              whileHover={{ scale: 1.1 }}
+              whileTap={{ scale: 0.9 }}
+              className="p-1 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg transition-colors"
+              title="Share market"
+            >
+              <svg className="w-3 h-3 md:w-4 md:h-4 text-gray-600 dark:text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z" />
+              </svg>
+            </motion.button>
           </div>
         </div>
       </Card>
