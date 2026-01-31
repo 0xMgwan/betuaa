@@ -399,7 +399,16 @@ function CompactMarketCard({
                           <div className="space-y-1">
                             <div className="flex items-center justify-between text-xs">
                               <span className={`font-semibold ${colors.text}`}>Amount</span>
-                              <span className={`font-black ${colors.text}`}>{quickBuyAmount} USDC</span>
+                              <div className={`font-black ${colors.text} flex items-center gap-1`}>
+                                <Image 
+                                  src="/USDC logo.png" 
+                                  alt="USDC"
+                                  width={12}
+                                  height={12}
+                                  className="rounded-full"
+                                />
+                                {quickBuyAmount} USDC
+                              </div>
                             </div>
                             <input
                               type="range"
@@ -421,7 +430,16 @@ function CompactMarketCard({
                           {/* Estimated Cost */}
                           <div className={`flex items-center justify-between text-xs font-semibold ${colors.text}`}>
                             <span>Estimated Cost</span>
-                            <span className="font-black">{estimatedCost} USDC</span>
+                            <div className={`font-black ${colors.text} flex items-center gap-1`}>
+                              <Image 
+                                src="/USDC logo.png" 
+                                alt="USDC"
+                                width={12}
+                                height={12}
+                                className="rounded-full"
+                              />
+                              {estimatedCost} USDC
+                            </div>
                           </div>
                           
                           {/* Buy Buttons */}
