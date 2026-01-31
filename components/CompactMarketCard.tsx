@@ -5,7 +5,7 @@ import { TrendingUp, TrendingDown, Clock, Bitcoin, Trophy, Building2, Clapperboa
 import { Card } from "./ui/card";
 import { extractCategory, getCategoryInfo, extractResolutionType, extractCustomOutcomes, hasMarketImage } from '@/lib/categoryUtils';
 import Image from 'next/image';
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 
 const iconMap: Record<string, LucideIcon> = {
   Bitcoin,
@@ -54,6 +54,8 @@ function CompactMarketCard({
   image,
 }: CompactMarketCardProps) {
   const [showShareMenu, setShowShareMenu] = useState(false);
+  const [expandedOutcome, setExpandedOutcome] = useState<number | null>(null);
+  const [quickBuyAmount, setQuickBuyAmount] = useState(10);
 
   const handleButtonClick = (e: React.MouseEvent, outcomeId: number, outcomeName: string, price: number) => {
     e.stopPropagation();
@@ -63,6 +65,11 @@ function CompactMarketCard({
     }
     
     onTradeClick(id, outcomeId, outcomeName, price, paymentToken);
+  };
+
+  const handleQuickBuy = (e: React.MouseEvent, outcomeId: number, outcomeName: string, price: number) => {
+    e.stopPropagation();
+    setExpandedOutcome(expandedOutcome === outcomeId ? null : outcomeId);
   };
   
   // Extract custom outcomes and resolution type
@@ -344,7 +351,7 @@ function CompactMarketCard({
 
           {/* Enhanced price buttons with animations */}
           {isCustomMarket ? (
-            // Custom Outcomes Display
+            // Custom Outcomes Display with Quick Buy
             <div className="space-y-1.5 mb-1.5 md:mb-2">
               {customOutcomes.slice(0, 3).map((outcome, index) => {
                 const colors = [
@@ -353,25 +360,99 @@ function CompactMarketCard({
                   { bg: 'from-amber-50 via-orange-50 to-amber-50', darkBg: 'dark:from-amber-900/30 dark:via-orange-900/30 dark:to-amber-900/30', border: 'border-amber-200/70 dark:border-amber-700/50', hoverBorder: 'hover:border-amber-400 dark:hover:border-amber-600', text: 'text-amber-600 dark:text-amber-400', shadow: 'hover:shadow-amber-500/30' },
                 ][index % 3];
                 
+                const isExpanded = expandedOutcome === index;
+                const estimatedCost = (quickBuyAmount * 50 / 100).toFixed(2);
+                
                 return (
-                  <motion.button
+                  <motion.div
                     key={index}
-                    type="button"
-                    onClick={(e) => handleButtonClick(e, index, outcome, 50)}
-                    disabled={status !== 'active'}
-                    whileHover={{ scale: 1.02, y: -1 }}
-                    whileTap={{ scale: 0.98 }}
-                    className={`w-full bg-gradient-to-br ${colors.bg} ${colors.darkBg} rounded-lg px-2 py-1.5 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed border-2 ${colors.border} ${colors.hoverBorder} hover:shadow-lg ${colors.shadow} backdrop-blur-sm`}
+                    className="space-y-1.5"
                   >
-                    <div className="flex items-center justify-between">
-                      <div className={`text-[9px] md:text-[10px] font-bold ${colors.text} truncate flex-1 text-left`}>
-                        {outcome}
+                    <motion.button
+                      type="button"
+                      onClick={(e) => handleQuickBuy(e, index, outcome, 50)}
+                      disabled={status !== 'active'}
+                      whileHover={{ scale: 1.02, y: -1 }}
+                      whileTap={{ scale: 0.98 }}
+                      className={`w-full bg-gradient-to-br ${colors.bg} ${colors.darkBg} rounded-lg px-2 py-1.5 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed border-2 ${colors.border} ${colors.hoverBorder} hover:shadow-lg ${colors.shadow} backdrop-blur-sm`}
+                    >
+                      <div className="flex items-center justify-between">
+                        <div className={`text-[9px] md:text-[10px] font-bold ${colors.text} truncate flex-1 text-left`}>
+                          {outcome}
+                        </div>
+                        <div className={`text-sm md:text-base font-black ${colors.text} ml-2`}>
+                          50¢
+                        </div>
                       </div>
-                      <div className={`text-sm md:text-base font-black ${colors.text} ml-2`}>
-                        50¢
-                      </div>
-                    </div>
-                  </motion.button>
+                    </motion.button>
+                    
+                    {/* Quick Buy Interface */}
+                    <AnimatePresence>
+                      {isExpanded && (
+                        <motion.div
+                          initial={{ opacity: 0, height: 0, y: -10 }}
+                          animate={{ opacity: 1, height: 'auto', y: 0 }}
+                          exit={{ opacity: 0, height: 0, y: -10 }}
+                          className={`bg-gradient-to-br ${colors.bg} ${colors.darkBg} rounded-lg p-3 border-2 ${colors.border} backdrop-blur-sm space-y-2`}
+                        >
+                          {/* Amount Slider */}
+                          <div className="space-y-1">
+                            <div className="flex items-center justify-between text-xs">
+                              <span className={`font-semibold ${colors.text}`}>Amount</span>
+                              <span className={`font-black ${colors.text}`}>{quickBuyAmount} USDC</span>
+                            </div>
+                            <input
+                              type="range"
+                              min="1"
+                              max="100"
+                              value={quickBuyAmount}
+                              onChange={(e) => setQuickBuyAmount(Number(e.target.value))}
+                              className="w-full h-2 bg-gray-200 dark:bg-gray-700 rounded-lg appearance-none cursor-pointer slider"
+                              style={{
+                                background: `linear-gradient(to right, currentColor ${(quickBuyAmount / 100) * 100}%, #e5e7eb ${(quickBuyAmount / 100) * 100}%)`
+                              }}
+                            />
+                            <div className="flex justify-between text-[9px] text-gray-500 dark:text-gray-400">
+                              <span>1</span>
+                              <span>100</span>
+                            </div>
+                          </div>
+                          
+                          {/* Estimated Cost */}
+                          <div className={`flex items-center justify-between text-xs font-semibold ${colors.text}`}>
+                            <span>Estimated Cost</span>
+                            <span className="font-black">{estimatedCost} USDC</span>
+                          </div>
+                          
+                          {/* Buy Buttons */}
+                          <div className="grid grid-cols-2 gap-1.5">
+                            <motion.button
+                              whileHover={{ scale: 1.02 }}
+                              whileTap={{ scale: 0.98 }}
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleButtonClick(e, index * 2, `${outcome} - Yes`, 50);
+                              }}
+                              className="bg-green-500 hover:bg-green-600 text-white rounded-lg py-1.5 text-xs font-black transition-colors"
+                            >
+                              Buy Yes
+                            </motion.button>
+                            <motion.button
+                              whileHover={{ scale: 1.02 }}
+                              whileTap={{ scale: 0.98 }}
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleButtonClick(e, index * 2 + 1, `${outcome} - No`, 50);
+                              }}
+                              className="bg-red-500 hover:bg-red-600 text-white rounded-lg py-1.5 text-xs font-black transition-colors"
+                            >
+                              Buy No
+                            </motion.button>
+                          </div>
+                        </motion.div>
+                      )}
+                    </AnimatePresence>
+                  </motion.div>
                 );
               })}
               {customOutcomes.length > 3 && (
@@ -516,3 +597,33 @@ function CompactMarketCard({
 }
 
 export default memo(CompactMarketCard);
+
+// Add custom styles for slider
+if (typeof document !== 'undefined') {
+  const style = document.createElement('style');
+  style.textContent = `
+    .slider::-webkit-slider-thumb {
+      appearance: none;
+      width: 16px;
+      height: 16px;
+      background: currentColor;
+      border-radius: 50%;
+      cursor: pointer;
+      border: 2px solid white;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+    }
+    .slider::-moz-range-thumb {
+      width: 16px;
+      height: 16px;
+      background: currentColor;
+      border-radius: 50%;
+      cursor: pointer;
+      border: 2px solid white;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+    }
+  `;
+  if (!document.head.querySelector('style[data-compact-market-card]')) {
+    style.setAttribute('data-compact-market-card', 'true');
+    document.head.appendChild(style);
+  }
+}
