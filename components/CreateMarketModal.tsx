@@ -56,6 +56,7 @@ export default function CreateMarketModal({ isOpen, onClose }: CreateMarketModal
   const [customOutcomes, setCustomOutcomes] = useState<string[]>(['', '']);
   const [marketImage, setMarketImage] = useState<string | null>(null);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
+  const [agreedToTerms, setAgreedToTerms] = useState(false);
   
   // Pyth market mode
   const [isPythMode, setIsPythMode] = useState(false);
@@ -294,6 +295,12 @@ export default function CreateMarketModal({ isOpen, onClose }: CreateMarketModal
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    if (!agreedToTerms) {
+      // Show alert or error message
+      alert('Please agree to the Terms and Conditions to create a market.');
+      return;
+    }
     
     if (parseFloat(initialLiquidity || '0') > 0) {
       setStep('approve');
@@ -972,6 +979,27 @@ export default function CreateMarketModal({ isOpen, onClose }: CreateMarketModal
             </>
           )}
 
+          {/* Terms and Conditions */}
+          <div className="flex items-center gap-3 p-4 bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-800 dark:to-gray-900 rounded-xl border border-gray-200 dark:border-gray-700">
+            <input
+              type="checkbox"
+              id="terms-checkbox"
+              checked={agreedToTerms}
+              onChange={(e) => setAgreedToTerms(e.target.checked)}
+              className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600 flex-shrink-0"
+            />
+            <label htmlFor="terms-checkbox" className="text-xs md:text-sm text-gray-700 dark:text-gray-300 cursor-pointer">
+              I have read and agree to the{' '}
+              <button
+                type="button"
+                onClick={() => window.open('/terms', '_blank')}
+                className="text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 font-semibold underline decoration-dotted hover:underline-solid transition-all"
+              >
+                Terms and Conditions
+              </button>
+            </label>
+          </div>
+
           <div className="flex flex-col md:flex-row gap-2 md:gap-3 pt-2 md:pt-4">
             <button
               type="button"
@@ -998,7 +1026,7 @@ export default function CreateMarketModal({ isOpen, onClose }: CreateMarketModal
             ) : (
               <button
                 type="submit"
-                disabled={isApproving || isCreating}
+                disabled={isApproving || isCreating || !agreedToTerms}
                 className="flex-1 px-4 md:px-6 py-2 md:py-3 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 disabled:from-gray-400 disabled:to-gray-500 text-white rounded-lg md:rounded-xl text-sm md:text-base font-bold transition-all shadow-lg hover:shadow-xl disabled:shadow-none"
               >
                 {isApproving ? 'Approving...' : isCreating ? 'Creating...' : 'Create Market'}
