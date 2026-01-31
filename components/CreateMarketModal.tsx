@@ -51,6 +51,12 @@ export default function CreateMarketModal({ isOpen, onClose }: CreateMarketModal
   const [step, setStep] = useState<'form' | 'approve' | 'create'>('form');
   const [isTokenDropdownOpen, setIsTokenDropdownOpen] = useState(false);
   
+  // Resolution type and outcomes
+  const [resolutionType, setResolutionType] = useState<'yesno' | 'custom'>('yesno');
+  const [customOutcomes, setCustomOutcomes] = useState<string[]>(['', '']);
+  const [marketImage, setMarketImage] = useState<string | null>(null);
+  const [imagePreview, setImagePreview] = useState<string | null>(null);
+  
   // Pyth market mode
   const [isPythMode, setIsPythMode] = useState(false);
   const [selectedFeed, setSelectedFeed] = useState<PythFeedId>('ETH/USD');
@@ -175,6 +181,19 @@ export default function CreateMarketModal({ isOpen, onClose }: CreateMarketModal
       isMounted = false;
     };
   }, [isSuccess, pythMarketData, isPythMode, configurePythMarket]);
+
+  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        const base64String = reader.result as string;
+        setMarketImage(base64String);
+        setImagePreview(base64String);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
 
   const handleApprove = async () => {
     if (!selectedStablecoin || !initialLiquidity) return;
@@ -708,6 +727,117 @@ export default function CreateMarketModal({ isOpen, onClose }: CreateMarketModal
               className="w-full px-3 md:px-4 py-2 md:py-3 text-sm md:text-base border border-gray-300 dark:border-gray-600 rounded-lg md:rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white transition-all"
               required
             />
+          </div>
+
+          {/* Resolution Type Selector */}
+          <div>
+            <label className="block text-xs md:text-sm font-semibold text-gray-900 dark:text-white mb-2 md:mb-3">
+              Resolution Type
+            </label>
+            <div className="flex gap-2 md:gap-3 bg-gradient-to-r from-gray-100 to-gray-50 dark:from-gray-700 dark:to-gray-800 p-1 md:p-1.5 rounded-lg md:rounded-xl border border-gray-200 dark:border-gray-600">
+              <button
+                type="button"
+                onClick={() => setResolutionType('yesno')}
+                className={`flex-1 py-2 md:py-2.5 px-3 md:px-4 rounded-md md:rounded-lg font-semibold text-xs md:text-sm transition-all duration-300 ${
+                  resolutionType === 'yesno'
+                    ? 'bg-white dark:bg-gray-800 text-blue-600 dark:text-blue-400 shadow-lg shadow-blue-500/20 scale-105'
+                    : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200'
+                }`}
+              >
+                Yes / No
+              </button>
+              <button
+                type="button"
+                onClick={() => setResolutionType('custom')}
+                className={`flex-1 py-2 md:py-2.5 px-3 md:px-4 rounded-md md:rounded-lg font-semibold text-xs md:text-sm transition-all duration-300 ${
+                  resolutionType === 'custom'
+                    ? 'bg-white dark:bg-gray-800 text-purple-600 dark:text-purple-400 shadow-lg shadow-purple-500/20 scale-105'
+                    : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200'
+                }`}
+              >
+                Custom Options
+              </button>
+            </div>
+          </div>
+
+          {/* Custom Outcomes */}
+          {resolutionType === 'custom' && (
+            <div className="space-y-2 md:space-y-3 p-3 md:p-4 bg-gradient-to-br from-purple-50 to-pink-50 dark:from-purple-900/20 dark:to-pink-900/20 rounded-lg md:rounded-xl border border-purple-200 dark:border-purple-700">
+              <label className="block text-xs md:text-sm font-semibold text-gray-900 dark:text-white">
+                Outcome Options (e.g., "Who will be president of Kenya?")
+              </label>
+              {customOutcomes.map((outcome, index) => (
+                <div key={index} className="flex gap-2">
+                  <input
+                    type="text"
+                    value={outcome}
+                    onChange={(e) => {
+                      const newOutcomes = [...customOutcomes];
+                      newOutcomes[index] = e.target.value;
+                      setCustomOutcomes(newOutcomes);
+                    }}
+                    placeholder={`Option ${index + 1} (e.g., ${index === 0 ? 'Raila Odinga' : 'William Ruto'})`}
+                    className="flex-1 px-3 md:px-4 py-2 md:py-2.5 text-xs md:text-sm border border-purple-300 dark:border-purple-600 rounded-lg md:rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent dark:bg-gray-700 dark:text-white transition-all"
+                  />
+                </div>
+              ))}
+              <button
+                type="button"
+                onClick={() => setCustomOutcomes([...customOutcomes, ''])}
+                className="w-full py-2 md:py-2.5 px-3 md:px-4 text-xs md:text-sm font-semibold text-purple-600 dark:text-purple-400 bg-purple-100/50 dark:bg-purple-900/30 hover:bg-purple-100 dark:hover:bg-purple-900/50 rounded-lg md:rounded-xl border border-purple-300 dark:border-purple-600 transition-all"
+              >
+                + Add Option
+              </button>
+            </div>
+          )}
+
+          {/* Image Upload */}
+          <div>
+            <label className="block text-xs md:text-sm font-semibold text-gray-900 dark:text-white mb-2 md:mb-3">
+              Market Image (Optional)
+            </label>
+            <div className="relative">
+              {imagePreview && (
+                <div className="mb-3 relative rounded-lg md:rounded-xl overflow-hidden border-2 border-blue-300 dark:border-blue-700 shadow-lg">
+                  <img 
+                    src={imagePreview} 
+                    alt="Market preview" 
+                    className="w-full h-32 md:h-40 object-cover"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setMarketImage(null);
+                      setImagePreview(null);
+                    }}
+                    className="absolute top-2 right-2 p-1.5 bg-red-500 hover:bg-red-600 text-white rounded-lg transition-all"
+                  >
+                    <X className="w-4 h-4" />
+                  </button>
+                </div>
+              )}
+              <label className="flex items-center justify-center w-full px-4 py-3 md:py-4 border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-lg md:rounded-xl hover:border-blue-500 dark:hover:border-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-all cursor-pointer group">
+                <div className="text-center">
+                  <div className="flex items-center justify-center h-8 w-8 md:h-10 md:w-10 rounded-lg bg-blue-100 dark:bg-blue-900/30 mx-auto mb-1 md:mb-2 group-hover:bg-blue-200 dark:group-hover:bg-blue-900/50 transition-all">
+                    <svg className="w-4 h-4 md:w-5 md:h-5 text-blue-600 dark:text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                    </svg>
+                  </div>
+                  <p className="text-xs md:text-sm font-semibold text-gray-700 dark:text-gray-300">
+                    Click to upload image
+                  </p>
+                  <p className="text-[10px] md:text-xs text-gray-500 dark:text-gray-400 mt-0.5">
+                    PNG, JPG up to 5MB
+                  </p>
+                </div>
+                <input
+                  type="file"
+                  accept="image/*"
+                  onChange={handleImageUpload}
+                  className="hidden"
+                />
+              </label>
+            </div>
           </div>
 
           <div>
