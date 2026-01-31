@@ -36,3 +36,35 @@ export function cleanDescription(description: string): string {
 export function getCategoryInfo(categoryKey: CategoryKey) {
   return CATEGORIES[categoryKey] || CATEGORIES.crypto;
 }
+
+/**
+ * Extract custom outcomes from market description
+ * Format: [OUTCOMES:Option1|Option2|Option3]
+ */
+export function extractCustomOutcomes(description: string): string[] {
+  const match = description.match(/\[OUTCOMES:([^\]]+)\]/);
+  if (match) {
+    return match[1].split('|').map(o => o.trim()).filter(o => o.length > 0);
+  }
+  return [];
+}
+
+/**
+ * Extract resolution type from market description
+ * Format: [RESOLUTION:custom] or [RESOLUTION:yesno]
+ */
+export function extractResolutionType(description: string): 'yesno' | 'custom' {
+  const match = description.match(/\[RESOLUTION:(\w+)\]/);
+  if (match && match[1] === 'custom') {
+    return 'custom';
+  }
+  return 'yesno';
+}
+
+/**
+ * Check if market has an image
+ * Format: [IMAGE:true]
+ */
+export function hasMarketImage(description: string): boolean {
+  return /\[IMAGE:true\]/.test(description);
+}

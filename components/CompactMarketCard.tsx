@@ -32,6 +32,7 @@ interface CompactMarketCardProps {
   description?: string;
   onTradeClick?: (marketId: number, outcomeId: number, outcomeName: string, price: number, paymentToken: string) => void;
   paymentToken?: string;
+  image?: string;
 }
 
 function CompactMarketCard({
@@ -50,6 +51,7 @@ function CompactMarketCard({
   description,
   onTradeClick,
   paymentToken,
+  image,
 }: CompactMarketCardProps) {
   const handleButtonClick = (e: React.MouseEvent, outcomeId: number, outcomeName: string, price: number) => {
     e.stopPropagation();
@@ -145,6 +147,17 @@ function CompactMarketCard({
         <div className="absolute -inset-1 bg-gradient-to-r from-blue-500/20 via-purple-500/20 to-pink-500/20 rounded-xl opacity-0 group-hover:opacity-100 blur-xl transition-opacity duration-500" />
         
         <div className="relative z-10">
+          {/* Market Image */}
+          {image && (
+            <div className="mb-2 md:mb-3 rounded-lg md:rounded-xl overflow-hidden border border-gray-200/50 dark:border-gray-700/50 shadow-lg h-32 md:h-40">
+              <img 
+                src={image} 
+                alt={question}
+                className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
+              />
+            </div>
+          )}
+
           <div className="flex items-start gap-1.5 md:gap-2 mb-1.5 md:mb-2">
             {/* Category Icon with enhanced gradient and animation */}
             <motion.div 

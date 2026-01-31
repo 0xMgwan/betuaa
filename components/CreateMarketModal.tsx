@@ -246,7 +246,23 @@ export default function CreateMarketModal({ isOpen, onClose }: CreateMarketModal
         setPythMarketData(pythData);
       } else {
         closingTimestamp = BigInt(Math.floor(new Date(closingDate).getTime() / 1000));
-        marketDescription = `[CATEGORY:${category}] ${description}`;
+        
+        // Build description with resolution type and custom outcomes
+        let descriptionWithMetadata = `[CATEGORY:${category}] ${description}`;
+        
+        if (resolutionType === 'custom' && customOutcomes.filter(o => o.trim()).length > 0) {
+          const validOutcomes = customOutcomes.filter(o => o.trim());
+          descriptionWithMetadata += `\n[RESOLUTION:custom]\n[OUTCOMES:${validOutcomes.join('|')}]`;
+        } else {
+          descriptionWithMetadata += `\n[RESOLUTION:yesno]`;
+        }
+        
+        // Add image metadata if present
+        if (marketImage) {
+          descriptionWithMetadata += `\n[IMAGE:true]`;
+        }
+        
+        marketDescription = descriptionWithMetadata;
       }
 
       const liquidityAmount = parseUnits(initialLiquidity || '0', selectedStablecoin.decimals);
@@ -255,7 +271,10 @@ export default function CreateMarketModal({ isOpen, onClose }: CreateMarketModal
         title: marketTitle,
         description: marketDescription,
         closingTimestamp: closingTimestamp.toString(),
-        isPythMode
+        isPythMode,
+        resolutionType,
+        customOutcomes: customOutcomes.filter(o => o.trim()),
+        hasImage: !!marketImage
       });
 
       await createMarket(
