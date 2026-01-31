@@ -315,8 +315,8 @@ export default function CreateMarketModal({ isOpen, onClose }: CreateMarketModal
 
   if (isSuccess) {
     return (
-      <div className="fixed inset-0 bg-black/50 dark:bg-black/70 backdrop-blur-sm flex items-center justify-center z-50 p-4 animate-in fade-in duration-300">
-        <div className="bg-gradient-to-br from-white via-white to-gray-50 dark:from-gray-800 dark:via-gray-800 dark:to-gray-900 rounded-2xl max-w-md w-full p-6 md:p-8 shadow-2xl border border-gray-200 dark:border-gray-700 animate-in zoom-in-95 duration-300">
+      <div className="fixed inset-0 bg-black/50 dark:bg-black/70 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+        <div className="bg-gradient-to-br from-white via-white to-gray-50 dark:from-gray-800 dark:via-gray-800 dark:to-gray-900 rounded-2xl max-w-md w-full p-6 md:p-8 shadow-2xl border border-gray-200 dark:border-gray-700">
           <div className="text-center">
             {/* Success Icon with Animation */}
             <div className="relative mb-6">
@@ -326,14 +326,14 @@ export default function CreateMarketModal({ isOpen, onClose }: CreateMarketModal
               </div>
               
               {/* Icon container */}
-              <div className="relative w-20 h-20 md:w-24 md:h-24 bg-gradient-to-br from-green-400 via-green-500 to-emerald-600 rounded-full flex items-center justify-center mx-auto shadow-lg shadow-green-500/50 animate-bounce">
+              <div className="relative w-20 h-20 md:w-24 md:h-24 bg-gradient-to-br from-green-400 via-green-500 to-emerald-600 rounded-full flex items-center justify-center mx-auto shadow-lg shadow-green-500/50">
                 <div className="absolute inset-0 bg-gradient-to-t from-white/20 to-transparent rounded-full"></div>
                 <span className="text-4xl md:text-5xl relative z-10 drop-shadow-lg">✅</span>
               </div>
             </div>
 
             {/* Title with gradient */}
-            <h3 className="text-2xl md:text-3xl font-black bg-gradient-to-r from-green-600 via-emerald-600 to-green-600 bg-clip-text text-transparent mb-3 animate-in slide-in-from-bottom-4 duration-500">
+            <h3 className="text-2xl md:text-3xl font-black bg-gradient-to-r from-green-600 via-emerald-600 to-green-600 bg-clip-text text-transparent mb-3">
               Market Created Successfully! 🎉
             </h3>
             
@@ -358,7 +358,7 @@ export default function CreateMarketModal({ isOpen, onClose }: CreateMarketModal
             )}
             
             {isPythMode && isPythConfigured && (
-              <div className="relative overflow-hidden bg-gradient-to-r from-green-50 to-emerald-50 dark:from-green-900/30 dark:to-emerald-900/30 border border-green-200 dark:border-green-700 rounded-xl p-4 mb-4 shadow-lg animate-in slide-in-from-top duration-500">
+              <div className="relative overflow-hidden bg-gradient-to-r from-green-50 to-emerald-50 dark:from-green-900/30 dark:to-emerald-900/30 border border-green-200 dark:border-green-700 rounded-xl p-4 mb-4 shadow-lg">
                 <div className="absolute inset-0 bg-gradient-to-r from-green-500/5 to-emerald-500/5"></div>
                 <div className="relative flex items-center justify-center gap-2">
                   <div className="flex items-center justify-center h-6 w-6 rounded-lg bg-green-500/20">
