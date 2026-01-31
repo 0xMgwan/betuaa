@@ -1,7 +1,7 @@
 "use client";
 
-import { memo } from "react";
-import { TrendingUp, TrendingDown, Clock, Bitcoin, Trophy, Building2, Clapperboard, Cpu, BarChart3, LucideIcon, Sparkles } from "lucide-react";
+import { memo, useState } from "react";
+import { TrendingUp, TrendingDown, Clock, Bitcoin, Trophy, Building2, Clapperboard, Cpu, BarChart3, LucideIcon, Sparkles, Share2, Mail, MessageCircle, Send } from "lucide-react";
 import { Card } from "./ui/card";
 import { extractCategory, getCategoryInfo, extractResolutionType, extractCustomOutcomes, hasMarketImage } from '@/lib/categoryUtils';
 import Image from 'next/image';
@@ -53,6 +53,8 @@ function CompactMarketCard({
   paymentToken,
   image,
 }: CompactMarketCardProps) {
+  const [showShareMenu, setShowShareMenu] = useState(false);
+
   const handleButtonClick = (e: React.MouseEvent, outcomeId: number, outcomeName: string, price: number) => {
     e.stopPropagation();
     
@@ -67,6 +69,29 @@ function CompactMarketCard({
   const resolutionType = description ? extractResolutionType(description) : 'yesno';
   const customOutcomes = description ? extractCustomOutcomes(description) : [];
   const isCustomMarket = resolutionType === 'custom' && customOutcomes.length > 0;
+  
+  // Share handlers
+  const shareUrl = typeof window !== 'undefined' ? window.location.href : '';
+  const shareText = `Check out this prediction market: ${question}`;
+  
+  const handleShare = (platform: string) => {
+    const encodedUrl = encodeURIComponent(shareUrl);
+    const encodedText = encodeURIComponent(shareText);
+    
+    const shareLinks = {
+      email: `mailto:?subject=${encodeURIComponent(question)}&body=${encodedText}%20${encodedUrl}`,
+      whatsapp: `https://wa.me/?text=${encodedText}%20${encodedUrl}`,
+      twitter: `https://twitter.com/intent/tweet?text=${encodedText}&url=${encodedUrl}`,
+      telegram: `https://t.me/share/url?url=${encodedUrl}&text=${encodedText}`,
+      discord: `https://discord.com/channels/@me?message=${encodedText}%20${encodedUrl}`,
+    };
+    
+    if (platform in shareLinks) {
+      window.open(shareLinks[platform as keyof typeof shareLinks], '_blank');
+    }
+    
+    setShowShareMenu(false);
+  };
   
   // Extract category from description if available (for blockchain markets)
   const actualCategory = description ? getCategoryInfo(extractCategory(description)).label : category;
@@ -400,29 +425,89 @@ function CompactMarketCard({
               <span className="text-[9px] md:text-[10px] text-gray-500 dark:text-gray-400 font-semibold">Volume</span>
               <span className="font-black text-[10px] md:text-xs text-gray-900 dark:text-white">{volume}</span>
             </div>
-            <motion.button
-              type="button"
-              onClick={(e) => {
-                e.stopPropagation();
-                if (navigator.share) {
-                  navigator.share({
-                    title: question,
-                    text: `Check out this prediction market: ${question}`,
-                    url: window.location.href
-                  });
-                } else {
-                  navigator.clipboard.writeText(window.location.href);
-                }
-              }}
-              whileHover={{ scale: 1.1 }}
-              whileTap={{ scale: 0.9 }}
-              className="p-1 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg transition-colors"
-              title="Share market"
-            >
-              <svg className="w-3 h-3 md:w-4 md:h-4 text-gray-600 dark:text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z" />
-              </svg>
-            </motion.button>
+            <div className="relative">
+              <motion.button
+                type="button"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setShowShareMenu(!showShareMenu);
+                }}
+                whileHover={{ scale: 1.1 }}
+                whileTap={{ scale: 0.9 }}
+                className="p-1 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg transition-colors"
+                title="Share market"
+              >
+                <Share2 className="w-3 h-3 md:w-4 md:h-4 text-gray-600 dark:text-gray-400" />
+              </motion.button>
+              
+              {/* Share Menu Dropdown */}
+              {showShareMenu && (
+                <motion.div
+                  initial={{ opacity: 0, y: -10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -10 }}
+                  className="absolute right-0 bottom-full mb-2 bg-white dark:bg-gray-800 rounded-xl shadow-2xl border border-gray-200 dark:border-gray-700 p-2 z-50 min-w-[140px]"
+                  onClick={(e) => e.stopPropagation()}
+                >
+                  <div className="space-y-1">
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleShare('email');
+                      }}
+                      className="w-full flex items-center gap-2 px-3 py-2 text-xs font-semibold text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
+                    >
+                      <Mail className="w-3 h-3" />
+                      Email
+                    </button>
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleShare('whatsapp');
+                      }}
+                      className="w-full flex items-center gap-2 px-3 py-2 text-xs font-semibold text-gray-700 dark:text-gray-300 hover:bg-green-100 dark:hover:bg-green-900/30 rounded-lg transition-colors"
+                    >
+                      <MessageCircle className="w-3 h-3" />
+                      WhatsApp
+                    </button>
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleShare('twitter');
+                      }}
+                      className="w-full flex items-center gap-2 px-3 py-2 text-xs font-semibold text-gray-700 dark:text-gray-300 hover:bg-blue-100 dark:hover:bg-blue-900/30 rounded-lg transition-colors"
+                    >
+                      <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 24 24">
+                        <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/>
+                      </svg>
+                      X (Twitter)
+                    </button>
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleShare('telegram');
+                      }}
+                      className="w-full flex items-center gap-2 px-3 py-2 text-xs font-semibold text-gray-700 dark:text-gray-300 hover:bg-blue-100 dark:hover:bg-blue-900/30 rounded-lg transition-colors"
+                    >
+                      <Send className="w-3 h-3" />
+                      Telegram
+                    </button>
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleShare('discord');
+                      }}
+                      className="w-full flex items-center gap-2 px-3 py-2 text-xs font-semibold text-gray-700 dark:text-gray-300 hover:bg-indigo-100 dark:hover:bg-indigo-900/30 rounded-lg transition-colors"
+                    >
+                      <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 24 24">
+                        <path d="M20.317 4.37a19.791 19.791 0 0 0-4.885-1.515a.074.074 0 0 0-.079.037c-.21.375-.444.864-.608 1.25a18.27 18.27 0 0 0-5.487 0a12.64 12.64 0 0 0-.617-1.25a.077.077 0 0 0-.079-.037A19.736 19.736 0 0 0 3.677 4.37a.07.07 0 0 0-.032.027C.533 9.046-.32 13.58.099 18.057a.082.082 0 0 0 .031.057a19.9 19.9 0 0 0 5.993 3.03a.078.078 0 0 0 .084-.028a14.09 14.09 0 0 0 1.226-1.994a.076.076 0 0 0-.041-.106a13.107 13.107 0 0 1-1.872-.892a.077.077 0 0 1-.008-.128a10.2 10.2 0 0 0 .372-.292a.074.074 0 0 1 .077-.01c3.928 1.793 8.18 1.793 12.062 0a.074.074 0 0 1 .078.01c.12.098.246.198.373.292a.077.077 0 0 1-.006.127a12.299 12.299 0 0 1-1.873.892a.077.077 0 0 0-.041.107c.36.698.772 1.362 1.225 1.993a.076.076 0 0 0 .084.028a19.839 19.839 0 0 0 6.002-3.03a.077.077 0 0 0 .032-.054c.5-5.177-.838-9.674-3.549-13.66a.061.061 0 0 0-.031-.03zM8.02 15.33c-1.183 0-2.157-1.085-2.157-2.419c0-1.333.956-2.419 2.157-2.419c1.21 0 2.176 1.096 2.157 2.42c0 1.333-.956 2.418-2.157 2.418zm7.975 0c-1.183 0-2.157-1.085-2.157-2.419c0-1.333.955-2.419 2.157-2.419c1.21 0 2.176 1.096 2.157 2.42c0 1.333-.946 2.418-2.157 2.418z"/>
+                      </svg>
+                      Discord
+                    </button>
+                  </div>
+                </motion.div>
+              )}
+            </div>
           </div>
         </div>
       </Card>

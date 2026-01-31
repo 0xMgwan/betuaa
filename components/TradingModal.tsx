@@ -1,13 +1,14 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { X, AlertCircle } from 'lucide-react';
+import { X, AlertCircle, Sparkles, TrendingUp, Zap } from 'lucide-react';
 import Image from 'next/image';
 import { parseUnits, formatUnits } from 'viem';
 import { useAccount } from 'wagmi';
 import { useCTFMintPositionTokens } from '@/hooks/useCTFMarket';
 import { useApproveToken, useTokenBalance, useTokenAllowance } from '@/hooks/useERC20';
 import { CONTRACTS } from '@/lib/contracts';
+import { motion, AnimatePresence } from 'framer-motion';
 
 interface TradingModalProps {
   isOpen: boolean;
@@ -129,96 +130,154 @@ export default function TradingModal({
   const balanceFormatted = balance ? formatUnits(balance as bigint, tokenDecimals) : '0';
 
   return (
-    <div 
-      className="fixed inset-0 bg-black/70 dark:bg-black/80 flex items-center justify-center z-[9999] p-4 backdrop-blur-md" 
-      onClick={onClose}
-      style={{ willChange: 'opacity' }}
-    >
-      <div 
-        className="bg-white dark:bg-gray-800 rounded-2xl max-w-md w-full p-6 border-2 border-gray-200 dark:border-gray-700 shadow-2xl"
-        onClick={(e) => e.stopPropagation()}
-        style={{ willChange: 'transform' }}
+    <AnimatePresence>
+      <motion.div 
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        exit={{ opacity: 0 }}
+        className="fixed inset-0 bg-black/60 dark:bg-black/80 backdrop-blur-sm flex items-center justify-center z-[9999] p-4" 
+        onClick={onClose}
       >
-        {/* Header */}
-        <div className="flex items-center justify-between mb-6">
-          <h2 className="text-xl font-bold text-gray-900 dark:text-white">
-            Buy {outcomeName}
-          </h2>
-          <button
-            onClick={onClose}
-            className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
-          >
-            <X className="w-5 h-5 text-gray-500 dark:text-gray-400" />
-          </button>
-        </div>
+        <motion.div 
+          initial={{ scale: 0.9, opacity: 0, y: 20 }}
+          animate={{ scale: 1, opacity: 1, y: 0 }}
+          exit={{ scale: 0.9, opacity: 0, y: 20 }}
+          transition={{ type: "spring", duration: 0.5 }}
+          className="bg-gradient-to-br from-white via-gray-50 to-gray-100 dark:from-gray-800 dark:via-gray-800 dark:to-gray-900 rounded-2xl max-w-md w-full shadow-2xl border border-gray-200/50 dark:border-gray-700/50 overflow-hidden"
+          onClick={(e) => e.stopPropagation()}
+        >
+          {/* Header with gradient background */}
+          <div className="bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600 p-6 relative overflow-hidden">
+            <div className="absolute inset-0 bg-white/10 backdrop-blur-sm" />
+            <div className="relative z-10 flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <div className="p-2 bg-white/20 rounded-lg backdrop-blur-sm">
+                  <Sparkles className="w-5 h-5 text-white" />
+                </div>
+                <div>
+                  <p className="text-white/80 text-xs font-semibold uppercase tracking-wider">Buy Position</p>
+                  <h2 className="text-2xl font-black text-white">
+                    {outcomeName}
+                  </h2>
+                </div>
+              </div>
+              <motion.button
+                whileHover={{ scale: 1.1, rotate: 90 }}
+                whileTap={{ scale: 0.9 }}
+                onClick={onClose}
+                className="p-2 hover:bg-white/20 rounded-lg transition-colors backdrop-blur-sm"
+              >
+                <X className="w-5 h-5 text-white" />
+              </motion.button>
+            </div>
+          </div>
 
         {mintSuccess ? (
-          <div className="text-center py-8 space-y-6">
+          <motion.div 
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="text-center py-8 px-6 space-y-6"
+          >
             {/* Success Icon with Animation */}
-            <div className="flex justify-center">
-              <div className="w-20 h-20 bg-gradient-to-br from-green-400 to-emerald-500 rounded-full flex items-center justify-center mx-auto shadow-lg shadow-green-500/30 animate-pulse">
-                <span className="text-4xl">✅</span>
+            <motion.div 
+              className="flex justify-center"
+              initial={{ scale: 0 }}
+              animate={{ scale: 1 }}
+              transition={{ type: "spring", delay: 0.2 }}
+            >
+              <div className="w-20 h-20 bg-gradient-to-br from-green-400 to-emerald-500 rounded-full flex items-center justify-center shadow-lg shadow-green-500/30">
+                <motion.span 
+                  className="text-4xl"
+                  animate={{ scale: [1, 1.2, 1] }}
+                  transition={{ duration: 0.6, delay: 0.3 }}
+                >
+                  ✅
+                </motion.span>
               </div>
-            </div>
+            </motion.div>
 
             {/* Success Message */}
-            <div>
-              <h3 className="text-2xl font-bold bg-gradient-to-r from-green-600 to-emerald-600 bg-clip-text text-transparent mb-2">
+            <motion.div
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.3 }}
+            >
+              <h3 className="text-2xl font-black bg-gradient-to-r from-green-600 to-emerald-600 bg-clip-text text-transparent mb-2">
                 Position Tokens Minted!
               </h3>
               <p className="text-gray-600 dark:text-gray-400 text-sm">
                 Your position has been successfully created
               </p>
-            </div>
+            </motion.div>
 
             {/* Details Card */}
-            <div className="bg-gradient-to-br from-green-50 to-emerald-50 dark:from-green-900/20 dark:to-emerald-900/20 rounded-lg p-4 space-y-3 border border-green-200 dark:border-green-800">
+            <motion.div 
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.4 }}
+              className="bg-gradient-to-br from-green-50 to-emerald-50 dark:from-green-900/20 dark:to-emerald-900/20 rounded-xl p-4 space-y-3 border border-green-200/70 dark:border-green-700/50 backdrop-blur-sm"
+            >
               <div className="flex items-center justify-between">
-                <span className="text-sm text-gray-600 dark:text-gray-400">Outcome</span>
-                <span className="font-semibold text-gray-900 dark:text-white">{outcomeName}</span>
+                <span className="text-sm font-semibold text-gray-600 dark:text-gray-400">Outcome</span>
+                <span className="font-black text-gray-900 dark:text-white">{outcomeName}</span>
               </div>
-              <div className="h-px bg-green-200 dark:bg-green-800"></div>
+              <div className="h-px bg-gradient-to-r from-green-200 to-emerald-200 dark:from-green-800 dark:to-emerald-800"></div>
               <div className="flex items-center justify-between">
-                <span className="text-sm text-gray-600 dark:text-gray-400">Amount Invested</span>
-                <span className="font-semibold text-gray-900 dark:text-white flex items-center gap-2">
-                  <Image src="/USDC logo.png" alt="USDC" width={20} height={20} className="rounded-full" />
+                <span className="text-sm font-semibold text-gray-600 dark:text-gray-400">Amount Invested</span>
+                <span className="font-black text-gray-900 dark:text-white flex items-center gap-2">
+                  <Image src="/USDC logo.png" alt="USDC" width={16} height={16} className="rounded-full" />
                   {amount} {tokenSymbol}
                 </span>
               </div>
-              <div className="h-px bg-green-200 dark:bg-green-800"></div>
+              <div className="h-px bg-gradient-to-r from-green-200 to-emerald-200 dark:from-green-800 dark:to-emerald-800"></div>
               <div className="flex items-center justify-between">
-                <span className="text-sm text-gray-600 dark:text-gray-400">Price per Share</span>
-                <span className="font-semibold text-gray-900 dark:text-white">{currentPrice}¢</span>
+                <span className="text-sm font-semibold text-gray-600 dark:text-gray-400">Price per Share</span>
+                <span className="font-black text-gray-900 dark:text-white">{currentPrice}¢</span>
               </div>
-              <div className="h-px bg-green-200 dark:bg-green-800"></div>
+              <div className="h-px bg-gradient-to-r from-green-200 to-emerald-200 dark:from-green-800 dark:to-emerald-800"></div>
               <div className="flex items-center justify-between">
-                <span className="text-sm text-gray-600 dark:text-gray-400">Tokens Received</span>
-                <span className="font-bold text-green-600 dark:text-green-400">
+                <span className="text-sm font-semibold text-gray-600 dark:text-gray-400">Tokens Received</span>
+                <span className="font-black text-green-600 dark:text-green-400">
                   {(parseFloat(amount) / (currentPrice / 100)).toFixed(2)} tokens
                 </span>
               </div>
-            </div>
+            </motion.div>
 
             {/* Info Message */}
-            <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-3">
+            <motion.div 
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.5 }}
+              className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-3"
+            >
               <p className="text-xs text-blue-800 dark:text-blue-200">
                 💡 Your position tokens will be worth more if {outcomeName.toLowerCase()} wins the market
               </p>
-            </div>
+            </motion.div>
 
             {/* Action Button */}
-            <button
+            <motion.button
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.6 }}
+              whileHover={{ scale: 1.05, y: -2 }}
+              whileTap={{ scale: 0.95 }}
               onClick={onClose}
-              className="w-full px-6 py-3 bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white rounded-lg font-semibold transition-all duration-300 shadow-lg shadow-green-500/30 hover:shadow-xl hover:shadow-green-500/40"
+              className="w-full px-6 py-3 bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white rounded-xl font-black transition-all duration-300 shadow-lg shadow-green-500/30 hover:shadow-xl hover:shadow-green-500/40"
             >
               Done
-            </button>
-          </div>
+            </motion.button>
+          </motion.div>
         ) : (
-          <form onSubmit={handleSubmit} className="space-y-4">
-            {/* Amount Input */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+          <form onSubmit={handleSubmit} className="p-6 space-y-4">
+            {/* Amount Input Section */}
+            <motion.div
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.1 }}
+            >
+              <label className="block text-sm font-black text-gray-900 dark:text-white mb-3 flex items-center gap-2">
+                <Zap className="w-4 h-4 text-blue-600" />
                 Amount ({tokenSymbol})
               </label>
               <input
@@ -229,94 +288,149 @@ export default function TradingModal({
                 step="0.000001"
                 min="0"
                 disabled={step !== 'input'}
-                className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white disabled:opacity-50"
+                className="w-full px-4 py-3 bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-700 dark:to-gray-800 border-2 border-gray-200 dark:border-gray-600 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:text-white disabled:opacity-50 font-semibold transition-all"
                 required
               />
-              <div className="mt-2 flex items-center justify-between text-sm">
-                <span className="text-gray-500 dark:text-gray-400">
-                  Balance: {parseFloat(balanceFormatted).toFixed(4)} {tokenSymbol}
+              <div className="mt-3 flex items-center justify-between text-sm">
+                <span className="text-gray-600 dark:text-gray-400 font-semibold">
+                  Balance: <span className="text-gray-900 dark:text-white font-black">{parseFloat(balanceFormatted).toFixed(4)}</span> {tokenSymbol}
                 </span>
-                <button
+                <motion.button
                   type="button"
                   onClick={() => setAmount(balanceFormatted)}
-                  className="text-blue-600 hover:text-blue-700 font-medium"
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                  className="text-blue-600 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300 font-black px-3 py-1 rounded-lg hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-all"
                   disabled={step !== 'input'}
                 >
                   Max
-                </button>
+                </motion.button>
               </div>
-            </div>
+            </motion.div>
 
-            {/* Price Info */}
-            <div className="bg-gray-50 dark:bg-gray-900 rounded-lg p-4 space-y-2">
-              <div className="flex justify-between text-sm">
-                <span className="text-gray-600 dark:text-gray-400">Price per share:</span>
-                <span className="font-medium text-gray-900 dark:text-white">{currentPrice}¢</span>
+            {/* Price Info Card */}
+            <motion.div 
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.2 }}
+              className="bg-gradient-to-br from-blue-50 to-cyan-50 dark:from-blue-900/20 dark:to-cyan-900/20 rounded-xl p-4 border border-blue-200/50 dark:border-blue-700/50 backdrop-blur-sm space-y-3"
+            >
+              <div className="flex items-center justify-between">
+                <span className="text-sm font-semibold text-gray-600 dark:text-gray-400 flex items-center gap-2">
+                  <TrendingUp className="w-4 h-4 text-blue-600 dark:text-blue-400" />
+                  Price per share
+                </span>
+                <span className="text-lg font-black text-blue-600 dark:text-blue-400">{currentPrice}¢</span>
               </div>
-              <div className="flex justify-between text-sm">
-                <span className="text-gray-600 dark:text-gray-400">Estimated cost:</span>
-                <span className="font-medium text-gray-900 dark:text-white">
-                  ~{estimatedCostDisplay.toFixed(4)} {tokenSymbol}
+              <div className="h-px bg-gradient-to-r from-blue-200 to-cyan-200 dark:from-blue-800 dark:to-cyan-800"></div>
+              <div className="flex items-center justify-between">
+                <span className="text-sm font-semibold text-gray-600 dark:text-gray-400">Estimated cost</span>
+                <span className="text-lg font-black text-gray-900 dark:text-white flex items-center gap-2">
+                  <Image src="/USDC logo.png" alt="USDC" width={16} height={16} className="rounded-full" />
+                  ~{estimatedCostDisplay.toFixed(4)}
                 </span>
               </div>
-            </div>
+            </motion.div>
 
             {/* Warning */}
-            {estimatedCostDisplay > parseFloat(balanceFormatted) && (
-              <div className="flex items-start gap-2 p-3 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg">
-                <AlertCircle className="w-5 h-5 text-red-600 dark:text-red-400 flex-shrink-0 mt-0.5" />
-                <p className="text-sm text-red-800 dark:text-red-200">
-                  Insufficient balance. You need ~{estimatedCostDisplay.toFixed(4)} {tokenSymbol}
-                </p>
-              </div>
-            )}
+            <AnimatePresence>
+              {estimatedCostDisplay > parseFloat(balanceFormatted) && (
+                <motion.div 
+                  initial={{ opacity: 0, y: -10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -10 }}
+                  className="flex items-start gap-2 p-4 bg-red-50 dark:bg-red-900/20 border border-red-200/70 dark:border-red-700/50 rounded-xl backdrop-blur-sm"
+                >
+                  <AlertCircle className="w-5 h-5 text-red-600 dark:text-red-400 flex-shrink-0 mt-0.5" />
+                  <p className="text-sm font-semibold text-red-800 dark:text-red-200">
+                    Insufficient balance. You need ~{estimatedCostDisplay.toFixed(4)} {tokenSymbol}
+                  </p>
+                </motion.div>
+              )}
+            </AnimatePresence>
 
             {/* Action Buttons */}
-            <div className="flex gap-3 pt-2">
-              <button
+            <motion.div 
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.3 }}
+              className="flex gap-3 pt-2"
+            >
+              <motion.button
                 type="button"
                 onClick={onClose}
                 disabled={isApproving || isMinting}
-                className="flex-1 px-6 py-3 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 font-medium transition-colors disabled:opacity-50"
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.98 }}
+                className="flex-1 px-6 py-3 border-2 border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 rounded-xl hover:bg-gray-50 dark:hover:bg-gray-700/50 font-black transition-all disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 Cancel
-              </button>
-              <button
+              </motion.button>
+              <motion.button
                 type="submit"
                 disabled={!amount || isApproving || isMinting || estimatedCostDisplay > parseFloat(balanceFormatted)}
-                className="flex-1 px-6 py-3 bg-blue-600 hover:bg-blue-700 disabled:bg-gray-400 text-white rounded-lg font-medium transition-colors"
+                whileHover={{ scale: !(!amount || isApproving || isMinting || estimatedCostDisplay > parseFloat(balanceFormatted)) ? 1.02 : 1 }}
+                whileTap={{ scale: 0.98 }}
+                className="flex-1 px-6 py-3 bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 disabled:from-gray-400 disabled:to-gray-500 text-white rounded-xl font-black transition-all shadow-lg shadow-blue-500/30 hover:shadow-xl hover:shadow-blue-500/40 disabled:shadow-none disabled:cursor-not-allowed"
               >
                 {isApproving ? 'Approving...' : isMinting ? 'Minting...' : needsApproval ? 'Approve & Mint' : 'Mint Tokens'}
-              </button>
-            </div>
+              </motion.button>
+            </motion.div>
 
-            {/* Status Message */}
-            {step === 'approve' && !approveSuccess && (
-              <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-3">
-                <p className="text-sm text-blue-800 dark:text-blue-200">
-                  Step 1/2: Approving {tokenSymbol} spending...
-                </p>
-              </div>
-            )}
+            {/* Status Messages */}
+            <AnimatePresence>
+              {step === 'approve' && !approveSuccess && (
+                <motion.div 
+                  initial={{ opacity: 0, y: -10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -10 }}
+                  className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200/70 dark:border-blue-700/50 rounded-xl p-4 backdrop-blur-sm"
+                >
+                  <p className="text-sm font-semibold text-blue-800 dark:text-blue-200 flex items-center gap-2">
+                    <motion.span animate={{ rotate: 360 }} transition={{ duration: 2, repeat: Infinity }}>
+                      ⏳
+                    </motion.span>
+                    Step 1/2: Approving {tokenSymbol} spending...
+                  </p>
+                </motion.div>
+              )}
 
-            {step === 'approve' && approveSuccess && (
-              <div className="bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg p-3">
-                <p className="text-sm text-green-800 dark:text-green-200">
-                  ✓ Approval confirmed! Waiting for on-chain confirmation before buying...
-                </p>
-              </div>
-            )}
+              {step === 'approve' && approveSuccess && (
+                <motion.div 
+                  initial={{ opacity: 0, y: -10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -10 }}
+                  className="bg-green-50 dark:bg-green-900/20 border border-green-200/70 dark:border-green-700/50 rounded-xl p-4 backdrop-blur-sm"
+                >
+                  <p className="text-sm font-semibold text-green-800 dark:text-green-200 flex items-center gap-2">
+                    <motion.span animate={{ scale: [1, 1.2, 1] }} transition={{ duration: 0.6 }}>
+                      ✓
+                    </motion.span>
+                    Approval confirmed! Proceeding to mint...
+                  </p>
+                </motion.div>
+              )}
 
-            {step === 'mint' && (
-              <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-3">
-                <p className="text-sm text-blue-800 dark:text-blue-200">
-                  Step 2/2: Minting position tokens...
-                </p>
-              </div>
-            )}
+              {step === 'mint' && (
+                <motion.div 
+                  initial={{ opacity: 0, y: -10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -10 }}
+                  className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200/70 dark:border-blue-700/50 rounded-xl p-4 backdrop-blur-sm"
+                >
+                  <p className="text-sm font-semibold text-blue-800 dark:text-blue-200 flex items-center gap-2">
+                    <motion.span animate={{ rotate: 360 }} transition={{ duration: 2, repeat: Infinity }}>
+                      ⏳
+                    </motion.span>
+                    Step 2/2: Minting position tokens...
+                  </p>
+                </motion.div>
+              )}
+            </AnimatePresence>
           </form>
         )}
-      </div>
-    </div>
+        </motion.div>
+      </motion.div>
+    </AnimatePresence>
   );
 }
