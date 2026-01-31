@@ -3,7 +3,7 @@
 import { memo } from "react";
 import { TrendingUp, TrendingDown, Clock, Bitcoin, Trophy, Building2, Clapperboard, Cpu, BarChart3, LucideIcon, Sparkles } from "lucide-react";
 import { Card } from "./ui/card";
-import { extractCategory, getCategoryInfo } from '@/lib/categoryUtils';
+import { extractCategory, getCategoryInfo, extractResolutionType, extractCustomOutcomes, hasMarketImage } from '@/lib/categoryUtils';
 import Image from 'next/image';
 import { motion } from "framer-motion";
 
@@ -62,6 +62,12 @@ function CompactMarketCard({
     
     onTradeClick(id, outcomeId, outcomeName, price, paymentToken);
   };
+  
+  // Extract custom outcomes and resolution type
+  const resolutionType = description ? extractResolutionType(description) : 'yesno';
+  const customOutcomes = description ? extractCustomOutcomes(description) : [];
+  const isCustomMarket = resolutionType === 'custom' && customOutcomes.length > 0;
+  
   // Extract category from description if available (for blockchain markets)
   const actualCategory = description ? getCategoryInfo(extractCategory(description)).label : category;
   
@@ -159,14 +165,24 @@ function CompactMarketCard({
           )}
 
           <div className="flex items-start gap-1.5 md:gap-2 mb-1.5 md:mb-2">
-            {/* Category Icon with enhanced gradient and animation */}
+            {/* Category Icon or Market Image for custom markets */}
             <motion.div 
-              className={`w-9 h-9 md:w-10 md:h-10 rounded-lg md:rounded-xl bg-gradient-to-br ${getCategoryColor()} flex items-center justify-center flex-shrink-0 shadow-lg group-hover:shadow-2xl relative overflow-hidden`}
-              whileHover={{ rotate: [0, -10, 10, -10, 0], scale: 1.1 }}
+              className={`w-9 h-9 md:w-10 md:h-10 rounded-lg md:rounded-xl ${isCustomMarket && image ? 'bg-white dark:bg-gray-800 border-2 border-gray-200 dark:border-gray-700' : `bg-gradient-to-br ${getCategoryColor()}`} flex items-center justify-center flex-shrink-0 shadow-lg group-hover:shadow-2xl relative overflow-hidden`}
+              whileHover={{ rotate: isCustomMarket && image ? 0 : [0, -10, 10, -10, 0], scale: 1.1 }}
               transition={{ duration: 0.5 }}
             >
-              <div className="absolute inset-0 bg-white/20 group-hover:bg-white/30 transition-colors" />
-              <CategoryIcon className="w-4 h-4 md:w-5 md:h-5 text-white drop-shadow-lg relative z-10" />
+              {isCustomMarket && image ? (
+                <img 
+                  src={image} 
+                  alt={question}
+                  className="w-full h-full object-cover rounded-lg md:rounded-xl"
+                />
+              ) : (
+                <>
+                  <div className="absolute inset-0 bg-white/20 group-hover:bg-white/30 transition-colors" />
+                  <CategoryIcon className="w-4 h-4 md:w-5 md:h-5 text-white drop-shadow-lg relative z-10" />
+                </>
+              )}
             </motion.div>
             
             <div className="flex-1 min-w-0">
@@ -302,34 +318,74 @@ function CompactMarketCard({
           </motion.div>
 
           {/* Enhanced price buttons with animations */}
-          <div className="flex items-center gap-1.5 md:gap-2 mb-1.5 md:mb-2">
-            <motion.button
-              type="button"
-              onClick={(e) => handleButtonClick(e, 0, 'Yes', yesPrice)}
-              disabled={status !== 'active'}
-              whileHover={{ scale: 1.05, y: -2 }}
-              whileTap={{ scale: 0.95 }}
-              className="flex-1 bg-gradient-to-br from-green-50 via-emerald-50 to-green-50 dark:from-green-900/30 dark:via-emerald-900/30 dark:to-green-900/30 rounded-lg md:rounded-xl px-2 py-1.5 md:py-2 hover:from-green-100 hover:via-emerald-100 hover:to-green-100 dark:hover:from-green-900/50 dark:hover:via-emerald-900/50 dark:hover:to-green-900/50 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed border-2 border-green-200/70 dark:border-green-700/50 hover:border-green-400 dark:hover:border-green-600 hover:shadow-lg hover:shadow-green-500/30 group/yes backdrop-blur-sm"
-            >
-              <div className="text-[9px] md:text-[10px] text-gray-600 dark:text-gray-400 font-semibold mb-0.5">Yes</div>
-              <div className="text-base md:text-lg font-black text-green-600 dark:text-green-400 group-hover/yes:scale-110 transition-transform">
-                {(yesPrice * 100).toFixed(0)}¢
-              </div>
-            </motion.button>
-            <motion.button
-              type="button"
-              onClick={(e) => handleButtonClick(e, 1, 'No', noPrice)}
-              disabled={status !== 'active'}
-              whileHover={{ scale: 1.05, y: -2 }}
-              whileTap={{ scale: 0.95 }}
-              className="flex-1 bg-gradient-to-br from-red-50 via-rose-50 to-red-50 dark:from-red-900/30 dark:via-rose-900/30 dark:to-red-900/30 rounded-lg md:rounded-xl px-2 py-1.5 md:py-2 hover:from-red-100 hover:via-rose-100 hover:to-red-100 dark:hover:from-red-900/50 dark:hover:via-rose-900/50 dark:hover:to-red-900/50 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed border-2 border-red-200/70 dark:border-red-700/50 hover:border-red-400 dark:hover:border-red-600 hover:shadow-lg hover:shadow-red-500/30 group/no backdrop-blur-sm"
-            >
-              <div className="text-[9px] md:text-[10px] text-gray-600 dark:text-gray-400 font-semibold mb-0.5">No</div>
-              <div className="text-base md:text-lg font-black text-red-600 dark:text-red-400 group-hover/no:scale-110 transition-transform">
-                {(noPrice * 100).toFixed(0)}¢
-              </div>
-            </motion.button>
-          </div>
+          {isCustomMarket ? (
+            // Custom Outcomes Display
+            <div className="space-y-1.5 mb-1.5 md:mb-2">
+              {customOutcomes.slice(0, 3).map((outcome, index) => {
+                const colors = [
+                  { bg: 'from-blue-50 via-cyan-50 to-blue-50', darkBg: 'dark:from-blue-900/30 dark:via-cyan-900/30 dark:to-blue-900/30', border: 'border-blue-200/70 dark:border-blue-700/50', hoverBorder: 'hover:border-blue-400 dark:hover:border-blue-600', text: 'text-blue-600 dark:text-blue-400', shadow: 'hover:shadow-blue-500/30' },
+                  { bg: 'from-purple-50 via-pink-50 to-purple-50', darkBg: 'dark:from-purple-900/30 dark:via-pink-900/30 dark:to-purple-900/30', border: 'border-purple-200/70 dark:border-purple-700/50', hoverBorder: 'hover:border-purple-400 dark:hover:border-purple-600', text: 'text-purple-600 dark:text-purple-400', shadow: 'hover:shadow-purple-500/30' },
+                  { bg: 'from-amber-50 via-orange-50 to-amber-50', darkBg: 'dark:from-amber-900/30 dark:via-orange-900/30 dark:to-amber-900/30', border: 'border-amber-200/70 dark:border-amber-700/50', hoverBorder: 'hover:border-amber-400 dark:hover:border-amber-600', text: 'text-amber-600 dark:text-amber-400', shadow: 'hover:shadow-amber-500/30' },
+                ][index % 3];
+                
+                return (
+                  <motion.button
+                    key={index}
+                    type="button"
+                    onClick={(e) => handleButtonClick(e, index, outcome, 50)}
+                    disabled={status !== 'active'}
+                    whileHover={{ scale: 1.02, y: -1 }}
+                    whileTap={{ scale: 0.98 }}
+                    className={`w-full bg-gradient-to-br ${colors.bg} ${colors.darkBg} rounded-lg px-2 py-1.5 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed border-2 ${colors.border} ${colors.hoverBorder} hover:shadow-lg ${colors.shadow} backdrop-blur-sm`}
+                  >
+                    <div className="flex items-center justify-between">
+                      <div className={`text-[9px] md:text-[10px] font-bold ${colors.text} truncate flex-1 text-left`}>
+                        {outcome}
+                      </div>
+                      <div className={`text-sm md:text-base font-black ${colors.text} ml-2`}>
+                        50¢
+                      </div>
+                    </div>
+                  </motion.button>
+                );
+              })}
+              {customOutcomes.length > 3 && (
+                <div className="text-center text-[9px] text-gray-500 dark:text-gray-400 font-semibold">
+                  +{customOutcomes.length - 3} more options
+                </div>
+              )}
+            </div>
+          ) : (
+            // Standard Yes/No buttons
+            <div className="flex items-center gap-1.5 md:gap-2 mb-1.5 md:mb-2">
+              <motion.button
+                type="button"
+                onClick={(e) => handleButtonClick(e, 0, 'Yes', yesPrice)}
+                disabled={status !== 'active'}
+                whileHover={{ scale: 1.05, y: -2 }}
+                whileTap={{ scale: 0.95 }}
+                className="flex-1 bg-gradient-to-br from-green-50 via-emerald-50 to-green-50 dark:from-green-900/30 dark:via-emerald-900/30 dark:to-green-900/30 rounded-lg md:rounded-xl px-2 py-1.5 md:py-2 hover:from-green-100 hover:via-emerald-100 hover:to-green-100 dark:hover:from-green-900/50 dark:hover:via-emerald-900/50 dark:hover:to-green-900/50 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed border-2 border-green-200/70 dark:border-green-700/50 hover:border-green-400 dark:hover:border-green-600 hover:shadow-lg hover:shadow-green-500/30 group/yes backdrop-blur-sm"
+              >
+                <div className="text-[9px] md:text-[10px] text-gray-600 dark:text-gray-400 font-semibold mb-0.5">Yes</div>
+                <div className="text-base md:text-lg font-black text-green-600 dark:text-green-400 group-hover/yes:scale-110 transition-transform">
+                  {(yesPrice * 100).toFixed(0)}¢
+                </div>
+              </motion.button>
+              <motion.button
+                type="button"
+                onClick={(e) => handleButtonClick(e, 1, 'No', noPrice)}
+                disabled={status !== 'active'}
+                whileHover={{ scale: 1.05, y: -2 }}
+                whileTap={{ scale: 0.95 }}
+                className="flex-1 bg-gradient-to-br from-red-50 via-rose-50 to-red-50 dark:from-red-900/30 dark:via-rose-900/30 dark:to-red-900/30 rounded-lg md:rounded-xl px-2 py-1.5 md:py-2 hover:from-red-100 hover:via-rose-100 hover:to-red-100 dark:hover:from-red-900/50 dark:hover:via-rose-900/50 dark:hover:to-red-900/50 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed border-2 border-red-200/70 dark:border-red-700/50 hover:border-red-400 dark:hover:border-red-600 hover:shadow-lg hover:shadow-red-500/30 group/no backdrop-blur-sm"
+              >
+                <div className="text-[9px] md:text-[10px] text-gray-600 dark:text-gray-400 font-semibold mb-0.5">No</div>
+                <div className="text-base md:text-lg font-black text-red-600 dark:text-red-400 group-hover/no:scale-110 transition-transform">
+                  {(noPrice * 100).toFixed(0)}¢
+                </div>
+              </motion.button>
+            </div>
+          )}
 
           {/* Enhanced volume display */}
           <div className="flex items-center justify-between px-0.5">
