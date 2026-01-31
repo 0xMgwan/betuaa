@@ -37,6 +37,11 @@ export default function BlockchainMarketModal({
   const [showTradingModal, setShowTradingModal] = useState(false);
   const [selectedOutcome, setSelectedOutcome] = useState<{ id: number; name: string; price: number } | null>(null);
   
+  // Extract custom outcomes from market description
+  const resolutionType = extractResolutionType(market.description);
+  const customOutcomes = extractCustomOutcomes(market.description);
+  const isCustomMarket = resolutionType === 'custom' && customOutcomes.length > 0;
+  
   // Use Graph data as primary source, positions as fallback
   const displayVolume = useMemo(() => {
     // Primary: Use subgraph data (total volume from all users)
@@ -220,73 +225,166 @@ export default function BlockchainMarketModal({
             </motion.div>
 
             {/* Enhanced Trading Section */}
-            <div className="grid grid-cols-2 gap-2 md:gap-4">
-              {/* Yes Option */}
-              <motion.div 
-                initial={{ opacity: 0, x: -20 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ delay: 0.7 }}
-                className="bg-gradient-to-br from-green-50 via-emerald-50 to-green-50 dark:from-green-900/30 dark:via-emerald-900/30 dark:to-green-900/30 rounded-xl p-3 md:p-5 border-2 border-green-200/70 dark:border-green-700/50 backdrop-blur-sm relative overflow-hidden"
-              >
-                <div className="absolute inset-0 bg-gradient-to-br from-green-500/5 to-emerald-500/5"></div>
-                <div className="relative z-10">
-                  <div className="mb-2 md:mb-3">
-                    <div className="text-xs text-gray-600 dark:text-gray-400 mb-1 font-semibold flex items-center gap-1">
-                      <Sparkles className="w-3 h-3" />
-                      Mint Yes Tokens
-                    </div>
-                    <div className="text-2xl md:text-4xl font-black text-green-600 dark:text-green-400">
-                      {yesOutcome?.price || 50}¢
-                    </div>
-                  </div>
-                  <motion.button
-                    disabled={!isActive}
-                    onClick={() => {
-                      setSelectedOutcome({ id: 0, name: yesOutcome?.name || 'Yes', price: yesOutcome?.price || 50 });
-                      setShowTradingModal(true);
-                    }}
-                    whileHover={{ scale: 1.05, y: -2 }}
-                    whileTap={{ scale: 0.95 }}
-                    className="w-full px-4 py-2.5 md:py-3 bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 disabled:from-gray-400 disabled:to-gray-500 disabled:cursor-not-allowed text-white rounded-xl font-black text-sm shadow-lg hover:shadow-xl hover:shadow-green-500/30 transition-all"
-                  >
-                    {isActive ? 'Mint Yes' : 'Closed'}
-                  </motion.button>
-                </div>
-              </motion.div>
+            {isCustomMarket ? (
+              // Custom Outcomes Trading
+              <div className="space-y-3">
+                {customOutcomes.map((outcome, index) => {
+                  const outcomeData = outcomes?.[index];
+                  const price = outcomeData?.price || 50;
+                  const colors = [
+                    { bg: 'from-blue-50 via-cyan-50 to-blue-50', darkBg: 'dark:from-blue-900/30 dark:via-cyan-900/30 dark:to-blue-900/30', border: 'border-blue-200/70 dark:border-blue-700/50', text: 'text-blue-600 dark:text-blue-400', button: 'from-blue-600 to-cyan-600 hover:from-blue-700 hover:to-cyan-700 hover:shadow-blue-500/30' },
+                    { bg: 'from-purple-50 via-pink-50 to-purple-50', darkBg: 'dark:from-purple-900/30 dark:via-pink-900/30 dark:to-purple-900/30', border: 'border-purple-200/70 dark:border-purple-700/50', text: 'text-purple-600 dark:text-purple-400', button: 'from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 hover:shadow-purple-500/30' },
+                    { bg: 'from-amber-50 via-orange-50 to-amber-50', darkBg: 'dark:from-amber-900/30 dark:via-orange-900/30 dark:to-amber-900/30', border: 'border-amber-200/70 dark:border-amber-700/50', text: 'text-amber-600 dark:text-amber-400', button: 'from-amber-600 to-orange-600 hover:from-amber-700 hover:to-orange-700 hover:shadow-amber-500/30' },
+                    { bg: 'from-teal-50 via-green-50 to-teal-50', darkBg: 'dark:from-teal-900/30 dark:via-green-900/30 dark:to-teal-900/30', border: 'border-teal-200/70 dark:border-teal-700/50', text: 'text-teal-600 dark:text-teal-400', button: 'from-teal-600 to-green-600 hover:from-teal-700 hover:to-green-700 hover:shadow-teal-500/30' },
+                  ][index % 4];
 
-              {/* No Option */}
-              <motion.div 
-                initial={{ opacity: 0, x: 20 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ delay: 0.7 }}
-                className="bg-gradient-to-br from-red-50 via-rose-50 to-red-50 dark:from-red-900/30 dark:via-rose-900/30 dark:to-red-900/30 rounded-xl p-3 md:p-5 border-2 border-red-200/70 dark:border-red-700/50 backdrop-blur-sm relative overflow-hidden"
-              >
-                <div className="absolute inset-0 bg-gradient-to-br from-red-500/5 to-rose-500/5"></div>
-                <div className="relative z-10">
-                  <div className="mb-2 md:mb-3">
-                    <div className="text-xs text-gray-600 dark:text-gray-400 mb-1 font-semibold flex items-center gap-1">
-                      <Sparkles className="w-3 h-3" />
-                      Mint No Tokens
+                  return (
+                    <motion.div
+                      key={index}
+                      initial={{ opacity: 0, y: 20 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ delay: 0.7 + index * 0.1 }}
+                      className="space-y-2"
+                    >
+                      <div className="flex items-center justify-between mb-2">
+                        <h4 className="font-black text-gray-900 dark:text-white text-sm md:text-base">
+                          {outcome}
+                        </h4>
+                        <span className={`text-xs font-semibold px-2 py-1 rounded-lg bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300`}>
+                          {((index + 1) / customOutcomes.length * 100).toFixed(0)}%
+                        </span>
+                      </div>
+                      <div className="grid grid-cols-2 gap-2">
+                        {/* Buy Yes for this outcome */}
+                        <motion.div 
+                          initial={{ opacity: 0, x: -20 }}
+                          animate={{ opacity: 1, x: 0 }}
+                          transition={{ delay: 0.8 + index * 0.1 }}
+                          className={`bg-gradient-to-br ${colors.bg} ${colors.darkBg} rounded-xl p-2.5 md:p-3 border-2 ${colors.border} backdrop-blur-sm relative overflow-hidden`}
+                        >
+                          <div className="absolute inset-0 bg-gradient-to-br from-green-500/5 to-emerald-500/5"></div>
+                          <div className="relative z-10">
+                            <div className="text-xs text-gray-600 dark:text-gray-400 mb-1 font-semibold">Buy Yes</div>
+                            <div className="text-lg md:text-2xl font-black text-green-600 dark:text-green-400 mb-2">
+                              {price}¢
+                            </div>
+                            <motion.button
+                              disabled={!isActive}
+                              onClick={() => {
+                                setSelectedOutcome({ id: index * 2, name: `${outcome} - Yes`, price });
+                                setShowTradingModal(true);
+                              }}
+                              whileHover={{ scale: 1.05, y: -2 }}
+                              whileTap={{ scale: 0.95 }}
+                              className="w-full px-3 py-1.5 md:py-2 bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 disabled:from-gray-400 disabled:to-gray-500 disabled:cursor-not-allowed text-white rounded-lg font-bold text-xs md:text-sm shadow-lg hover:shadow-xl hover:shadow-green-500/30 transition-all"
+                            >
+                              {isActive ? 'Buy Yes' : 'Closed'}
+                            </motion.button>
+                          </div>
+                        </motion.div>
+
+                        {/* Buy No for this outcome */}
+                        <motion.div 
+                          initial={{ opacity: 0, x: 20 }}
+                          animate={{ opacity: 1, x: 0 }}
+                          transition={{ delay: 0.8 + index * 0.1 }}
+                          className={`bg-gradient-to-br ${colors.bg} ${colors.darkBg} rounded-xl p-2.5 md:p-3 border-2 ${colors.border} backdrop-blur-sm relative overflow-hidden`}
+                        >
+                          <div className="absolute inset-0 bg-gradient-to-br from-red-500/5 to-rose-500/5"></div>
+                          <div className="relative z-10">
+                            <div className="text-xs text-gray-600 dark:text-gray-400 mb-1 font-semibold">Buy No</div>
+                            <div className="text-lg md:text-2xl font-black text-red-600 dark:text-red-400 mb-2">
+                              {100 - price}¢
+                            </div>
+                            <motion.button
+                              disabled={!isActive}
+                              onClick={() => {
+                                setSelectedOutcome({ id: index * 2 + 1, name: `${outcome} - No`, price: 100 - price });
+                                setShowTradingModal(true);
+                              }}
+                              whileHover={{ scale: 1.05, y: -2 }}
+                              whileTap={{ scale: 0.95 }}
+                              className="w-full px-3 py-1.5 md:py-2 bg-gradient-to-r from-red-600 to-rose-600 hover:from-red-700 hover:to-rose-700 disabled:from-gray-400 disabled:to-gray-500 disabled:cursor-not-allowed text-white rounded-lg font-bold text-xs md:text-sm shadow-lg hover:shadow-xl hover:shadow-red-500/30 transition-all"
+                            >
+                              {isActive ? 'Buy No' : 'Closed'}
+                            </motion.button>
+                          </div>
+                        </motion.div>
+                      </div>
+                    </motion.div>
+                  );
+                })}
+              </div>
+            ) : (
+              // Standard Yes/No Trading
+              <div className="grid grid-cols-2 gap-2 md:gap-4">
+                {/* Yes Option */}
+                <motion.div 
+                  initial={{ opacity: 0, x: -20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ delay: 0.7 }}
+                  className="bg-gradient-to-br from-green-50 via-emerald-50 to-green-50 dark:from-green-900/30 dark:via-emerald-900/30 dark:to-green-900/30 rounded-xl p-3 md:p-5 border-2 border-green-200/70 dark:border-green-700/50 backdrop-blur-sm relative overflow-hidden"
+                >
+                  <div className="absolute inset-0 bg-gradient-to-br from-green-500/5 to-emerald-500/5"></div>
+                  <div className="relative z-10">
+                    <div className="mb-2 md:mb-3">
+                      <div className="text-xs text-gray-600 dark:text-gray-400 mb-1 font-semibold flex items-center gap-1">
+                        <Sparkles className="w-3 h-3" />
+                        Mint Yes Tokens
+                      </div>
+                      <div className="text-2xl md:text-4xl font-black text-green-600 dark:text-green-400">
+                        {yesOutcome?.price || 50}¢
+                      </div>
                     </div>
-                    <div className="text-2xl md:text-4xl font-black text-red-600 dark:text-red-400">
-                      {noOutcome?.price || 50}¢
-                    </div>
+                    <motion.button
+                      disabled={!isActive}
+                      onClick={() => {
+                        setSelectedOutcome({ id: 0, name: yesOutcome?.name || 'Yes', price: yesOutcome?.price || 50 });
+                        setShowTradingModal(true);
+                      }}
+                      whileHover={{ scale: 1.05, y: -2 }}
+                      whileTap={{ scale: 0.95 }}
+                      className="w-full px-4 py-2.5 md:py-3 bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 disabled:from-gray-400 disabled:to-gray-500 disabled:cursor-not-allowed text-white rounded-xl font-black text-sm shadow-lg hover:shadow-xl hover:shadow-green-500/30 transition-all"
+                    >
+                      {isActive ? 'Mint Yes' : 'Closed'}
+                    </motion.button>
                   </div>
-                  <motion.button
-                    disabled={!isActive}
-                    onClick={() => {
-                      setSelectedOutcome({ id: 1, name: noOutcome?.name || 'No', price: noOutcome?.price || 50 });
-                      setShowTradingModal(true);
+                </motion.div>
+
+                {/* No Option */}
+                <motion.div 
+                  initial={{ opacity: 0, x: 20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ delay: 0.7 }}
+                  className="bg-gradient-to-br from-red-50 via-rose-50 to-red-50 dark:from-red-900/30 dark:via-rose-900/30 dark:to-red-900/30 rounded-xl p-3 md:p-5 border-2 border-red-200/70 dark:border-red-700/50 backdrop-blur-sm relative overflow-hidden"
+                >
+                  <div className="absolute inset-0 bg-gradient-to-br from-red-500/5 to-rose-500/5"></div>
+                  <div className="relative z-10">
+                    <div className="mb-2 md:mb-3">
+                      <div className="text-xs text-gray-600 dark:text-gray-400 mb-1 font-semibold flex items-center gap-1">
+                        <Sparkles className="w-3 h-3" />
+                        Mint No Tokens
+                      </div>
+                      <div className="text-2xl md:text-4xl font-black text-red-600 dark:text-red-400">
+                        {noOutcome?.price || 50}¢
+                      </div>
+                    </div>
+                    <motion.button
+                      disabled={!isActive}
+                      onClick={() => {
+                        setSelectedOutcome({ id: 1, name: noOutcome?.name || 'No', price: noOutcome?.price || 50 });
+                        setShowTradingModal(true);
                     }}
                     whileHover={{ scale: 1.05, y: -2 }}
                     whileTap={{ scale: 0.95 }}
                     className="w-full px-4 py-2.5 md:py-3 bg-gradient-to-r from-red-600 to-rose-600 hover:from-red-700 hover:to-rose-700 disabled:from-gray-400 disabled:to-gray-500 disabled:cursor-not-allowed text-white rounded-xl font-black text-sm shadow-lg hover:shadow-xl hover:shadow-red-500/30 transition-all"
-                  >
-                    {isActive ? 'Mint No' : 'Closed'}
-                  </motion.button>
-                </div>
-              </motion.div>
-            </div>
+                    >
+                      {isActive ? 'Mint No' : 'Closed'}
+                    </motion.button>
+                  </div>
+                </motion.div>
+              </div>
+            )}
 
           {/* Trading Modal */}
           {selectedOutcome && (
