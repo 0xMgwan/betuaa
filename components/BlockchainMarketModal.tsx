@@ -17,7 +17,7 @@ import MarketComments from './MarketComments';
 import FavoriteButton from './FavoriteButton';
 import CategoryBadge from './CategoryBadge';
 import { BlockchainMarket } from '@/hooks/useMarkets';
-import { cleanDescription, extractCategory } from '@/lib/categoryUtils';
+import { cleanDescription, extractCategory, extractResolutionType, extractCustomOutcomes } from '@/lib/categoryUtils';
 import Image from 'next/image';
 
 interface BlockchainMarketModalProps {
@@ -137,14 +137,6 @@ export default function BlockchainMarketModal({
             >
               {market.title}
             </motion.h2>
-            <motion.p 
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.2 }}
-              className="text-[11px] md:text-sm text-white/80 leading-relaxed"
-            >
-              {cleanDescription(market.description)}
-            </motion.p>
           </div>
 
           {/* Content */}
@@ -319,15 +311,54 @@ export default function BlockchainMarketModal({
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.8 }}
-              className="bg-gradient-to-br from-amber-50 to-orange-50 dark:from-amber-900/20 dark:to-orange-900/20 rounded-xl p-3 md:p-4 border border-amber-200/50 dark:border-amber-700/50 backdrop-blur-sm"
+              className="bg-gradient-to-br from-amber-50 to-orange-50 dark:from-amber-900/20 dark:to-orange-900/20 rounded-xl p-3 md:p-4 border border-amber-200/50 dark:border-amber-700/50 backdrop-blur-sm space-y-2"
             >
               <h3 className="font-black text-gray-900 dark:text-white mb-1.5 md:mb-2 text-sm flex items-center gap-2">
                 <BarChart3 className="w-4 h-4 text-amber-600 dark:text-amber-400" />
                 Rules Summary
               </h3>
+              
+              {/* Market Description */}
               <p className="text-gray-700 dark:text-gray-300 text-xs leading-relaxed">
-                Resolves to <span className="font-black text-green-600 dark:text-green-400">Yes</span> if event occurs before {closingDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}, otherwise <span className="font-black text-red-600 dark:text-red-400">No</span>.
+                {cleanDescription(market.description)}
               </p>
+
+              {/* Resolution Type and Custom Outcomes */}
+              {(() => {
+                const resolutionType = extractResolutionType(market.description);
+                const customOutcomes = extractCustomOutcomes(market.description);
+                
+                if (resolutionType === 'custom' && customOutcomes.length > 0) {
+                  return (
+                    <div className="space-y-2 pt-2 border-t border-amber-200/50 dark:border-amber-700/50">
+                      <p className="text-gray-700 dark:text-gray-300 text-xs leading-relaxed">
+                        <span className="font-black">Resolution Type:</span> Custom Outcomes
+                      </p>
+                      <div className="flex flex-wrap gap-1.5">
+                        {customOutcomes.map((outcome, index) => (
+                          <span 
+                            key={index}
+                            className="px-2 py-1 bg-white dark:bg-gray-800 rounded-lg text-xs font-semibold text-gray-700 dark:text-gray-300 border border-amber-200 dark:border-amber-700"
+                          >
+                            {outcome}
+                          </span>
+                        ))}
+                      </div>
+                      <p className="text-gray-700 dark:text-gray-300 text-xs leading-relaxed">
+                        Closes on {closingDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
+                      </p>
+                    </div>
+                  );
+                } else {
+                  return (
+                    <div className="pt-2 border-t border-amber-200/50 dark:border-amber-700/50">
+                      <p className="text-gray-700 dark:text-gray-300 text-xs leading-relaxed">
+                        Resolves to <span className="font-black text-green-600 dark:text-green-400">Yes</span> if event occurs before {closingDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}, otherwise <span className="font-black text-red-600 dark:text-red-400">No</span>.
+                      </p>
+                    </div>
+                  );
+                }
+              })()}
             </motion.div>
 
             {/* Market Comments */}
