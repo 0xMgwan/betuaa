@@ -143,8 +143,22 @@ html {
 .scrollbar-hide {
   -ms-overflow-style: none;
   scrollbar-width: none;
+  -webkit-overflow-scrolling: touch; /* iOS momentum scrolling */
+  scroll-behavior: smooth;
+  overscroll-behavior: contain; /* Prevent scroll chaining */
 }
 
 .scrollbar-hide::-webkit-scrollbar {
   display: none;
+}
+
+/* Smooth scrolling for custom outcomes */
+.smooth-scroll-container {
+  scroll-snap-type: y proximity;
+  scroll-padding: 0.375rem;
+}
+
+.smooth-scroll-container > * {
+  scroll-snap-align: start;
+  scroll-snap-stop: normal;
 }
