@@ -249,21 +249,24 @@ export default function CreateMarketModal({ isOpen, onClose }: CreateMarketModal
         closingTimestamp = BigInt(Math.floor(new Date(closingDate).getTime() / 1000));
         
         // Build description with resolution type and custom outcomes
-        let descriptionWithMetadata = `[CATEGORY:${category}] ${description}`;
+        const descriptionMetadata: any = {
+          category,
+          text: description,
+          resolutionType,
+        };
         
         if (resolutionType === 'custom' && customOutcomes.filter(o => o.trim()).length > 0) {
           const validOutcomes = customOutcomes.filter(o => o.trim());
-          descriptionWithMetadata += `\n[RESOLUTION:custom]\n[OUTCOMES:${validOutcomes.join('|')}]`;
-        } else {
-          descriptionWithMetadata += `\n[RESOLUTION:yesno]`;
+          descriptionMetadata.outcomes = validOutcomes;
         }
         
         // Add image metadata if present
         if (marketImage) {
-          descriptionWithMetadata += `\n[IMAGE:true]`;
+          descriptionMetadata.image = marketImage;
         }
         
-        marketDescription = descriptionWithMetadata;
+        // Store as JSON string
+        marketDescription = JSON.stringify(descriptionMetadata);
       }
 
       const liquidityAmount = parseUnits(initialLiquidity || '0', selectedStablecoin.decimals);
