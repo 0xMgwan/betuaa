@@ -73,11 +73,11 @@ function CompactMarketCard({
   const { mintPositionTokens, isPending: isMinting, isSuccess: isMintSuccess } = useCTFMintPositionTokens();
   const { approve, isPending: isApproving, isSuccess: isApproveSuccess } = useApproveToken();
   
-  // Type guard for paymentToken
-  const validPaymentToken = paymentToken as `0x${string}` | undefined;
+  // Type guard for paymentToken - use a dummy address if undefined to satisfy TypeScript
+  const validPaymentToken = (paymentToken && paymentToken.startsWith('0x') ? paymentToken : '0x0000000000000000000000000000000000000000') as `0x${string}`;
   
   const { data: allowance, refetch: refetchAllowance } = useTokenAllowance(
-    validPaymentToken && validPaymentToken.startsWith('0x') ? validPaymentToken : undefined,
+    validPaymentToken,
     address,
     CONTRACTS.baseSepolia.ctfPredictionMarket as `0x${string}`
   );
