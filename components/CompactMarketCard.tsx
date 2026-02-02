@@ -78,7 +78,7 @@ function CompactMarketCard({
   
   const { data: allowance, refetch: refetchAllowance } = useTokenAllowance(
     validPaymentToken,
-    address,
+    address || ('0x0000000000000000000000000000000000000000' as `0x${string}`),
     CONTRACTS.baseSepolia.ctfPredictionMarket as `0x${string}`
   );
 
