@@ -1,11 +1,17 @@
 "use client";
 
-import { memo, useState } from "react";
+import { memo, useState, useEffect } from "react";
 import { TrendingUp, TrendingDown, Clock, Bitcoin, Trophy, Building2, Clapperboard, Cpu, BarChart3, LucideIcon, Sparkles, Share2, Mail, MessageCircle, Send } from "lucide-react";
 import { Card } from "./ui/card";
 import { extractCategory, getCategoryInfo, extractResolutionType, extractCustomOutcomes, hasMarketImage } from '@/lib/categoryUtils';
 import Image from 'next/image';
 import { motion, AnimatePresence } from "framer-motion";
+import { useAccount } from "wagmi";
+import { parseUnits } from "viem";
+import { useCTFMintPositionTokens } from "@/hooks/useCTFMarket";
+import { useApproveToken, useTokenAllowance } from "@/hooks/useERC20";
+import { CONTRACTS } from "@/lib/contracts";
+import PurchaseSuccessModal from "./PurchaseSuccessModal";
 
 const iconMap: Record<string, LucideIcon> = {
   Bitcoin,
@@ -56,6 +62,32 @@ function CompactMarketCard({
   const [showShareMenu, setShowShareMenu] = useState(false);
   const [expandedOutcome, setExpandedOutcome] = useState<number | null>(null);
   const [quickBuyAmount, setQuickBuyAmount] = useState(10);
+  const [isBuying, setIsBuying] = useState(false);
+  const [showSuccessModal, setShowSuccessModal] = useState(false);
+  const [purchasedOutcome, setPurchasedOutcome] = useState<string>("");
+
+  // Wallet hooks
+  const { address, isConnected } = useAccount();
+  const { mintPositionTokens, isPending: isMinting, isSuccess: isMintSuccess } = useCTFMintPositionTokens();
+  const { approve, isPending: isApproving, isSuccess: isApproveSuccess } = useApproveToken();
+  
+  // Type guard for paymentToken
+  const validPaymentToken = paymentToken as `0x${string}` | undefined;
+  
+  const { data: allowance, refetch: refetchAllowance } = useTokenAllowance(
+    validPaymentToken && validPaymentToken.startsWith('0x') ? validPaymentToken : undefined,
+    address,
+    CONTRACTS.baseSepolia.ctfPredictionMarket as `0x${string}`
+  );
+
+  // Handle successful mint
+  useEffect(() => {
+    if (isMintSuccess) {
+      setIsBuying(false);
+      setExpandedOutcome(null);
+      setShowSuccessModal(true);
+    }
+  }, [isMintSuccess]);
 
   const handleButtonClick = (e: React.MouseEvent, outcomeId: number, outcomeName: string, price: number) => {
     e.stopPropagation();
@@ -70,6 +102,47 @@ function CompactMarketCard({
   const handleQuickBuy = (e: React.MouseEvent, outcomeId: number, outcomeName: string, price: number) => {
     e.stopPropagation();
     setExpandedOutcome(expandedOutcome === outcomeId ? null : outcomeId);
+  };
+
+  // Direct buy handler for quick buy interface
+  const handleDirectBuy = async (e: React.MouseEvent, outcomeName: string) => {
+    e.stopPropagation();
+    
+    if (!isConnected) {
+      alert("Please connect your wallet first");
+      return;
+    }
+
+    if (!paymentToken) {
+      alert("Payment token not configured");
+      return;
+    }
+
+    try {
+      setIsBuying(true);
+      setPurchasedOutcome(outcomeName);
+      const amountInWei = parseUnits(quickBuyAmount.toString(), 6); // USDC has 6 decimals
+
+      // Check allowance
+      const currentAllowance = allowance as bigint || BigInt(0);
+      
+      if (currentAllowance < amountInWei) {
+        await approve(
+          paymentToken as `0x${string}`,
+          CONTRACTS.baseSepolia.ctfPredictionMarket as `0x${string}`,
+          amountInWei
+        );
+        await refetchAllowance();
+      }
+
+      // Mint position tokens
+      await mintPositionTokens(id, amountInWei);
+      
+    } catch (error: any) {
+      console.error("Buy error:", error);
+      alert(error?.message || "Failed to complete purchase");
+      setIsBuying(false);
+    }
   };
   
   // Extract custom outcomes and resolution type
@@ -166,15 +239,16 @@ function CompactMarketCard({
   };
 
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.3 }}
-      whileHover={{ scale: 1.02, y: -4 }}
-      whileTap={{ scale: 0.98 }}
-      onClick={onClick}
-      className="cursor-pointer"
-    >
+    <>
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.3 }}
+        whileHover={{ scale: 1.02, y: -4 }}
+        whileTap={{ scale: 0.98 }}
+        onClick={onClick}
+        className="cursor-pointer"
+      >
       <Card 
         className="relative p-2.5 md:p-3 overflow-hidden border border-gray-200/50 dark:border-gray-700/50 bg-white/80 dark:bg-gray-900/80 backdrop-blur-xl shadow-lg hover:shadow-2xl hover:shadow-blue-500/20 dark:hover:shadow-blue-500/30 transition-all duration-500 group"
       >
@@ -353,7 +427,7 @@ function CompactMarketCard({
           {isCustomMarket ? (
             // Custom Outcomes Display with Quick Buy and Scrolling
             <div className="mb-1.5 md:mb-2">
-              <div className={`space-y-1.5 ${customOutcomes.length > 3 ? 'max-h-[150px] overflow-y-scroll pr-1 smooth-scroll-container' : ''} scrollbar-hide`}>
+              <div className={`space-y-1.5 ${customOutcomes.length > 3 ? 'max-h-[120px] overflow-y-scroll pr-1 smooth-scroll-container' : ''} scrollbar-hide`}>
                 {customOutcomes.map((outcome, index) => {
                   const colors = [
                     { bg: 'from-blue-50 via-cyan-50 to-blue-50', darkBg: 'dark:from-blue-900/30 dark:via-cyan-900/30 dark:to-blue-900/30', border: 'border-blue-200/70 dark:border-blue-700/50', hoverBorder: 'hover:border-blue-400 dark:hover:border-blue-600', text: 'text-blue-600 dark:text-blue-400', shadow: 'hover:shadow-blue-500/30' },
@@ -367,25 +441,45 @@ function CompactMarketCard({
                   return (
                     <motion.div
                       key={index}
-                      className="space-y-1.5"
+                      className="space-y-1"
                     >
-                      <motion.button
-                        type="button"
-                        onClick={(e) => handleQuickBuy(e, index, outcome, 50)}
-                        disabled={status !== 'active'}
-                        whileHover={{ scale: 1.02, y: -1 }}
-                        whileTap={{ scale: 0.98 }}
-                        className={`w-full bg-gradient-to-br ${colors.bg} ${colors.darkBg} rounded-lg px-2 py-1.5 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed border-2 ${colors.border} ${colors.hoverBorder} hover:shadow-lg ${colors.shadow} backdrop-blur-sm`}
-                      >
-                        <div className="flex items-center justify-between">
-                          <div className={`text-[9px] md:text-[10px] font-bold ${colors.text} truncate flex-1 text-left`}>
-                            {outcome}
-                          </div>
-                          <div className={`text-sm md:text-base font-black ${colors.text} ml-2`}>
-                            50¢
-                          </div>
+                      {/* Outcome with Yes/No Buttons in one row */}
+                      <div className="flex items-center gap-2">
+                        {/* Outcome Name */}
+                        <div className={`text-[10px] md:text-xs font-bold ${colors.text} flex-1 truncate`}>
+                          {outcome}
                         </div>
-                      </motion.button>
+                        
+                        {/* Yes Button */}
+                        <motion.button
+                          type="button"
+                          onClick={(e) => handleQuickBuy(e, index * 2, `${outcome} - Yes`, 50)}
+                          disabled={status !== 'active'}
+                          whileHover={{ scale: 1.03 }}
+                          whileTap={{ scale: 0.97 }}
+                          className="bg-gradient-to-br from-green-50 to-green-100 dark:from-green-900/30 dark:to-green-800/30 rounded-lg px-3 py-1.5 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed border border-green-200/70 dark:border-green-700/50 hover:border-green-400 dark:hover:border-green-600 hover:shadow-lg hover:shadow-green-500/25"
+                        >
+                          <div className="flex items-center gap-1.5">
+                            <div className="text-[9px] font-semibold text-green-700 dark:text-green-400">Yes</div>
+                            <div className="text-sm font-black text-green-600 dark:text-green-400">50¢</div>
+                          </div>
+                        </motion.button>
+                        
+                        {/* No Button */}
+                        <motion.button
+                          type="button"
+                          onClick={(e) => handleQuickBuy(e, index * 2 + 1, `${outcome} - No`, 50)}
+                          disabled={status !== 'active'}
+                          whileHover={{ scale: 1.03 }}
+                          whileTap={{ scale: 0.97 }}
+                          className="bg-gradient-to-br from-red-50 to-red-100 dark:from-red-900/30 dark:to-red-800/30 rounded-lg px-3 py-1.5 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed border border-red-200/70 dark:border-red-700/50 hover:border-red-400 dark:hover:border-red-600 hover:shadow-lg hover:shadow-red-500/25"
+                        >
+                          <div className="flex items-center gap-1.5">
+                            <div className="text-[9px] font-semibold text-red-700 dark:text-red-400">No</div>
+                            <div className="text-sm font-black text-red-600 dark:text-red-400">50¢</div>
+                          </div>
+                        </motion.button>
+                      </div>
                       
                       {/* Quick Buy Interface */}
                       <AnimatePresence>
@@ -448,24 +542,20 @@ function CompactMarketCard({
                               <motion.button
                                 whileHover={{ scale: 1.02 }}
                                 whileTap={{ scale: 0.98 }}
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  handleButtonClick(e, index * 2, `${outcome} - Yes`, 50);
-                                }}
-                                className="bg-green-500 hover:bg-green-600 text-white rounded-lg py-1.5 text-xs font-black transition-colors"
+                                onClick={(e) => handleDirectBuy(e, `${outcome} - Yes`)}
+                                disabled={isBuying || isMinting || isApproving}
+                                className="bg-green-500 hover:bg-green-600 disabled:bg-green-400 disabled:cursor-not-allowed text-white rounded-lg py-1.5 text-xs font-black transition-colors"
                               >
-                                Buy Yes
+                                {isBuying || isMinting || isApproving ? "Buying..." : "Buy Yes"}
                               </motion.button>
                               <motion.button
                                 whileHover={{ scale: 1.02 }}
                                 whileTap={{ scale: 0.98 }}
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  handleButtonClick(e, index * 2 + 1, `${outcome} - No`, 50);
-                                }}
-                                className="bg-red-500 hover:bg-red-600 text-white rounded-lg py-1.5 text-xs font-black transition-colors"
+                                onClick={(e) => handleDirectBuy(e, `${outcome} - No`)}
+                                disabled={isBuying || isMinting || isApproving}
+                                className="bg-red-500 hover:bg-red-600 disabled:bg-red-400 disabled:cursor-not-allowed text-white rounded-lg py-1.5 text-xs font-black transition-colors"
                               >
-                                Buy No
+                                {isBuying || isMinting || isApproving ? "Buying..." : "Buy No"}
                               </motion.button>
                             </div>
                           </motion.div>
@@ -623,7 +713,18 @@ function CompactMarketCard({
           </div>
         </div>
       </Card>
-    </motion.div>
+      </motion.div>
+
+      {/* Purchase Success Modal */}
+      <PurchaseSuccessModal
+        isOpen={showSuccessModal}
+        onClose={() => setShowSuccessModal(false)}
+        marketTitle={question}
+        outcomeName={purchasedOutcome}
+        amount={quickBuyAmount}
+        tokenSymbol="USDC"
+      />
+    </>
   );
 }
 
