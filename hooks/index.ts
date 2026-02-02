@@ -13,3 +13,6 @@ export {
 
 // Re-export ERC20 hooks
 export { useApproveToken, useTokenBalance, useTokenAllowance } from './useERC20.js';
+
+// Re-export outcome price hooks
+export { useOutcomePrices, useAllOutcomePrices } from './useOutcomePrices.js';

@@ -12,6 +12,7 @@ import { useCTFMintPositionTokens } from "@/hooks/useCTFMarket";
 import { useApproveToken, useTokenAllowance } from "@/hooks/useERC20";
 import { CONTRACTS } from "@/lib/contracts";
 import PurchaseSuccessModal from "./PurchaseSuccessModal";
+import { useOutcomePrices } from "@/hooks/useOutcomePrices";
 
 const iconMap: Record<string, LucideIcon> = {
   Bitcoin,
@@ -435,8 +436,11 @@ function CompactMarketCard({
                     { bg: 'from-amber-50 via-orange-50 to-amber-50', darkBg: 'dark:from-amber-900/30 dark:via-orange-900/30 dark:to-amber-900/30', border: 'border-amber-200/70 dark:border-amber-700/50', hoverBorder: 'hover:border-amber-400 dark:hover:border-amber-600', text: 'text-amber-600 dark:text-amber-400', shadow: 'hover:shadow-amber-500/30' },
                   ][index % 3];
                   
+                  // Fetch real-time prices for this outcome
+                  const { yesPrice, noPrice } = useOutcomePrices(id, index);
+                  
                   const isExpanded = expandedOutcome === index;
-                  const estimatedCost = (quickBuyAmount * 50 / 100).toFixed(2);
+                  const estimatedCost = (quickBuyAmount * yesPrice / 100).toFixed(2);
                   
                   return (
                     <motion.div
@@ -453,7 +457,7 @@ function CompactMarketCard({
                         {/* Yes Button */}
                         <motion.button
                           type="button"
-                          onClick={(e) => handleQuickBuy(e, index * 2, `${outcome} - Yes`, 50)}
+                          onClick={(e) => handleQuickBuy(e, index * 2, `${outcome} - Yes`, yesPrice)}
                           disabled={status !== 'active'}
                           whileHover={{ scale: 1.03 }}
                           whileTap={{ scale: 0.97 }}
@@ -461,14 +465,14 @@ function CompactMarketCard({
                         >
                           <div className="flex items-center gap-1.5">
                             <div className="text-[9px] font-semibold text-green-700 dark:text-green-400">Yes</div>
-                            <div className="text-sm font-black text-green-600 dark:text-green-400">50¢</div>
+                            <div className="text-sm font-black text-green-600 dark:text-green-400">{yesPrice}¢</div>
                           </div>
                         </motion.button>
                         
                         {/* No Button */}
                         <motion.button
                           type="button"
-                          onClick={(e) => handleQuickBuy(e, index * 2 + 1, `${outcome} - No`, 50)}
+                          onClick={(e) => handleQuickBuy(e, index * 2 + 1, `${outcome} - No`, noPrice)}
                           disabled={status !== 'active'}
                           whileHover={{ scale: 1.03 }}
                           whileTap={{ scale: 0.97 }}
@@ -476,7 +480,7 @@ function CompactMarketCard({
                         >
                           <div className="flex items-center gap-1.5">
                             <div className="text-[9px] font-semibold text-red-700 dark:text-red-400">No</div>
-                            <div className="text-sm font-black text-red-600 dark:text-red-400">50¢</div>
+                            <div className="text-sm font-black text-red-600 dark:text-red-400">{noPrice}¢</div>
                           </div>
                         </motion.button>
                       </div>
