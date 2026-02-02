@@ -1,7 +1,7 @@
 "use client";
 
 import { memo, useState, useEffect } from "react";
-import { TrendingUp, TrendingDown, Clock, Bitcoin, Trophy, Building2, Clapperboard, Cpu, BarChart3, LucideIcon, Sparkles, Share2, Mail, MessageCircle, Send } from "lucide-react";
+import { TrendingUp, TrendingDown, Clock, Bitcoin, Trophy, Building2, Clapperboard, Cpu, BarChart3, LucideIcon, Sparkles, Share2, Mail, MessageCircle, Send, X } from "lucide-react";
 import { Card } from "./ui/card";
 import { extractCategory, getCategoryInfo, extractResolutionType, extractCustomOutcomes, hasMarketImage } from '@/lib/categoryUtils';
 import Image from 'next/image';
@@ -61,7 +61,8 @@ function CompactMarketCard({
   image,
 }: CompactMarketCardProps) {
   const [showShareMenu, setShowShareMenu] = useState(false);
-  const [expandedOutcome, setExpandedOutcome] = useState<number | null>(null);
+  const [expandedOutcome, setExpandedOutcome] = useState<string | null>(null);
+  const [selectedPosition, setSelectedPosition] = useState<'yes' | 'no'>('yes');
   const [quickBuyAmount, setQuickBuyAmount] = useState(10);
   const [isBuying, setIsBuying] = useState(false);
   const [showSuccessModal, setShowSuccessModal] = useState(false);
@@ -100,9 +101,11 @@ function CompactMarketCard({
     onTradeClick(id, outcomeId, outcomeName, price, paymentToken);
   };
 
-  const handleQuickBuy = (e: React.MouseEvent, outcomeId: number, outcomeName: string, price: number) => {
+  const handleQuickBuy = (e: React.MouseEvent, outcomeId: number, outcomeName: string, price: number, position: 'yes' | 'no') => {
     e.stopPropagation();
-    setExpandedOutcome(expandedOutcome === outcomeId ? null : outcomeId);
+    const outcomeKey = `${outcomeId}-${position}`;
+    setExpandedOutcome(expandedOutcome === outcomeKey ? null : outcomeKey);
+    setSelectedPosition(position);
   };
 
   // Direct buy handler for quick buy interface
@@ -428,132 +431,125 @@ function CompactMarketCard({
                   // Fetch real-time prices for this outcome
                   const { yesPrice, noPrice } = useOutcomePrices(id, index);
                   
-                  const isExpanded = expandedOutcome === index;
-                  const estimatedCost = (quickBuyAmount * yesPrice / 100).toFixed(2);
+                  const isYesExpanded = expandedOutcome === `${index}-yes`;
+                  const isNoExpanded = expandedOutcome === `${index}-no`;
+                  const isExpanded = isYesExpanded || isNoExpanded;
+                  const currentPrice = isYesExpanded ? yesPrice : noPrice;
+                  const estimatedCost = (quickBuyAmount * currentPrice / 100).toFixed(2);
                   
                   return (
                     <motion.div
                       key={index}
-                      className="space-y-1"
+                      className="space-y-1.5"
                     >
-                      {/* Outcome with Yes/No Buttons in one row */}
+                      {/* Interactive Row: Outcome Name + Yes/No -> Slider -> Buy */}
                       <div className="flex items-center gap-2">
                         {/* Outcome Name */}
-                        <div className={`text-[10px] md:text-xs font-bold ${colors.text} flex-1 truncate`}>
+                        <div className={`text-[10px] md:text-xs font-bold ${colors.text} flex-shrink-0`}>
                           {outcome}
                         </div>
                         
-                        {/* Yes Button */}
-                        <motion.button
-                          type="button"
-                          onClick={(e) => handleQuickBuy(e, index * 2, `${outcome} - Yes`, yesPrice)}
-                          disabled={status !== 'active'}
-                          whileHover={{ scale: 1.03 }}
-                          whileTap={{ scale: 0.97 }}
-                          className="bg-gradient-to-br from-green-50 to-green-100 dark:from-green-900/30 dark:to-green-800/30 rounded-lg px-3 py-1.5 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed border border-green-200/70 dark:border-green-700/50 hover:border-green-400 dark:hover:border-green-600 hover:shadow-lg hover:shadow-green-500/25"
-                        >
-                          <div className="flex items-center gap-1.5">
-                            <div className="text-[9px] font-semibold text-green-700 dark:text-green-400">Yes</div>
-                            <div className="text-sm font-black text-green-600 dark:text-green-400">{yesPrice}¢</div>
-                          </div>
-                        </motion.button>
-                        
-                        {/* No Button */}
-                        <motion.button
-                          type="button"
-                          onClick={(e) => handleQuickBuy(e, index * 2 + 1, `${outcome} - No`, noPrice)}
-                          disabled={status !== 'active'}
-                          whileHover={{ scale: 1.03 }}
-                          whileTap={{ scale: 0.97 }}
-                          className="bg-gradient-to-br from-red-50 to-red-100 dark:from-red-900/30 dark:to-red-800/30 rounded-lg px-3 py-1.5 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed border border-red-200/70 dark:border-red-700/50 hover:border-red-400 dark:hover:border-red-600 hover:shadow-lg hover:shadow-red-500/25"
-                        >
-                          <div className="flex items-center gap-1.5">
-                            <div className="text-[9px] font-semibold text-red-700 dark:text-red-400">No</div>
-                            <div className="text-sm font-black text-red-600 dark:text-red-400">{noPrice}¢</div>
-                          </div>
-                        </motion.button>
-                      </div>
-                      
-                      {/* Quick Buy Interface */}
-                      <AnimatePresence>
-                        {isExpanded && (
-                          <motion.div
-                            initial={{ opacity: 0, height: 0, y: -10 }}
-                            animate={{ opacity: 1, height: 'auto', y: 0 }}
-                            exit={{ opacity: 0, height: 0, y: -10 }}
-                            className={`bg-gradient-to-br ${colors.bg} ${colors.darkBg} rounded-lg p-3 border-2 ${colors.border} backdrop-blur-sm space-y-2`}
-                          >
-                            {/* Amount Slider */}
-                            <div className="space-y-1">
-                              <div className="flex items-center justify-between text-xs">
-                                <span className={`font-semibold ${colors.text}`}>Amount</span>
-                                <div className={`font-black ${colors.text} flex items-center gap-1`}>
-                                  <Image 
-                                    src="/USDC logo.png" 
-                                    alt="USDC"
-                                    width={12}
-                                    height={12}
-                                    className="rounded-full"
-                                  />
+                        {/* Yes/No or Slider Interface */}
+                        <div className="flex items-center gap-2 flex-1">
+                        {!isExpanded ? (
+                          <>
+                            {/* Yes Button */}
+                            <motion.button
+                              type="button"
+                              onClick={(e) => handleQuickBuy(e, index, `${outcome} - Yes`, yesPrice, 'yes')}
+                              disabled={status !== 'active'}
+                              whileHover={{ scale: 1.03 }}
+                              whileTap={{ scale: 0.97 }}
+                              className="flex-1 bg-gradient-to-br from-green-50 to-green-100 dark:from-green-900/30 dark:to-green-800/30 rounded-lg px-3 py-1.5 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed border border-green-200/70 dark:border-green-700/50 hover:border-green-400 dark:hover:border-green-600 hover:shadow-lg hover:shadow-green-500/25"
+                            >
+                              <div className="flex items-center justify-center gap-1.5">
+                                <div className="text-[9px] font-semibold text-green-700 dark:text-green-400">Yes</div>
+                                <div className="text-sm font-black text-green-600 dark:text-green-400">{yesPrice}¢</div>
+                              </div>
+                            </motion.button>
+                            
+                            {/* No Button */}
+                            <motion.button
+                              type="button"
+                              onClick={(e) => handleQuickBuy(e, index, `${outcome} - No`, noPrice, 'no')}
+                              disabled={status !== 'active'}
+                              whileHover={{ scale: 1.03 }}
+                              whileTap={{ scale: 0.97 }}
+                              className="flex-1 bg-gradient-to-br from-red-50 to-red-100 dark:from-red-900/30 dark:to-red-800/30 rounded-lg px-3 py-1.5 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed border border-red-200/70 dark:border-red-700/50 hover:border-red-400 dark:hover:border-red-600 hover:shadow-lg hover:shadow-red-500/25"
+                            >
+                              <div className="flex items-center justify-center gap-1.5">
+                                <div className="text-[9px] font-semibold text-red-700 dark:text-red-400">No</div>
+                                <div className="text-sm font-black text-red-600 dark:text-red-400">{noPrice}¢</div>
+                              </div>
+                            </motion.button>
+                          </>
+                        ) : (
+                          <AnimatePresence mode="wait">
+                            <motion.div
+                              initial={{ opacity: 0, scale: 0.95 }}
+                              animate={{ opacity: 1, scale: 1 }}
+                              exit={{ opacity: 0, scale: 0.95 }}
+                              className="flex items-center gap-2 flex-1"
+                            >
+                              {/* Position Badge */}
+                              <div className={`px-2 py-1 rounded-lg text-[9px] font-bold whitespace-nowrap ${
+                                isYesExpanded 
+                                  ? 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400 border border-green-200 dark:border-green-700'
+                                  : 'bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400 border border-red-200 dark:border-red-700'
+                              }`}>
+                                {isYesExpanded ? 'Yes' : 'No'} {currentPrice}¢
+                              </div>
+                              
+                              {/* Amount Slider */}
+                              <div className="flex-1 min-w-0">
+                                <input
+                                  type="range"
+                                  min="1"
+                                  max="100"
+                                  value={quickBuyAmount}
+                                  onChange={(e) => setQuickBuyAmount(Number(e.target.value))}
+                                  className="w-full h-1.5 bg-gray-200 dark:bg-gray-700 rounded-lg appearance-none cursor-pointer"
+                                  style={{
+                                    background: `linear-gradient(to right, ${isYesExpanded ? '#10b981' : '#ef4444'} ${(quickBuyAmount / 100) * 100}%, #e5e7eb ${(quickBuyAmount / 100) * 100}%)`
+                                  }}
+                                />
+                                <div className="text-[8px] text-gray-500 dark:text-gray-400 text-center mt-0.5">
                                   {quickBuyAmount} USDC
                                 </div>
                               </div>
-                              <input
-                                type="range"
-                                min="1"
-                                max="100"
-                                value={quickBuyAmount}
-                                onChange={(e) => setQuickBuyAmount(Number(e.target.value))}
-                                className="w-full h-2 bg-gray-200 dark:bg-gray-700 rounded-lg appearance-none cursor-pointer slider"
-                                style={{
-                                  background: `linear-gradient(to right, currentColor ${(quickBuyAmount / 100) * 100}%, #e5e7eb ${(quickBuyAmount / 100) * 100}%)`
+                              
+                              {/* Buy Button */}
+                              <motion.button
+                                whileHover={{ scale: 1.05 }}
+                                whileTap={{ scale: 0.95 }}
+                                onClick={(e) => handleDirectBuy(e, `${outcome} - ${isYesExpanded ? 'Yes' : 'No'}`)}
+                                disabled={isBuying || isMinting || isApproving}
+                                className={`px-3 py-1.5 rounded-lg text-[10px] font-black text-white transition-colors whitespace-nowrap ${
+                                  isYesExpanded
+                                    ? 'bg-green-500 hover:bg-green-600 disabled:bg-green-400'
+                                    : 'bg-red-500 hover:bg-red-600 disabled:bg-red-400'
+                                } disabled:cursor-not-allowed`}
+                              >
+                                {isBuying || isMinting || isApproving ? "..." : "Buy"}
+                              </motion.button>
+                              
+                              {/* Close Button */}
+                              <motion.button
+                                whileHover={{ scale: 1.1 }}
+                                whileTap={{ scale: 0.9 }}
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  setExpandedOutcome(null);
                                 }}
-                              />
-                              <div className="flex justify-between text-[9px] text-gray-500 dark:text-gray-400">
-                                <span>1</span>
-                                <span>100</span>
-                              </div>
-                            </div>
-                            
-                            {/* Estimated Cost */}
-                            <div className={`flex items-center justify-between text-xs font-semibold ${colors.text}`}>
-                              <span>Estimated Cost</span>
-                              <div className={`font-black ${colors.text} flex items-center gap-1`}>
-                                <Image 
-                                  src="/USDC logo.png" 
-                                  alt="USDC"
-                                  width={12}
-                                  height={12}
-                                  className="rounded-full"
-                                />
-                                {estimatedCost} USDC
-                              </div>
-                            </div>
-                            
-                            {/* Buy Buttons */}
-                            <div className="grid grid-cols-2 gap-1.5">
-                              <motion.button
-                                whileHover={{ scale: 1.02 }}
-                                whileTap={{ scale: 0.98 }}
-                                onClick={(e) => handleDirectBuy(e, `${outcome} - Yes`)}
-                                disabled={isBuying || isMinting || isApproving}
-                                className="bg-green-500 hover:bg-green-600 disabled:bg-green-400 disabled:cursor-not-allowed text-white rounded-lg py-1.5 text-xs font-black transition-colors"
+                                className="p-1 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors"
                               >
-                                {isBuying || isMinting || isApproving ? "Buying..." : "Buy Yes"}
+                                <X className="w-3 h-3 text-gray-500 dark:text-gray-400" />
                               </motion.button>
-                              <motion.button
-                                whileHover={{ scale: 1.02 }}
-                                whileTap={{ scale: 0.98 }}
-                                onClick={(e) => handleDirectBuy(e, `${outcome} - No`)}
-                                disabled={isBuying || isMinting || isApproving}
-                                className="bg-red-500 hover:bg-red-600 disabled:bg-red-400 disabled:cursor-not-allowed text-white rounded-lg py-1.5 text-xs font-black transition-colors"
-                              >
-                                {isBuying || isMinting || isApproving ? "Buying..." : "Buy No"}
-                              </motion.button>
-                            </div>
-                          </motion.div>
+                            </motion.div>
+                          </AnimatePresence>
                         )}
-                      </AnimatePresence>
+                        </div>
+                      </div>
                     </motion.div>
                   );
                 })}
