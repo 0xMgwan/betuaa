@@ -6,6 +6,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { useMarketDetails } from '@/hooks/useMarketDetails';
 import { usePriceHistory } from '@/hooks/usePriceHistory';
 import { useUserPositions } from '@/hooks/useUserPositions';
+import { useOutcomePrices } from '@/hooks/useOutcomePrices';
 import { STABLECOINS } from '@/lib/contracts';
 import { formatDistanceToNow } from 'date-fns';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from 'recharts';
@@ -229,8 +230,8 @@ export default function BlockchainMarketModal({
               // Custom Outcomes Trading
               <div className="space-y-3">
                 {customOutcomes.map((outcome, index) => {
-                  const outcomeData = outcomes?.[index];
-                  const price = outcomeData?.price || 50;
+                  const { yesPrice, noPrice } = useOutcomePrices(market.id, index);
+                  const price = yesPrice;
                   const colors = [
                     { bg: 'from-blue-50 via-cyan-50 to-blue-50', darkBg: 'dark:from-blue-900/30 dark:via-cyan-900/30 dark:to-blue-900/30', border: 'border-blue-200/70 dark:border-blue-700/50', text: 'text-blue-600 dark:text-blue-400', button: 'from-blue-600 to-cyan-600 hover:from-blue-700 hover:to-cyan-700 hover:shadow-blue-500/30' },
                     { bg: 'from-purple-50 via-pink-50 to-purple-50', darkBg: 'dark:from-purple-900/30 dark:via-pink-900/30 dark:to-purple-900/30', border: 'border-purple-200/70 dark:border-purple-700/50', text: 'text-purple-600 dark:text-purple-400', button: 'from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 hover:shadow-purple-500/30' },
