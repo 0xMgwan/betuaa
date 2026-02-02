@@ -65,6 +65,7 @@ function CompactMarketCard({
   const [selectedPosition, setSelectedPosition] = useState<'yes' | 'no'>('yes');
   const [quickBuyAmount, setQuickBuyAmount] = useState(10);
   const [isBuying, setIsBuying] = useState(false);
+  const [txStatus, setTxStatus] = useState<'idle' | 'approving' | 'minting'>('idle');
   const [showSuccessModal, setShowSuccessModal] = useState(false);
   const [purchasedOutcome, setPurchasedOutcome] = useState<string>("");
 
@@ -86,6 +87,7 @@ function CompactMarketCard({
   useEffect(() => {
     if (isMintSuccess) {
       setIsBuying(false);
+      setTxStatus('idle');
       setExpandedOutcome(null);
       setShowSuccessModal(true);
     }
@@ -131,21 +133,38 @@ function CompactMarketCard({
       const currentAllowance = allowance as bigint || BigInt(0);
       
       if (currentAllowance < amountInWei) {
+        setTxStatus('approving');
+        console.log('Requesting approval...');
+        
+        // Use max uint256 for infinite approval to avoid future approvals
+        const maxApproval = BigInt('0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff');
+        
         await approve(
           paymentToken as `0x${string}`,
           CONTRACTS.baseSepolia.ctfPredictionMarket as `0x${string}`,
-          amountInWei
+          maxApproval
         );
+        
+        console.log('Approval transaction submitted, waiting for confirmation...');
+        // Wait a bit for the approval to be indexed
+        await new Promise(resolve => setTimeout(resolve, 2000));
         await refetchAllowance();
       }
 
       // Mint position tokens
+      setTxStatus('minting');
+      console.log('Minting position tokens...');
       await mintPositionTokens(id, amountInWei);
       
     } catch (error: any) {
       console.error("Buy error:", error);
-      alert(error?.message || "Failed to complete purchase");
+      if (error?.message?.includes('User rejected')) {
+        alert('Transaction cancelled');
+      } else {
+        alert(error?.message || "Failed to complete purchase");
+      }
       setIsBuying(false);
+      setTxStatus('idle');
     }
   };
   
@@ -530,7 +549,7 @@ function CompactMarketCard({
                                     : 'bg-red-500 hover:bg-red-600 disabled:bg-red-400'
                                 } disabled:cursor-not-allowed`}
                               >
-                                {isBuying || isMinting || isApproving ? "..." : "Buy"}
+                                {txStatus === 'approving' ? '✓ Approve' : txStatus === 'minting' ? '✓ Confirm' : isBuying ? '...' : 'Buy'}
                               </motion.button>
                               
                               {/* Close Button */}
