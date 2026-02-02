@@ -146,8 +146,8 @@ function CompactMarketCard({
         );
         
         console.log('Approval transaction submitted, waiting for confirmation...');
-        // Wait a bit for the approval to be indexed
-        await new Promise(resolve => setTimeout(resolve, 2000));
+        // Reduced wait time for faster flow
+        await new Promise(resolve => setTimeout(resolve, 500));
         await refetchAllowance();
       }
 
@@ -549,7 +549,7 @@ function CompactMarketCard({
                                     : 'bg-red-500 hover:bg-red-600 disabled:bg-red-400'
                                 } disabled:cursor-not-allowed`}
                               >
-                                {txStatus === 'approving' ? '✓ Approve' : txStatus === 'minting' ? '✓ Confirm' : isBuying ? '...' : 'Buy'}
+                                {isBuying || isMinting || isApproving ? 'Buying...' : 'Buy'}
                               </motion.button>
                               
                               {/* Close Button */}
