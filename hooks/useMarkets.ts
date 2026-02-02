@@ -19,6 +19,7 @@ export interface BlockchainMarket {
   participantCount: number;
   creatorFeePercent: number;
   platformFeePercent: number;
+  image?: string;
 }
 
 export function useAllMarkets() {

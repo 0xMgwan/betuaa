@@ -320,6 +320,7 @@ export default function Home() {
                                 status={market.resolved ? 'resolved' : isActive ? 'active' : 'closed'}
                                 description={market.description}
                                 paymentToken={market.paymentToken}
+                                image={market.image}
                               />
                             </div>
                           );
@@ -352,6 +353,7 @@ export default function Home() {
                             status={market.resolved ? 'resolved' : isActive ? 'active' : 'closed'}
                             description={market.description}
                             paymentToken={market.paymentToken}
+                            image={market.image}
                           />
                         </div>
                       );
@@ -383,6 +385,7 @@ export default function Home() {
                               status={market.resolved ? 'resolved' : isActive ? 'active' : 'closed'}
                               description={market.description}
                               paymentToken={market.paymentToken}
+                              image={market.image}
                             />
                           </div>
                         );

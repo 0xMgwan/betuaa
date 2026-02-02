@@ -131,6 +131,17 @@ export async function GET(
       }
     }
 
+    // Extract image from description if it exists
+    let imageUrl: string | undefined;
+    try {
+      const descriptionObj = JSON.parse(market.description);
+      if (descriptionObj.image) {
+        imageUrl = descriptionObj.image;
+      }
+    } catch {
+      // Description is not JSON or doesn't have image field
+    }
+
     const response = {
       id: marketId,
       title: market.question,
@@ -144,6 +155,7 @@ export async function GET(
       participantCount: participantCount,
       creatorFeePercent: 0, // CTF uses platform fee only
       platformFeePercent: 200, // 2% platform fee (200 basis points)
+      image: imageUrl,
     };
 
     console.log(`Market ${marketId} response:`, response);
