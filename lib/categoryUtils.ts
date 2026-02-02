@@ -13,21 +13,41 @@ export type CategoryKey = keyof typeof CATEGORIES;
 
 /**
  * Extract category from market description
- * Format: [CATEGORY:sports] Description text...
+ * Format: [CATEGORY:sports] Description text... OR JSON format
  */
 export function extractCategory(description: string): CategoryKey {
-  const match = description.match(/^\[CATEGORY:(\w+)\]/);
-  if (match && match[1] in CATEGORIES) {
-    return match[1] as CategoryKey;
+  // Try JSON format first
+  try {
+    const parsed = JSON.parse(description);
+    if (parsed.category && parsed.category in CATEGORIES) {
+      return parsed.category as CategoryKey;
+    }
+  } catch {
+    // Not JSON, try text format
+    const match = description.match(/^\[CATEGORY:(\w+)\]/);
+    if (match && match[1] in CATEGORIES) {
+      return match[1] as CategoryKey;
+    }
   }
   return 'crypto'; // Default fallback
 }
 
 /**
  * Remove category tag and Pyth marker from description for display
+ * Handles both JSON and text formats
  */
 export function cleanDescription(description: string): string {
-  return description.replace(/^\[PYTH\]\[CATEGORY:\w+\]\s*/, '').replace(/^\[CATEGORY:\w+\]\s*/, '');
+  // Try JSON format first
+  try {
+    const parsed = JSON.parse(description);
+    if (parsed.text) {
+      return parsed.text;
+    }
+  } catch {
+    // Not JSON, clean text format
+    return description.replace(/^\[PYTH\]\[CATEGORY:\w+\]\s*/, '').replace(/^\[CATEGORY:\w+\]\s*/, '');
+  }
+  return description;
 }
 
 /**
@@ -39,24 +59,45 @@ export function getCategoryInfo(categoryKey: CategoryKey) {
 
 /**
  * Extract custom outcomes from market description
- * Format: [OUTCOMES:Option1|Option2|Option3]
+ * Format: [OUTCOMES:Option1|Option2|Option3] OR JSON format
  */
 export function extractCustomOutcomes(description: string): string[] {
-  const match = description.match(/\[OUTCOMES:([^\]]+)\]/);
-  if (match) {
-    return match[1].split('|').map(o => o.trim()).filter(o => o.length > 0);
+  // Try JSON format first
+  try {
+    const parsed = JSON.parse(description);
+    if (parsed.outcomes && Array.isArray(parsed.outcomes)) {
+      return parsed.outcomes;
+    }
+  } catch {
+    // Not JSON, try text format
+    const match = description.match(/\[OUTCOMES:([^\]]+)\]/);
+    if (match) {
+      return match[1].split('|').map(o => o.trim()).filter(o => o.length > 0);
+    }
   }
   return [];
 }
 
 /**
  * Extract resolution type from market description
- * Format: [RESOLUTION:custom] or [RESOLUTION:yesno]
+ * Format: [RESOLUTION:custom] or [RESOLUTION:yesno] OR JSON format
  */
 export function extractResolutionType(description: string): 'yesno' | 'custom' {
-  const match = description.match(/\[RESOLUTION:(\w+)\]/);
-  if (match && match[1] === 'custom') {
-    return 'custom';
+  // Try JSON format first
+  try {
+    const parsed = JSON.parse(description);
+    if (parsed.resolutionType === 'custom') {
+      return 'custom';
+    }
+    if (parsed.resolutionType === 'yesno') {
+      return 'yesno';
+    }
+  } catch {
+    // Not JSON, try text format
+    const match = description.match(/\[RESOLUTION:(\w+)\]/);
+    if (match && match[1] === 'custom') {
+      return 'custom';
+    }
   }
   return 'yesno';
 }

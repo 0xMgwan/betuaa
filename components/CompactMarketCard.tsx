@@ -260,25 +260,14 @@ function CompactMarketCard({
         <div className="absolute -inset-1 bg-gradient-to-r from-blue-500/20 via-purple-500/20 to-pink-500/20 rounded-xl opacity-0 group-hover:opacity-100 blur-xl transition-opacity duration-500" />
         
         <div className="relative z-10">
-          {/* Market Image */}
-          {image && (
-            <div className="mb-2 md:mb-3 rounded-lg md:rounded-xl overflow-hidden border border-gray-200/50 dark:border-gray-700/50 shadow-lg h-32 md:h-40">
-              <img 
-                src={image} 
-                alt={question}
-                className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
-              />
-            </div>
-          )}
-
           <div className="flex items-start gap-1.5 md:gap-2 mb-1.5 md:mb-2">
             {/* Category Icon or Market Image for custom markets */}
             <motion.div 
-              className={`w-9 h-9 md:w-10 md:h-10 rounded-lg md:rounded-xl ${isCustomMarket && image ? 'bg-white dark:bg-gray-800 border-2 border-gray-200 dark:border-gray-700' : `bg-gradient-to-br ${getCategoryColor()}`} flex items-center justify-center flex-shrink-0 shadow-lg group-hover:shadow-2xl relative overflow-hidden`}
-              whileHover={{ rotate: isCustomMarket && image ? 0 : [0, -10, 10, -10, 0], scale: 1.1 }}
+              className={`w-9 h-9 md:w-10 md:h-10 rounded-lg md:rounded-xl ${image ? 'p-0' : `bg-gradient-to-br ${getCategoryColor()}`} flex items-center justify-center flex-shrink-0 shadow-lg group-hover:shadow-2xl relative overflow-hidden`}
+              whileHover={{ rotate: image ? 0 : [0, -10, 10, -10, 0], scale: 1.1 }}
               transition={{ duration: 0.5 }}
             >
-              {isCustomMarket && image ? (
+              {image ? (
                 <img 
                   src={image} 
                   alt={question}
