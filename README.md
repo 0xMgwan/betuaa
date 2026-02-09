@@ -13,6 +13,11 @@ A fully decentralized prediction market platform built on Base blockchain with a
 ### Core Functionality
 - **Create Markets** - Binary outcome markets (Yes/No) on any topic
 - **Pyth Markets** - Markets that auto-resolve using Pyth price feeds
+- **CLOB Trading** - Central Limit Order Book for peer-to-peer trading
+  - Limit orders (place orders at custom prices)
+  - Market orders (instant execution against best available price)
+  - Real-time order book with bid/ask spreads
+  - Order cancellation and management
 - **Position Token Trading** - Buy/sell outcome tokens at fixed prices
 - **Automatic Resolution** - Keeper bot auto-resolves expired Pyth markets
 - **Manual Resolution** - Market creators can manually resolve non-Pyth markets
@@ -73,8 +78,10 @@ A fully decentralized prediction market platform built on Base blockchain with a
 
 ### Contract Addresses (Base Sepolia)
 ```
-CTFPredictionMarket: 0xA5Bf04D3D079BE92981EE8208b18B0514eBd370C
+CTFPredictionMarket: 0xb46Ff34C716570b90472D2b8d709252618126052
 PythResolver: 0xc3c8523FaC61b6E35DC553BB5a1F542982753F62
+OrderBook (CLOB): 0x62f80b6433ca877c0e723061fa8222925ea4b709
+USDC (Collateral): 0x036CbD53842c5426634e7929541eC2318f3dCF7e
 MockUSDC: 0x7c476223C59E2106511C7238c1A3f78C4d8AF7a1
 ```
 
@@ -321,6 +328,40 @@ struct PythMarket {
 - Automatic winner determination
 - Proper int64 scaling for prices
 
+### OrderBook.sol (CLOB)
+
+**Purpose**: Central Limit Order Book for peer-to-peer trading of outcome tokens
+
+**Key Functions:**
+- `placeLimitOrder()` - Place limit order at custom price
+  - Buy: deposits collateral (USDC)
+  - Sell: deposits outcome tokens (ERC1155)
+- `placeMarketOrder()` - Instant execution against best available price
+- `cancelOrder()` - Cancel resting limit order
+- `getOrderBook()` - View all orders at each price level
+- `getMarketBookSummary()` - Get best bid/ask and volume
+
+**Order Structure:**
+```solidity
+struct Order {
+    uint256 orderId;
+    address maker;
+    Side side;           // BUY or SELL
+    uint256 price;       // In basis points (0-10000)
+    uint256 size;        // Amount of shares
+    uint256 filled;      // Amount already filled
+    bool active;         // Is order still active
+}
+```
+
+**Features:**
+- Automatic order matching (crossing orders fill immediately)
+- Partial fills supported
+- ERC1155 approval required for sell orders
+- ERC20 approval required for buy orders
+- Platform fee collection (configurable)
+- Reentrancy protection
+
 ### Integration Flow
 
 ```
@@ -347,6 +388,24 @@ PythResolver validates price and resolves market
 Market marked as resolved on CTFPredictionMarket
     ↓
 Winners can claim payouts
+```
+
+### CLOB Trading Flow
+
+```
+User Mints Tokens
+    ↓
+User places limit orders (buy/sell) on OrderBook
+    ↓
+Orders rest in order book (bid/ask spread)
+    ↓
+Other users place market orders
+    ↓
+Market orders match against resting limit orders
+    ↓
+Trades execute instantly with automatic settlement
+    ↓
+Users can cancel unmatched orders
 ```
 
 ## 🤖 Keeper Bot Architecture
@@ -469,6 +528,8 @@ betuaa/
 │   ├── TradingModal.tsx          # Buy shares modal
 │   ├── SellModal.tsx             # Sell shares modal
 │   ├── ResolveMarketModal.tsx    # Resolve market modal
+│   ├── CLOBTradingModal.tsx      # CLOB limit/market order modal
+│   ├── OrderBookPanel.tsx        # Real-time order book display
 │   ├── CustomConnectButton.tsx   # Wallet dropdown
 │   ├── UsernameModal.tsx         # Username setup
 │   ├── BlockchainMarketModal.tsx # Market details
@@ -476,6 +537,7 @@ betuaa/
 ├── hooks/                         # Custom React hooks
 │   ├── useCTFMarket.ts           # CTF contract interactions
 │   ├── usePythResolver.ts        # Pyth resolver interactions
+│   ├── useOrderBook.ts           # CLOB trading (limit/market orders, approvals)
 │   ├── useERC20.ts               # Token operations
 │   ├── useUsername.ts            # Username management
 │   ├── useUserPositions.ts       # Portfolio data (optimized)
@@ -488,6 +550,7 @@ betuaa/
 │   ├── graphql.ts                # GraphQL queries (future)
 │   └── abis/
 │       ├── CTFPredictionMarket.json
+│       ├── OrderBook.json
 │       └── PythResolver.json
 ├── scripts/
 │   └── keeper-bot.ts             # Keeper bot for auto-resolution
@@ -572,12 +635,29 @@ vercel deploy
 ```
 
 ### Smart Contracts (Base Sepolia)
+
+**Deploy CTFPredictionMarket:**
 ```bash
-cd ../contracts
-forge script script/Deploy.s.sol:DeployScript --rpc-url $BASE_RPC_URL --broadcast --verify
+cd contracts
+forge script script/Deploy.s.sol:DeployScript --rpc-url https://sepolia.base.org --broadcast --verify
 ```
 
-Update contract addresses in `lib/contracts.ts`
+**Deploy OrderBook (CLOB):**
+```bash
+cd contracts
+forge script script/DeployOrderBook.s.sol:DeployOrderBookScript --rpc-url https://sepolia.base.org --broadcast --verify
+```
+
+**Update contract addresses in `lib/contracts.ts`:**
+```typescript
+export const CONTRACTS = {
+  baseSepolia: {
+    ctfPredictionMarket: '0xb46Ff34C716570b90472D2b8d709252618126052',
+    orderBook: '0x62f80b6433ca877c0e723061fa8222925ea4b709',
+    pythResolver: '0xc3c8523FaC61b6E35DC553BB5a1F542982753F62',
+  },
+};
+```
 
 ## 🤝 Contributing
 
