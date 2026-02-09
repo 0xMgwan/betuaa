@@ -4,11 +4,11 @@ import { getDefaultConfig } from '@rainbow-me/rainbowkit'
 
 export const config = getDefaultConfig({
   appName: 'BetUAA',
-  projectId: 'YOUR_PROJECT_ID', // Get from WalletConnect Cloud
+  projectId: '420ee053eafb031c96425e4c4a694bd8',
   chains: [base, baseSepolia],
   transports: {
-    [base.id]: http(),
-    [baseSepolia.id]: http(),
+    [base.id]: http('https://mainnet.base.org'),
+    [baseSepolia.id]: http('https://sepolia.base.org'),
   },
 })
 

@@ -1,14 +1,11 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { X, Zap, Calendar, DollarSign, Tag, FileText, TrendingUp, ChevronDown, Wallet, Bitcoin, Trophy, Building2, Clapperboard, Cpu, BarChart3, Zap as ZapIcon } from 'lucide-react';
+import { X, Zap, Calendar, DollarSign, Tag, FileText, ChevronDown, Wallet, Bitcoin, Trophy, Building2, Clapperboard, Cpu, BarChart3, Zap as ZapIcon } from 'lucide-react';
 import { useAccount } from 'wagmi';
 import { ConnectButton } from '@rainbow-me/rainbowkit';
 import { STABLECOINS } from '@/lib/contracts';
 import { useCTFCreateMarket } from '@/hooks/useCTFMarket';
-import { useApproveToken } from '@/hooks/useERC20';
-import { CONTRACTS } from '@/lib/contracts';
-import { parseUnits } from 'viem';
 import { useTranslation } from '@/hooks/useTranslation';
 import Image from 'next/image';
 import { CATEGORIES as CATEGORY_CONFIG } from '@/lib/categoryUtils';
@@ -45,10 +42,9 @@ export default function CreateMarketModal({ isOpen, onClose }: CreateMarketModal
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
   const [closingDate, setClosingDate] = useState('');
-  const [initialLiquidity, setInitialLiquidity] = useState('');
   const [selectedToken, setSelectedToken] = useState<string>(STABLECOINS.baseSepolia[0].address);
   const [category, setCategory] = useState('crypto');
-  const [step, setStep] = useState<'form' | 'approve' | 'create'>('form');
+  const [step, setStep] = useState<'form' | 'create'>('form');
   const [isTokenDropdownOpen, setIsTokenDropdownOpen] = useState(false);
   
   // Resolution type and outcomes
@@ -66,8 +62,7 @@ export default function CreateMarketModal({ isOpen, onClose }: CreateMarketModal
   const [isAbove, setIsAbove] = useState(true);
   const [expiryDays, setExpiryDays] = useState(1);
 
-  const { createMarket, isPending: isCreating, isSuccess, hash: createHash } = useCTFCreateMarket();
-  const { approve, isPending: isApproving, isSuccess: isApproved } = useApproveToken();
+  const { createMarket, isPending: isCreating, isSuccess, hash: createHash, reset: resetCreateMarket } = useCTFCreateMarket();
   const { configurePythMarket, isPending: isConfiguringPyth, isSuccess: isPythConfigured } = useConfigurePythMarket();
 
   const selectedStablecoin = STABLECOINS.baseSepolia.find(t => t.address === selectedToken);
@@ -79,6 +74,29 @@ export default function CreateMarketModal({ isOpen, onClose }: CreateMarketModal
     expiryTime: number;
     isAbove: boolean;
   } | null>(null);
+
+  // Reset all form state
+  const resetForm = () => {
+    setTitle('');
+    setDescription('');
+    setClosingDate('');
+    setStep('form');
+    setPythMarketData(null);
+    setThreshold('');
+    setIsAbove(true);
+    setExpiryDays(1);
+    setAgreedToTerms(false);
+    setMarketImage(null);
+    setImagePreview(null);
+    resetCreateMarket();
+  };
+
+  // Reset state when modal opens
+  useEffect(() => {
+    if (isOpen && isSuccess) {
+      resetCreateMarket();
+    }
+  }, [isOpen]);
 
   // Remove auto-switch effect since crypto is now only in Pyth mode
 
@@ -97,14 +115,6 @@ export default function CreateMarketModal({ isOpen, onClose }: CreateMarketModal
       fetchPrice();
     }
   }, [selectedFeed, isPythMode]);
-
-  // Automatically create market after approval succeeds
-  useEffect(() => {
-    if (isApproved && step === 'approve') {
-      setStep('create');
-      handleCreateMarket();
-    }
-  }, [isApproved]);
 
   // Automatically configure Pyth market after creation succeeds
   useEffect(() => {
@@ -196,22 +206,6 @@ export default function CreateMarketModal({ isOpen, onClose }: CreateMarketModal
     }
   };
 
-  const handleApprove = async () => {
-    if (!selectedStablecoin || !initialLiquidity) return;
-    
-    try {
-      const amount = parseUnits(initialLiquidity, selectedStablecoin.decimals);
-      await approve(
-        selectedToken as `0x${string}`,
-        CONTRACTS.baseSepolia.ctfPredictionMarket as `0x${string}`,
-        amount
-      );
-    } catch (error) {
-      console.error('Error approving token:', error);
-      setStep('form');
-    }
-  };
-
   const handleCreateMarket = async () => {
     if (!selectedStablecoin) return;
 
@@ -269,8 +263,6 @@ export default function CreateMarketModal({ isOpen, onClose }: CreateMarketModal
         marketDescription = JSON.stringify(descriptionMetadata);
       }
 
-      const liquidityAmount = parseUnits(initialLiquidity || '0', selectedStablecoin.decimals);
-
       console.log('📤 Calling createMarket with:', {
         title: marketTitle,
         description: marketDescription,
@@ -305,13 +297,8 @@ export default function CreateMarketModal({ isOpen, onClose }: CreateMarketModal
       return;
     }
     
-    if (parseFloat(initialLiquidity || '0') > 0) {
-      setStep('approve');
-      await handleApprove();
-    } else {
-      setStep('create');
-      await handleCreateMarket();
-    }
+    setStep('create');
+    await handleCreateMarket();
   };
 
   if (!isOpen) return null;
@@ -395,13 +382,7 @@ export default function CreateMarketModal({ isOpen, onClose }: CreateMarketModal
             <div className="flex flex-col md:flex-row gap-3">
               <button
                 onClick={() => {
-                  onClose();
-                  setStep('form');
-                  setTitle('');
-                  setDescription('');
-                  setClosingDate('');
-                  setInitialLiquidity('');
-                  setPythMarketData(null);
+                  resetForm();
                 }}
                 className="flex-1 px-6 py-3 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white rounded-xl font-bold text-sm md:text-base shadow-lg shadow-blue-500/30 hover:shadow-xl hover:shadow-blue-500/40 transition-all duration-300 hover:scale-105 active:scale-95"
               >
@@ -409,13 +390,8 @@ export default function CreateMarketModal({ isOpen, onClose }: CreateMarketModal
               </button>
               <button
                 onClick={() => {
+                  resetForm();
                   onClose();
-                  setStep('form');
-                  setTitle('');
-                  setDescription('');
-                  setClosingDate('');
-                  setInitialLiquidity('');
-                  setPythMarketData(null);
                 }}
                 className="flex-1 px-6 py-3 border-2 border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 hover:border-gray-400 dark:hover:border-gray-500 rounded-xl font-bold text-sm md:text-base transition-all duration-300 hover:scale-105 active:scale-95"
               >
@@ -533,7 +509,7 @@ export default function CreateMarketModal({ isOpen, onClose }: CreateMarketModal
               <div className="space-y-1.5 md:space-y-2">
                 <label className="block text-xs md:text-sm font-semibold text-gray-900 dark:text-white flex items-center gap-1.5 md:gap-2">
                   <div className="flex items-center justify-center h-5 w-5 md:h-6 md:w-6 rounded-md md:rounded-lg bg-gradient-to-br from-blue-500 to-purple-500 shadow-sm">
-                    <TrendingUp className="w-3 h-3 md:w-4 md:h-4 text-white" />
+                    <BarChart3 className="w-3 h-3 md:w-4 md:h-4 text-white" />
                   </div>
                   Price Feed
                 </label>
@@ -645,6 +621,7 @@ export default function CreateMarketModal({ isOpen, onClose }: CreateMarketModal
                     '⚡ Short-term': [
                       { value: 5/1440, label: '5 Minutes', icon: '⚡' },
                       { value: 10/1440, label: '10 Minutes', icon: '⚡' },
+                      { value: 15/1440, label: '15 Minutes', icon: '⚡' },
                       { value: 30/1440, label: '30 Minutes', icon: '⚡' },
                       { value: 1/24, label: '1 Hour', icon: '⏱️' },
                       { value: 4/24, label: '4 Hours', icon: '⏱️' },
@@ -961,24 +938,6 @@ export default function CreateMarketModal({ isOpen, onClose }: CreateMarketModal
             </p>
           </div>
 
-          <div>
-            <label className="block text-xs md:text-sm font-medium text-gray-700 dark:text-gray-300 mb-1 md:mb-2 flex items-center gap-1.5 md:gap-2">
-              <TrendingUp className="w-3 h-3 md:w-4 md:h-4" />
-              Initial Liquidity (Optional)
-            </label>
-            <input
-              type="number"
-              value={initialLiquidity}
-              onChange={(e) => setInitialLiquidity(e.target.value)}
-              placeholder="0"
-              step="0.000001"
-              min="0"
-              className="w-full px-3 md:px-4 py-2 md:py-3 text-sm md:text-base border border-gray-300 dark:border-gray-600 rounded-lg md:rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white transition-all"
-            />
-            <p className="mt-1 md:mt-2 text-xs md:text-sm text-gray-500 dark:text-gray-400">
-              Add initial liquidity to help bootstrap your market
-            </p>
-          </div>
             </>
           )}
 
@@ -1029,26 +988,18 @@ export default function CreateMarketModal({ isOpen, onClose }: CreateMarketModal
             ) : (
               <button
                 type="submit"
-                disabled={isApproving || isCreating || !agreedToTerms}
+                disabled={isCreating || !agreedToTerms}
                 className="flex-1 px-4 md:px-6 py-2 md:py-3 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 disabled:from-gray-400 disabled:to-gray-500 text-white rounded-lg md:rounded-xl text-sm md:text-base font-bold transition-all shadow-lg hover:shadow-xl disabled:shadow-none"
               >
-                {isApproving ? 'Approving...' : isCreating ? 'Creating...' : 'Create Market'}
+                {isCreating ? 'Creating...' : 'Create Market'}
               </button>
             )}
           </div>
 
-          {step === 'approve' && (
-            <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-3 md:p-4">
-              <p className="text-xs md:text-sm text-blue-800 dark:text-blue-200">
-                Step 1/2: Approving {selectedStablecoin?.symbol} spending...
-              </p>
-            </div>
-          )}
-
           {step === 'create' && (
             <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-3 md:p-4">
               <p className="text-xs md:text-sm text-blue-800 dark:text-blue-200">
-                Step 2/2: Creating market on blockchain...
+                Creating market on blockchain...
               </p>
             </div>
           )}

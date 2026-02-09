@@ -14,6 +14,8 @@ import MarketAnalytics from './MarketAnalytics';
 import ShareButton from './ShareButton';
 import PriceChart from './PriceChart';
 import TradingModal from './TradingModal';
+import CLOBTradingModal from './CLOBTradingModal';
+import OrderBookPanel from './OrderBookPanel';
 import MarketComments from './MarketComments';
 import FavoriteButton from './FavoriteButton';
 import CategoryBadge from './CategoryBadge';
@@ -36,7 +38,9 @@ export default function BlockchainMarketModal({
   const { priceHistory, isLoading: isPriceLoading } = usePriceHistory(market.id);
   const { positions } = useUserPositions();
   const [showTradingModal, setShowTradingModal] = useState(false);
+  const [showCLOBModal, setShowCLOBModal] = useState(false);
   const [selectedOutcome, setSelectedOutcome] = useState<{ id: number; name: string; price: number } | null>(null);
+  const [selectedCLOBOutcome, setSelectedCLOBOutcome] = useState<{ index: number; name: string } | null>(null);
   
   // Extract custom outcomes from market description
   const resolutionType = extractResolutionType(market.description);
@@ -198,6 +202,44 @@ export default function BlockchainMarketModal({
                 </div>
               </motion.div>
             </div>
+
+            {/* Order Book */}
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.55 }}
+            >
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                <OrderBookPanel marketId={market.id} outcomeIndex={0} maxLevels={6} compact={true} />
+                <OrderBookPanel marketId={market.id} outcomeIndex={1} maxLevels={6} compact={true} />
+              </div>
+              <div className="flex gap-2 mt-3">
+                <motion.button
+                  whileHover={{ scale: 1.02 }}
+                  whileTap={{ scale: 0.98 }}
+                  disabled={!isActive}
+                  onClick={() => {
+                    setSelectedCLOBOutcome({ index: 0, name: 'Yes' });
+                    setShowCLOBModal(true);
+                  }}
+                  className="flex-1 py-2.5 bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 disabled:from-gray-400 disabled:to-gray-500 text-white rounded-xl font-bold text-sm shadow-lg transition-all disabled:cursor-not-allowed"
+                >
+                  Trade Yes
+                </motion.button>
+                <motion.button
+                  whileHover={{ scale: 1.02 }}
+                  whileTap={{ scale: 0.98 }}
+                  disabled={!isActive}
+                  onClick={() => {
+                    setSelectedCLOBOutcome({ index: 1, name: 'No' });
+                    setShowCLOBModal(true);
+                  }}
+                  className="flex-1 py-2.5 bg-gradient-to-r from-red-600 to-rose-600 hover:from-red-700 hover:to-rose-700 disabled:from-gray-400 disabled:to-gray-500 text-white rounded-xl font-bold text-sm shadow-lg transition-all disabled:cursor-not-allowed"
+                >
+                  Trade No
+                </motion.button>
+              </div>
+            </motion.div>
 
             {/* Enhanced Price History Chart */}
             <motion.div
@@ -387,7 +429,7 @@ export default function BlockchainMarketModal({
               </div>
             )}
 
-          {/* Trading Modal */}
+          {/* Legacy Mint Trading Modal */}
           {selectedOutcome && (
             <TradingModal
               isOpen={showTradingModal}
@@ -399,6 +441,24 @@ export default function BlockchainMarketModal({
               outcomeId={selectedOutcome.id}
               outcomeName={selectedOutcome.name}
               currentPrice={selectedOutcome.price}
+              paymentToken={market.paymentToken}
+              tokenSymbol={token?.symbol || 'USDC'}
+              tokenDecimals={token?.decimals || 6}
+            />
+          )}
+
+          {/* CLOB Trading Modal */}
+          {selectedCLOBOutcome && (
+            <CLOBTradingModal
+              isOpen={showCLOBModal}
+              onClose={() => {
+                setShowCLOBModal(false);
+                setSelectedCLOBOutcome(null);
+              }}
+              marketId={market.id}
+              marketQuestion={market.title}
+              outcomeIndex={selectedCLOBOutcome.index}
+              outcomeName={selectedCLOBOutcome.name}
               paymentToken={market.paymentToken}
               tokenSymbol={token?.symbol || 'USDC'}
               tokenDecimals={token?.decimals || 6}

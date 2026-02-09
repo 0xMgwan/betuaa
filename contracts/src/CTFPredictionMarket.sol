@@ -87,6 +87,9 @@ contract CTFPredictionMarket is ERC1155, ERC1155Holder, Ownable, ReentrancyGuard
     
     // Authorized resolvers (e.g., PythResolver for automated resolution)
     mapping(address => bool) public authorizedResolvers;
+    
+    // Authorized operators (e.g., OrderBook contract for CLOB trading)
+    mapping(address => bool) public authorizedOperators;
 
     /*//////////////////////////////////////////////////////////////
                                 EVENTS
@@ -122,6 +125,8 @@ contract CTFPredictionMarket is ERC1155, ERC1155Holder, Ownable, ReentrancyGuard
     );
     
     event ResolverAuthorized(address indexed resolver, bool authorized);
+    event OperatorAuthorized(address indexed operator, bool authorized);
+    event TokensMintedFor(uint256 indexed marketId, address indexed recipient, uint256 amount);
 
     /*//////////////////////////////////////////////////////////////
                             CONSTRUCTOR
@@ -399,6 +404,47 @@ contract CTFPredictionMarket is ERC1155, ERC1155Holder, Ownable, ReentrancyGuard
     }
 
     /**
+     * @notice Authorize or revoke operator contracts (e.g., OrderBook)
+     * @param operator Address of operator contract
+     * @param authorized True to authorize, false to revoke
+     */
+    function setAuthorizedOperator(address operator, bool authorized) 
+        external 
+        onlyOwner 
+    {
+        authorizedOperators[operator] = authorized;
+        emit OperatorAuthorized(operator, authorized);
+    }
+
+    /**
+     * @notice Mint outcome tokens for a recipient (called by authorized operators like OrderBook)
+     * @param marketId Market ID
+     * @param amount Amount of collateral to convert to outcome tokens
+     * @param recipient Address to receive the outcome tokens
+     */
+    function mintPositionTokensFor(uint256 marketId, uint256 amount, address recipient) 
+        external 
+        nonReentrant 
+    {
+        require(authorizedOperators[msg.sender], "Not authorized operator");
+        Market storage market = markets[marketId];
+        require(!market.resolved, "Market resolved");
+        require(block.timestamp < market.closingTime, "Market closed");
+        
+        // Transfer collateral from operator (OrderBook holds it)
+        IERC20(market.collateralToken).transferFrom(msg.sender, address(this), amount);
+        
+        // Mint outcome tokens for each outcome to the recipient
+        for (uint256 i = 0; i < market.outcomeCount; i++) {
+            uint256 tokenId = outcomeTokens[marketId][i];
+            _mint(recipient, tokenId, amount, "");
+            userPositions[recipient][marketId][i] += amount;
+        }
+        
+        emit TokensMintedFor(marketId, recipient, amount);
+    }
+
+    /**
      * @notice Redeem winning tokens for collateral
      * @param marketId Market ID
      * @param amount Amount of winning tokens to redeem
@@ -500,6 +546,14 @@ contract CTFPredictionMarket is ERC1155, ERC1155Holder, Ownable, ReentrancyGuard
 
     function getMarket(uint256 marketId) external view returns (Market memory) {
         return markets[marketId];
+    }
+
+    function isMarketActive(uint256 marketId) external view returns (bool active, uint256 closingTime, bool resolved, bool paused) {
+        Market storage m = markets[marketId];
+        closingTime = m.closingTime;
+        resolved = m.resolved;
+        paused = m.paused;
+        active = !resolved && !paused && block.timestamp < closingTime && closingTime > 0;
     }
 
     function getOutcomeToken(uint256 marketId, uint256 outcome) 

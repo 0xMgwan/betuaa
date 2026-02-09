@@ -53,7 +53,7 @@ export function useCTFBalanceOf(account: `0x${string}` | undefined, tokenId: big
 
 // Create market
 export function useCTFCreateMarket() {
-  const { data: hash, writeContract, isPending, error } = useWriteContract();
+  const { data: hash, writeContract, isPending, error, reset } = useWriteContract();
   
   const { isLoading: isConfirming, isSuccess } = useWaitForTransactionReceipt({
     hash,
@@ -82,6 +82,7 @@ export function useCTFCreateMarket() {
     isConfirming,
     isSuccess,
     error,
+    reset,
   };
 }
 

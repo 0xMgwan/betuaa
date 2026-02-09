@@ -2,9 +2,12 @@
 export const CONTRACTS = {
   baseSepolia: {
     // CTF Prediction Market (New - with Pyth resolver support)
-    ctfPredictionMarket: '0xA5Bf04D3D079BE92981EE8208b18B0514eBd370C',
+    ctfPredictionMarket: '0xb46Ff34C716570b90472D2b8d709252618126052',
     pythResolver: '0xc3c8523FaC61b6E35DC553BB5a1F542982753F62',
     mockUSDC: '0x7c476223C59E2106511C7238c1A3f78C4d8AF7a1',
+    
+    // On-chain CLOB OrderBook
+    orderBook: '0x62f80b6433ca877c0e723061fa8222925ea4b709',
     
     // Legacy contracts (kept for reference)
     predictionMarket: '0x33063a9fD4d812939586E90924Fa3946e252C019',
@@ -12,6 +15,7 @@ export const CONTRACTS = {
   base: {
     ctfPredictionMarket: '', // Deploy to mainnet when ready
     predictionMarket: '', // Deploy to mainnet when ready
+    orderBook: '', // Deploy to mainnet when ready
   },
 } as const;
 
