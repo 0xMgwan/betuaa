@@ -8,13 +8,15 @@ interface OrderBookPanelProps {
   outcomeIndex: number;
   maxLevels?: number;
   compact?: boolean;
+  outcomeName?: string;
 }
 
 export default function OrderBookPanel({ 
   marketId, 
   outcomeIndex, 
   maxLevels = 10,
-  compact = false 
+  compact = false,
+  outcomeName,
 }: OrderBookPanelProps) {
   const { orderBookData } = useOrderBookData(marketId, outcomeIndex, maxLevels);
 
@@ -117,7 +119,7 @@ export default function OrderBookPanel({
         <div className="px-4 py-2 border-t border-gray-200 dark:border-gray-700 flex justify-between text-xs text-gray-500 dark:text-gray-400">
           <span>Vol: {formatVolume(totalVolume)}</span>
           <span>
-            {outcomeIndex === 0 ? 'YES' : 'NO'} Token
+            {outcomeName || (outcomeIndex === 0 ? 'YES' : 'NO')} Token
           </span>
         </div>
       )}

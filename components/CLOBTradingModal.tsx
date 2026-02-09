@@ -103,14 +103,14 @@ export default function CLOBTradingModal({
     ? (parseFloat(price) || 0) * (parseFloat(amount) || 0)
     : (orderBookData?.bestAsk ? bpsToPrice(orderBookData.bestAsk) : 0.5) * (parseFloat(amount) || 0);
 
-  // Reset stale hook state when modal opens or outcome changes
+  // Reset stale hook state when modal opens, outcome changes, or trade side/type changes
   useEffect(() => {
     resetLimit();
     resetMarket();
     resetApproveCollateral();
     resetApproveTokens();
     setPendingTrade(false);
-  }, [isOpen, outcomeIndex]);
+  }, [isOpen, outcomeIndex, tradeSide, orderType]);
 
   // Auto-set price from order book
   useEffect(() => {
@@ -489,12 +489,22 @@ export default function CLOBTradingModal({
                     </div>
                   </div>
 
+                  {/* Sell warning - user needs tokens */}
+                  {tradeSide === 'sell' && (
+                    <div className="flex items-start gap-2 p-2.5 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-700 rounded-xl">
+                      <AlertCircle className="w-4 h-4 text-amber-600 flex-shrink-0 mt-0.5" />
+                      <p className="text-xs text-amber-700 dark:text-amber-300">
+                        To sell, you must hold {outcomeName} outcome tokens. Mint tokens first (1 USDC = 1 Yes + 1 No token), then sell here.
+                      </p>
+                    </div>
+                  )}
+
                   {/* Error */}
                   {error && (
                     <div className="flex items-start gap-2 p-3 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-700 rounded-xl">
                       <AlertCircle className="w-4 h-4 text-red-600 flex-shrink-0 mt-0.5" />
                       <p className="text-xs text-red-700 dark:text-red-300">
-                        {(error as any)?.shortMessage || 'Transaction failed'}
+                        {(error as any)?.shortMessage || (error as any)?.message || 'Transaction failed. If selling, make sure you have enough outcome tokens.'}
                       </p>
                     </div>
                   )}
