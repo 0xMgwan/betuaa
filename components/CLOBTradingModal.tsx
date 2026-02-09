@@ -14,6 +14,7 @@ import {
   useApproveCollateral,
   useApproveOutcomeTokens,
   useIsApprovedForAll,
+  useSplitShares,
   useOrderBookData,
   useUserOrders,
   useCancelOrder,
@@ -64,6 +65,7 @@ export default function CLOBTradingModal({
   const { placeMarketOrder, isPending: isMarketPending, isSuccess: marketSuccess, error: marketError, reset: resetMarket } = usePlaceMarketOrder();
   const { approve: approveCollateral, isPending: isApprovingCollateral, isSuccess: approveCollateralSuccess, reset: resetApproveCollateral } = useApproveCollateral();
   const { approveAll: approveTokens, isPending: isApprovingTokens, isSuccess: approveTokensSuccess, reset: resetApproveTokens } = useApproveOutcomeTokens();
+  const { splitShares, isPending: isSplitting, isSuccess: splitSuccess, error: splitError, reset: resetSplit } = useSplitShares();
   const { orders: userOrders, refetch: refetchOrders } = useUserOrders();
   const { cancelOrder, isPending: isCancelling } = useCancelOrder();
 
@@ -75,7 +77,7 @@ export default function CLOBTradingModal({
 
   // Allowance for OrderBook
   const orderBookAddress = CONTRACTS.baseSepolia.orderBook as `0x${string}`;
-  const { data: allowance } = useTokenAllowance(
+  const { data: allowance, refetch: refetchAllowance } = useTokenAllowance(
     paymentToken as `0x${string}`,
     address as `0x${string}`,
     orderBookAddress
@@ -84,11 +86,12 @@ export default function CLOBTradingModal({
   const balanceFormatted = balance ? formatUnits(balance as bigint, tokenDecimals) : '0';
   const MAX_UINT256 = BigInt('0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff');
   const minUsefulAllowance = parseUnits('1000', tokenDecimals);
-  const { isApproved: isERC1155Approved } = useIsApprovedForAll();
-  const needsBuyApproval = tradeSide === 'buy' && (!allowance || (allowance as bigint) < minUsefulAllowance);
-  const needsSellApproval = tradeSide === 'sell' && !isERC1155Approved;
-  const needsApproval = needsBuyApproval || needsSellApproval;
+  const { isApproved: isERC1155Approved, refetch: refetchERC1155Approval } = useIsApprovedForAll();
+  const needsCollateralApproval = !allowance || (allowance as bigint) < minUsefulAllowance;
   const [pendingTrade, setPendingTrade] = useState(false);
+
+  // Sell flow state machine: 'idle' | 'approving_usdc' | 'minting' | 'approving_erc1155' | 'placing_order'
+  const [sellStep, setSellStep] = useState<'idle' | 'approving_usdc' | 'minting' | 'approving_erc1155' | 'placing_order'>('idle');
 
   // Order book empty detection
   const isOrderBookEmpty = !orderBookData || (orderBookData.bestAsk === 0 && orderBookData.bestBid === 0);
@@ -109,7 +112,9 @@ export default function CLOBTradingModal({
     resetMarket();
     resetApproveCollateral();
     resetApproveTokens();
+    resetSplit();
     setPendingTrade(false);
+    setSellStep('idle');
   }, [isOpen, outcomeIndex, tradeSide, orderType]);
 
   // Auto-set price from order book
@@ -123,22 +128,64 @@ export default function CLOBTradingModal({
     }
   }, [tradeSide, orderBookData?.bestAsk, orderBookData?.bestBid]);
 
-  // After approval succeeds, automatically submit the trade
+  // === BUY FLOW: After USDC approval succeeds, place buy order ===
   useEffect(() => {
-    if ((approveCollateralSuccess || approveTokensSuccess) && pendingTrade && amount && sizeRaw > BigInt(0)) {
+    if (tradeSide === 'buy' && approveCollateralSuccess && pendingTrade && amount && sizeRaw > BigInt(0)) {
       setPendingTrade(false);
-      const side = tradeSide === 'buy' ? OrderSide.BUY : OrderSide.SELL;
+      const side = OrderSide.BUY;
       if (orderType === 'limit') {
         placeLimitOrder(marketId, outcomeIndex, side, priceBps, sizeRaw);
       } else {
         placeMarketOrder(marketId, outcomeIndex, side, sizeRaw, parseInt(slippage) * 100);
       }
     }
-  }, [approveCollateralSuccess, approveTokensSuccess]);
+  }, [approveCollateralSuccess]);
+
+  // === SELL FLOW PIPELINE ===
+  // Step 1: After USDC approval for sell → mint tokens
+  useEffect(() => {
+    if (sellStep === 'approving_usdc' && approveCollateralSuccess && sizeRaw > BigInt(0)) {
+      setSellStep('minting');
+      splitShares(marketId, sizeRaw);
+    }
+  }, [approveCollateralSuccess, sellStep]);
+
+  // Step 2: After minting → approve ERC1155 (if needed) or place order
+  useEffect(() => {
+    if (sellStep === 'minting' && splitSuccess) {
+      refetchERC1155Approval();
+      if (!isERC1155Approved) {
+        setSellStep('approving_erc1155');
+        approveTokens();
+      } else {
+        setSellStep('placing_order');
+        const side = OrderSide.SELL;
+        if (orderType === 'limit') {
+          placeLimitOrder(marketId, outcomeIndex, side, priceBps, sizeRaw);
+        } else {
+          placeMarketOrder(marketId, outcomeIndex, side, sizeRaw, parseInt(slippage) * 100);
+        }
+      }
+    }
+  }, [splitSuccess, sellStep]);
+
+  // Step 3: After ERC1155 approval → place sell order
+  useEffect(() => {
+    if (sellStep === 'approving_erc1155' && approveTokensSuccess) {
+      setSellStep('placing_order');
+      const side = OrderSide.SELL;
+      if (orderType === 'limit') {
+        placeLimitOrder(marketId, outcomeIndex, side, priceBps, sizeRaw);
+      } else {
+        placeMarketOrder(marketId, outcomeIndex, side, sizeRaw, parseInt(slippage) * 100);
+      }
+    }
+  }, [approveTokensSuccess, sellStep]);
 
   // Reset on success
   useEffect(() => {
     if (limitSuccess || marketSuccess) {
+      setSellStep('idle');
       refetchOrders();
       const timer = setTimeout(() => {
         setAmount('');
@@ -154,31 +201,44 @@ export default function CLOBTradingModal({
     }
   }, [noAsksForBuy, noBidsForSell, orderType]);
 
-  const handleApproveAndTrade = () => {
-    setPendingTrade(true);
-    if (tradeSide === 'buy') {
-      approveCollateral(paymentToken, MAX_UINT256);
-    } else {
-      approveTokens();
-    }
-  };
-
+  // === HANDLERS ===
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!amount || sizeRaw === BigInt(0)) return;
 
-    const side = tradeSide === 'buy' ? OrderSide.BUY : OrderSide.SELL;
-
-    if (orderType === 'limit') {
-      placeLimitOrder(marketId, outcomeIndex, side, priceBps, sizeRaw);
+    if (tradeSide === 'buy') {
+      // Buy flow: approve USDC if needed, then place order
+      if (needsCollateralApproval) {
+        setPendingTrade(true);
+        approveCollateral(paymentToken, MAX_UINT256);
+      } else if (orderType === 'limit') {
+        placeLimitOrder(marketId, outcomeIndex, OrderSide.BUY, priceBps, sizeRaw);
+      } else {
+        placeMarketOrder(marketId, outcomeIndex, OrderSide.BUY, sizeRaw, parseInt(slippage) * 100);
+      }
     } else {
-      placeMarketOrder(marketId, outcomeIndex, side, sizeRaw, parseInt(slippage) * 100);
+      // Sell flow: approve USDC → mint → approve ERC1155 → place sell order
+      if (needsCollateralApproval) {
+        setSellStep('approving_usdc');
+        approveCollateral(paymentToken, MAX_UINT256);
+      } else {
+        // USDC already approved, go straight to minting
+        setSellStep('minting');
+        splitShares(marketId, sizeRaw);
+      }
     }
   };
 
-  const isPending = isLimitPending || isMarketPending || isApprovingCollateral || isApprovingTokens;
+  const isPending = isLimitPending || isMarketPending || isApprovingCollateral || isApprovingTokens || isSplitting;
   const isSuccess = limitSuccess || marketSuccess;
-  const error = limitError || marketError;
+  const error = limitError || marketError || splitError;
+
+  // Sell step status message
+  const sellStepMessage = sellStep === 'approving_usdc' ? 'Step 1/3: Approving USDC...'
+    : sellStep === 'minting' ? 'Step 2/3: Minting outcome tokens...'
+    : sellStep === 'approving_erc1155' ? 'Step 3/4: Approving tokens for trading...'
+    : sellStep === 'placing_order' ? 'Final step: Placing sell order...'
+    : null;
 
   // Filter user orders for this market
   const myOrders = userOrders.filter(
@@ -489,12 +549,22 @@ export default function CLOBTradingModal({
                     </div>
                   </div>
 
-                  {/* Sell warning - user needs tokens */}
-                  {tradeSide === 'sell' && (
-                    <div className="flex items-start gap-2 p-2.5 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-700 rounded-xl">
-                      <AlertCircle className="w-4 h-4 text-amber-600 flex-shrink-0 mt-0.5" />
-                      <p className="text-xs text-amber-700 dark:text-amber-300">
-                        To sell, you must hold {outcomeName} outcome tokens. Mint tokens first (1 USDC = 1 Yes + 1 No token), then sell here.
+                  {/* Sell info - auto-mint explanation */}
+                  {tradeSide === 'sell' && sellStep === 'idle' && (
+                    <div className="flex items-start gap-2 p-2.5 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-700 rounded-xl">
+                      <BookOpen className="w-4 h-4 text-blue-600 flex-shrink-0 mt-0.5" />
+                      <p className="text-xs text-blue-700 dark:text-blue-300">
+                        Selling will auto-mint tokens first (1 {tokenSymbol} → 1 Yes + 1 No token), then place your sell order. You&apos;ll keep the opposite token.
+                      </p>
+                    </div>
+                  )}
+
+                  {/* Sell step progress */}
+                  {sellStepMessage && (
+                    <div className="flex items-center gap-2 p-3 bg-indigo-50 dark:bg-indigo-900/20 border border-indigo-200 dark:border-indigo-700 rounded-xl">
+                      <div className="w-4 h-4 border-2 border-indigo-600 border-t-transparent rounded-full animate-spin flex-shrink-0" />
+                      <p className="text-xs text-indigo-700 dark:text-indigo-300 font-semibold">
+                        {sellStepMessage}
                       </p>
                     </div>
                   )}
@@ -504,7 +574,7 @@ export default function CLOBTradingModal({
                     <div className="flex items-start gap-2 p-3 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-700 rounded-xl">
                       <AlertCircle className="w-4 h-4 text-red-600 flex-shrink-0 mt-0.5" />
                       <p className="text-xs text-red-700 dark:text-red-300">
-                        {(error as any)?.shortMessage || (error as any)?.message || 'Transaction failed. If selling, make sure you have enough outcome tokens.'}
+                        {(error as any)?.shortMessage || (error as any)?.message || 'Transaction failed.'}
                       </p>
                     </div>
                   )}
@@ -520,32 +590,21 @@ export default function CLOBTradingModal({
                       Cancel
                     </button>
 
-                    {needsApproval ? (
-                      <button
-                        type="button"
-                        onClick={handleApproveAndTrade}
-                        disabled={isPending || !amount}
-                        className="flex-1 px-4 py-2.5 bg-blue-600 text-white rounded-xl font-bold text-sm hover:bg-blue-700 transition-colors disabled:opacity-50"
-                      >
-                        {isApprovingCollateral || isApprovingTokens
-                          ? (pendingTrade ? 'Approving... (trade will follow)' : 'Approving...')
-                          : 'Approve & Trade'}
-                      </button>
-                    ) : (
-                      <button
-                        type="submit"
-                        disabled={!amount || isPending}
-                        className={`flex-1 px-4 py-2.5 rounded-xl font-bold text-sm transition-colors disabled:opacity-50 ${
-                          tradeSide === 'buy'
-                            ? 'bg-green-600 text-white hover:bg-green-700'
-                            : 'bg-red-600 text-white hover:bg-red-700'
-                        }`}
-                      >
-                        {isPending
-                          ? 'Submitting...'
-                          : `${tradeSide === 'buy' ? 'Buy' : 'Sell'} ${outcomeName}`}
-                      </button>
-                    )}
+                    <button
+                      type="submit"
+                      disabled={!amount || isPending}
+                      className={`flex-1 px-4 py-2.5 rounded-xl font-bold text-sm transition-colors disabled:opacity-50 ${
+                        tradeSide === 'buy'
+                          ? 'bg-green-600 text-white hover:bg-green-700'
+                          : 'bg-red-600 text-white hover:bg-red-700'
+                      }`}
+                    >
+                      {isPending
+                        ? (sellStepMessage || 'Processing...')
+                        : tradeSide === 'sell'
+                          ? `Mint & Sell ${outcomeName}`
+                          : `Buy ${outcomeName}`}
+                    </button>
                   </div>
                 </form>
               )}

@@ -312,7 +312,7 @@ export function useApproveOutcomeTokens() {
  * Hook to split $1 collateral into 1 Yes + 1 No share
  */
 export function useSplitShares() {
-  const { writeContract, data: hash, isPending, error } = useWriteContract();
+  const { writeContract, data: hash, isPending, error, reset } = useWriteContract();
   const { isLoading: isConfirming, isSuccess } = useWaitForTransactionReceipt({ hash });
 
   const splitShares = useCallback((marketId: number, amount: bigint) => {
@@ -322,10 +322,11 @@ export function useSplitShares() {
       functionName: 'splitShares',
       args: [BigInt(marketId), amount],
       chainId: baseSepolia.id,
+      gas: BigInt(500_000),
     });
   }, [writeContract]);
 
-  return { splitShares, hash, isPending, isConfirming, isSuccess, error };
+  return { splitShares, hash, isPending, isConfirming, isSuccess, error, reset };
 }
 
 /**
