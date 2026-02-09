@@ -16,6 +16,7 @@ import TradingModal from "@/components/TradingModal";
 import { ConnectButton } from '@rainbow-me/rainbowkit';
 import { useAccount } from 'wagmi';
 import { STABLECOINS } from '@/lib/contracts';
+import { extractCategory } from '@/lib/categoryUtils';
 // Lazy load heavy components
 const BlockchainMarketModal = dynamic(() => import("@/components/BlockchainMarketModal"), { ssr: false });
 
@@ -69,6 +70,40 @@ export default function Home() {
   const displayedBlockchainMarkets = useMemo(() => {
     let markets = [...blockchainMarkets];
     
+    // Apply category filter
+    if (activeCategory && activeCategory !== 'all' && activeCategory !== 'trending') {
+      // Map tab IDs to extractCategory values
+      const categoryMap: Record<string, string[]> = {
+        crypto: ['crypto'],
+        sports: ['sports'],
+        politics: ['politics'],
+        business: ['other'],
+        tech: ['technology'],
+        climate: ['other'],
+        new: [], // handled separately below
+      };
+      
+      if (activeCategory === 'new') {
+        // "New" = most recently created markets (last 7 days)
+        const oneWeekAgo = Date.now() / 1000 - 7 * 24 * 60 * 60;
+        markets = markets.filter(market => market.id > 0); // all are "new" for now, sorted by id desc later
+        markets.sort((a, b) => b.id - a.id);
+      } else {
+        const matchCategories = categoryMap[activeCategory];
+        if (matchCategories && matchCategories.length > 0) {
+          markets = markets.filter(market => {
+            const marketCategory = extractCategory(market.description);
+            return matchCategories.includes(marketCategory);
+          });
+        }
+      }
+    }
+    
+    // "Trending" = sort by volume
+    if (activeCategory === 'trending') {
+      markets.sort((a, b) => Number(b.totalVolume) - Number(a.totalVolume));
+    }
+    
     // Apply search filter
     if (searchQuery.trim()) {
       const query = searchQuery.toLowerCase();
@@ -94,33 +129,36 @@ export default function Home() {
       });
     }
     
-    // Apply sorting
-    markets = [...markets].sort((a, b) => {
-      if (sortBy === 'volume') {
-        return Number(b.totalVolume) - Number(a.totalVolume);
-      }
-      if (sortBy === 'closing') {
-        return Number(a.closingDate) - Number(b.closingDate);
-      }
-      if (sortBy === 'created') {
-        return b.id - a.id;
-      }
-      if (sortBy === 'activity') {
-        return b.participantCount - a.participantCount;
-      }
-      return 0;
-    });
+    // Apply sorting (unless already sorted by category logic)
+    if (activeCategory !== 'trending' && activeCategory !== 'new') {
+      markets = [...markets].sort((a, b) => {
+        if (sortBy === 'volume') {
+          return Number(b.totalVolume) - Number(a.totalVolume);
+        }
+        if (sortBy === 'closing') {
+          return Number(a.closingDate) - Number(b.closingDate);
+        }
+        if (sortBy === 'created') {
+          return b.id - a.id;
+        }
+        if (sortBy === 'activity') {
+          return b.participantCount - a.participantCount;
+        }
+        return 0;
+      });
+    }
     
     // Apply pagination - only show current page
     const startIdx = (blockchainPage - 1) * BLOCKCHAIN_PER_PAGE;
     const endIdx = startIdx + BLOCKCHAIN_PER_PAGE;
     return markets.slice(startIdx, endIdx);
-  }, [blockchainMarkets, searchQuery, statusFilter, sortBy, blockchainPage]);
+  }, [blockchainMarkets, activeCategory, searchQuery, statusFilter, sortBy, blockchainPage]);
 
 
   useEffect(() => {
     console.log('✅ Category changed to:', activeCategory);
     setRenderKey(prev => prev + 1);
+    setBlockchainPage(1);
   }, [activeCategory]);
 
 
