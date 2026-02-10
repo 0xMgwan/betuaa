@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { createPublicClient, http } from 'viem';
 import { baseSepolia } from 'viem/chains';
 import { CONTRACTS } from '@/lib/contracts';
-import CTFPredictionMarketABI from '@/lib/abis/CTFPredictionMarket.json';
+import CTFPredictionMarketABI from '@/lib/abis/CTFPredictionMarketV2.json';
 import { fetchMarketData } from '@/lib/graphql';
 
 const publicClient = createPublicClient({

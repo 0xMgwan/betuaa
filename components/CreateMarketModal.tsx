@@ -5,7 +5,9 @@ import { X, Zap, Calendar, DollarSign, Tag, FileText, ChevronDown, Wallet, Bitco
 import { useAccount } from 'wagmi';
 import { ConnectButton } from '@rainbow-me/rainbowkit';
 import { STABLECOINS } from '@/lib/contracts';
-import { useCTFCreateMarket } from '@/hooks/useCTFMarket';
+import { useCTFCreateMarket, useCTFCreateMarketFee } from '@/hooks/useCTFMarket';
+import { useTokenAllowance, useApproveToken } from '@/hooks/useERC20';
+import { CONTRACTS } from '@/lib/contracts';
 import { useTranslation } from '@/hooks/useTranslation';
 import Image from 'next/image';
 import { CATEGORIES as CATEGORY_CONFIG } from '@/lib/categoryUtils';
@@ -38,7 +40,7 @@ interface CreateMarketModalProps {
 
 export default function CreateMarketModal({ isOpen, onClose }: CreateMarketModalProps) {
   const { t } = useTranslation();
-  const { isConnected } = useAccount();
+  const { isConnected, address } = useAccount();
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
   const [closingDate, setClosingDate] = useState('');
@@ -64,6 +66,22 @@ export default function CreateMarketModal({ isOpen, onClose }: CreateMarketModal
 
   const { createMarket, isPending: isCreating, isSuccess, hash: createHash, reset: resetCreateMarket } = useCTFCreateMarket();
   const { configurePythMarket, isPending: isConfiguringPyth, isSuccess: isPythConfigured } = useConfigurePythMarket();
+
+  // V2: Market creation fee
+  const { data: createMarketFee } = useCTFCreateMarketFee();
+  const creationFeeAmount = createMarketFee ? BigInt(createMarketFee as any) : BigInt(0);
+  const creationFeeDisplay = creationFeeAmount > 0 ? (Number(creationFeeAmount) / 1e6).toFixed(2) : '0';
+
+  // V2: USDC approval for creation fee
+  const ctfAddress = CONTRACTS.baseSepolia.ctfPredictionMarket as `0x${string}`;
+  const { data: allowanceData } = useTokenAllowance(
+    selectedToken as `0x${string}`,
+    (address || '0x0000000000000000000000000000000000000000') as `0x${string}`,
+    ctfAddress
+  );
+  const currentAllowance = allowanceData ? BigInt(allowanceData as any) : BigInt(0);
+  const needsFeeApproval = creationFeeAmount > 0 && currentAllowance < creationFeeAmount;
+  const { approve: approveFee, isPending: isApprovingFee, isSuccess: feeApproved } = useApproveToken();
 
   const selectedStablecoin = STABLECOINS.baseSepolia.find(t => t.address === selectedToken);
   
@@ -941,6 +959,25 @@ export default function CreateMarketModal({ isOpen, onClose }: CreateMarketModal
             </>
           )}
 
+          {/* V2: Market Creation Fee Notice */}
+          {creationFeeAmount > 0 && (
+            <div className="relative overflow-hidden bg-gradient-to-r from-amber-50 to-orange-50 dark:from-amber-900/20 dark:to-orange-900/20 border border-amber-200 dark:border-amber-700 rounded-lg md:rounded-xl p-3 md:p-4 shadow-sm">
+              <div className="flex items-center gap-2 md:gap-3">
+                <div className="flex items-center justify-center h-8 w-8 rounded-lg bg-amber-500/20">
+                  <DollarSign className="w-4 h-4 text-amber-600 dark:text-amber-400" />
+                </div>
+                <div className="flex-1">
+                  <p className="text-xs md:text-sm font-semibold text-amber-900 dark:text-amber-200">
+                    Market Creation Fee: {creationFeeDisplay} {selectedStablecoin?.symbol || 'USDC'}
+                  </p>
+                  <p className="text-[10px] md:text-xs text-amber-700 dark:text-amber-400 mt-0.5">
+                    A small fee is charged to prevent spam markets. This goes to the protocol.
+                  </p>
+                </div>
+              </div>
+            </div>
+          )}
+
           {/* Terms and Conditions */}
           <div className="flex items-center gap-3 p-4 bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-800 dark:to-gray-900 rounded-xl border border-gray-200 dark:border-gray-700">
             <input
@@ -985,13 +1022,22 @@ export default function CreateMarketModal({ isOpen, onClose }: CreateMarketModal
                   )}
                 </ConnectButton.Custom>
               </div>
+            ) : needsFeeApproval ? (
+              <button
+                type="button"
+                disabled={isApprovingFee}
+                onClick={() => approveFee(selectedToken as `0x${string}`, ctfAddress, creationFeeAmount)}
+                className="flex-1 px-4 md:px-6 py-2 md:py-3 bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 disabled:from-gray-400 disabled:to-gray-500 text-white rounded-lg md:rounded-xl text-sm md:text-base font-bold transition-all shadow-lg hover:shadow-xl disabled:shadow-none"
+              >
+                {isApprovingFee ? 'Approving...' : `Approve ${creationFeeDisplay} ${selectedStablecoin?.symbol || 'USDC'}`}
+              </button>
             ) : (
               <button
                 type="submit"
                 disabled={isCreating || !agreedToTerms}
                 className="flex-1 px-4 md:px-6 py-2 md:py-3 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 disabled:from-gray-400 disabled:to-gray-500 text-white rounded-lg md:rounded-xl text-sm md:text-base font-bold transition-all shadow-lg hover:shadow-xl disabled:shadow-none"
               >
-                {isCreating ? 'Creating...' : 'Create Market'}
+                {isCreating ? 'Creating...' : `Create Market${creationFeeAmount > 0 ? ` (${creationFeeDisplay} ${selectedStablecoin?.symbol || 'USDC'} fee)` : ''}`}
               </button>
             )}
           </div>

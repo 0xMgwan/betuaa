@@ -9,6 +9,13 @@ export {
   useCTFRedeemPositionTokens,
   useCTFResolveMarket,
   useCTFRedeemWinningTokens,
+  // V2 hooks
+  useCTFCreateMarketFee,
+  useCTFCreatorFeeBps,
+  useCTFCancelMarket,
+  useCTFClaimRefund,
+  useCTFMarketStatus,
+  useCTFMarketMeta,
 } from './useCTFMarket.js';
 
 // Re-export ERC20 hooks

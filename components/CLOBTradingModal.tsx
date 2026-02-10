@@ -299,6 +299,22 @@ export default function CLOBTradingModal({
 
             {/* Trading Form (right side) */}
             <div className="flex-1 p-5">
+              {/* Error State */}
+              {error && (
+                <div className="mb-4 p-3 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-700 rounded-xl flex items-start gap-3">
+                  <AlertCircle className="w-5 h-5 text-red-600 dark:text-red-400 flex-shrink-0 mt-0.5" />
+                  <div className="flex-1">
+                    <p className="text-sm font-semibold text-red-800 dark:text-red-300">Transaction Failed</p>
+                    <p className="text-xs text-red-700 dark:text-red-400 mt-1">
+                      {error instanceof Error ? error.message : String(error)}
+                    </p>
+                    <p className="text-xs text-red-600 dark:text-red-500 mt-2">
+                      Common reasons: insufficient balance, approval not confirmed, or network error. Check your wallet and try again.
+                    </p>
+                  </div>
+                </div>
+              )}
+
               {/* Success State */}
               {isSuccess ? (
                 <div className="text-center py-6 space-y-4">

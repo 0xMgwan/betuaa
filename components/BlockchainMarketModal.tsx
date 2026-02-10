@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useMemo } from 'react';
-import { X, TrendingUp, TrendingDown, Users, DollarSign, Clock, ExternalLink, BarChart3, Loader } from 'lucide-react';
+import { X, TrendingUp, TrendingDown, Users, DollarSign, Clock, ExternalLink, BarChart3, Loader, AlertTriangle, RefreshCw } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useMarketDetails } from '@/hooks/useMarketDetails';
 import { usePriceHistory } from '@/hooks/usePriceHistory';
@@ -19,6 +19,8 @@ import FavoriteButton from './FavoriteButton';
 import CategoryBadge from './CategoryBadge';
 import { BlockchainMarket } from '@/hooks/useMarkets';
 import { cleanDescription, extractCategory, extractResolutionType, extractCustomOutcomes } from '@/lib/categoryUtils';
+import { useCTFCancelMarket, useCTFClaimRefund } from '@/hooks/useCTFMarket';
+import { useAccount } from 'wagmi';
 import Image from 'next/image';
 
 interface BlockchainMarketModalProps {
@@ -35,8 +37,14 @@ export default function BlockchainMarketModal({
   const { outcomes, isLoading } = useMarketDetails(market.id);
   const { priceHistory, isLoading: isPriceLoading } = usePriceHistory(market.id);
   const { positions } = useUserPositions();
+  const { address } = useAccount();
   const [showCLOBModal, setShowCLOBModal] = useState(false);
   const [selectedCLOBOutcome, setSelectedCLOBOutcome] = useState<{ index: number; name: string } | null>(null);
+
+  // V2: Cancel market & claim refund
+  const { cancelMarket, isPending: isCanceling, isSuccess: cancelSuccess } = useCTFCancelMarket();
+  const { claimRefund, isPending: isClaiming, isSuccess: claimSuccess } = useCTFClaimRefund();
+  const isCreator = address?.toLowerCase() === market.creator?.toLowerCase();
 
   // Determine outcomes list (standard Yes/No or custom multi-outcome)
   const resolutionType = extractResolutionType(market.description);
@@ -354,6 +362,80 @@ export default function BlockchainMarketModal({
                 }
               })()}
             </motion.div>
+
+            {/* V2: Cancel Market / Claim Refund Section */}
+            {isCreator && isActive && !market.resolved && (
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.85 }}
+                className="bg-gradient-to-br from-red-50 to-orange-50 dark:from-red-900/20 dark:to-orange-900/20 rounded-xl p-3 md:p-4 border border-red-200/50 dark:border-red-700/50 backdrop-blur-sm"
+              >
+                <h3 className="font-black text-gray-900 dark:text-white mb-2 text-sm flex items-center gap-2">
+                  <AlertTriangle className="w-4 h-4 text-red-600 dark:text-red-400" />
+                  Market Creator Actions
+                </h3>
+                <p className="text-xs text-gray-600 dark:text-gray-400 mb-3">
+                  As the market creator, you can cancel this market. All participants will be able to claim refunds for their complete token sets.
+                </p>
+                {cancelSuccess ? (
+                  <div className="bg-green-100 dark:bg-green-900/30 border border-green-300 dark:border-green-700 rounded-lg p-3 text-center">
+                    <p className="text-sm font-bold text-green-700 dark:text-green-300">Market canceled successfully!</p>
+                    <p className="text-xs text-green-600 dark:text-green-400 mt-1">Participants can now claim refunds.</p>
+                  </div>
+                ) : (
+                  <button
+                    onClick={() => cancelMarket(market.id)}
+                    disabled={isCanceling}
+                    className="w-full py-2.5 bg-gradient-to-r from-red-500 to-orange-500 hover:from-red-600 hover:to-orange-600 disabled:from-gray-400 disabled:to-gray-500 text-white rounded-xl font-bold text-sm shadow-lg transition-all disabled:cursor-not-allowed"
+                  >
+                    {isCanceling ? (
+                      <span className="flex items-center justify-center gap-2">
+                        <Loader className="w-4 h-4 animate-spin" />
+                        Canceling...
+                      </span>
+                    ) : 'Cancel Market'}
+                  </button>
+                )}
+              </motion.div>
+            )}
+
+            {/* V2: Claim Refund (for canceled markets) */}
+            {(cancelSuccess || market.resolved === false) && (
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.87 }}
+              >
+                {claimSuccess ? (
+                  <div className="bg-green-100 dark:bg-green-900/30 border border-green-300 dark:border-green-700 rounded-xl p-3 md:p-4 text-center">
+                    <p className="text-sm font-bold text-green-700 dark:text-green-300">Refund claimed successfully!</p>
+                  </div>
+                ) : cancelSuccess ? (
+                  <div className="bg-gradient-to-br from-blue-50 to-cyan-50 dark:from-blue-900/20 dark:to-cyan-900/20 rounded-xl p-3 md:p-4 border border-blue-200/50 dark:border-blue-700/50">
+                    <h3 className="font-black text-gray-900 dark:text-white mb-2 text-sm flex items-center gap-2">
+                      <RefreshCw className="w-4 h-4 text-blue-600 dark:text-blue-400" />
+                      Claim Your Refund
+                    </h3>
+                    <p className="text-xs text-gray-600 dark:text-gray-400 mb-3">
+                      This market has been canceled. If you hold complete token sets (equal amounts of all outcomes), you can claim a refund.
+                    </p>
+                    <button
+                      onClick={() => claimRefund(market.id)}
+                      disabled={isClaiming}
+                      className="w-full py-2.5 bg-gradient-to-r from-blue-500 to-cyan-500 hover:from-blue-600 hover:to-cyan-600 disabled:from-gray-400 disabled:to-gray-500 text-white rounded-xl font-bold text-sm shadow-lg transition-all disabled:cursor-not-allowed"
+                    >
+                      {isClaiming ? (
+                        <span className="flex items-center justify-center gap-2">
+                          <Loader className="w-4 h-4 animate-spin" />
+                          Claiming Refund...
+                        </span>
+                      ) : 'Claim Refund'}
+                    </button>
+                  </div>
+                ) : null}
+              </motion.div>
+            )}
 
             {/* Market Comments */}
             <motion.div

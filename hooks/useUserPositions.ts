@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useAccount, useReadContract } from 'wagmi';
 import { CONTRACTS } from '@/lib/contracts';
-import CTFPredictionMarketABI from '@/lib/abis/CTFPredictionMarket.json';
+import CTFPredictionMarketABI from '@/lib/abis/CTFPredictionMarketV2.json';
 import { baseSepolia } from 'wagmi/chains';
 import { createPublicClient, http } from 'viem';
 

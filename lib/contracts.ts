@@ -1,21 +1,23 @@
 // Contract addresses for Stretch platform
 export const CONTRACTS = {
   baseSepolia: {
-    // CTF Prediction Market (New - with Pyth resolver support)
-    ctfPredictionMarket: '0xb46Ff34C716570b90472D2b8d709252618126052',
+    // V2 Upgradeable Contracts (UUPS Proxy addresses) — redeployed Feb 10 2026
+    ctfPredictionMarket: '0xfb4224B9826b0e1c4d2113103dAD1167D0EdE69d',
+    orderBook: '0x90E274E7AbD5eb7c4b164455c158a649b8012a84',
+    
+    // Supporting contracts
     pythResolver: '0xc3c8523FaC61b6E35DC553BB5a1F542982753F62',
-    mockUSDC: '0x7c476223C59E2106511C7238c1A3f78C4d8AF7a1',
+    mockUSDC: '0x8FD3cf50315A4AA74e97516cC4F46150AB032616',
     
-    // On-chain CLOB OrderBook
-    orderBook: '0x62f80b6433ca877c0e723061fa8222925ea4b709',
-    
-    // Legacy contracts (kept for reference)
+    // Legacy V1 contracts (kept for reference)
+    ctfPredictionMarketV1: '0xb46Ff34C716570b90472D2b8d709252618126052',
+    orderBookV1: '0x62f80b6433ca877c0e723061fa8222925ea4b709',
     predictionMarket: '0x33063a9fD4d812939586E90924Fa3946e252C019',
   },
   base: {
     ctfPredictionMarket: '', // Deploy to mainnet when ready
-    predictionMarket: '', // Deploy to mainnet when ready
     orderBook: '', // Deploy to mainnet when ready
+    predictionMarket: '', // Deploy to mainnet when ready
   },
 } as const;
 
@@ -44,9 +46,9 @@ export const STABLECOINS = {
       icon: '/cngn logo.png',
     },
     {
-      address: '0x182FcDFe504bb116555C8b9b3CF425F44a965b11',
+      address: '0x8FD3cf50315A4AA74e97516cC4F46150AB032616',
       symbol: 'MockUSDC',
-      name: 'Mock USDC (Test)',
+      name: 'Mock USDC (V2 Test)',
       decimals: 6,
       icon: '🧪',
     },

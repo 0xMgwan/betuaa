@@ -1,7 +1,7 @@
 import { createPublicClient, http } from 'viem';
 import { baseSepolia } from 'viem/chains';
 import { CONTRACTS } from '@/lib/contracts';
-import CTFPredictionMarketABI from '@/lib/abis/CTFPredictionMarket.json';
+import CTFPredictionMarketABI from '@/lib/abis/CTFPredictionMarketV2.json';
 
 export async function GET() {
   try {

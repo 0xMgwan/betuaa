@@ -2,8 +2,8 @@ import { useReadContract, useWriteContract, useAccount, useWaitForTransactionRec
 import { baseSepolia } from 'wagmi/chains';
 import { useState, useEffect, useCallback } from 'react';
 import { CONTRACTS } from '@/lib/contracts';
-import OrderBookABI from '@/lib/abis/OrderBook.json';
-import CTFPredictionMarketABI from '@/lib/abis/CTFPredictionMarket.json';
+import OrderBookABI from '@/lib/abis/OrderBookV2.json';
+import CTFPredictionMarketABI from '@/lib/abis/CTFPredictionMarketV2.json';
 
 const ORDER_BOOK_ADDRESS = CONTRACTS.baseSepolia.orderBook as `0x${string}`;
 const CTF_ADDRESS = CONTRACTS.baseSepolia.ctfPredictionMarket as `0x${string}`;
@@ -140,6 +140,7 @@ export function usePlaceLimitOrder() {
     priceBps: number,
     size: bigint,
   ) => {
+    console.log('[placeLimitOrder] Placing order:', { marketId, outcomeIndex, side, priceBps, size: size.toString() });
     writeContract({
       address: ORDER_BOOK_ADDRESS,
       abi: OrderBookABI,
@@ -149,6 +150,13 @@ export function usePlaceLimitOrder() {
       gas: BigInt(500_000),
     });
   }, [writeContract]);
+
+  // Log errors
+  useEffect(() => {
+    if (error) {
+      console.error('[placeLimitOrder] Error:', error);
+    }
+  }, [error]);
 
   return { placeLimitOrder, hash, isPending, isConfirming, isSuccess, error, reset };
 }
@@ -244,6 +252,7 @@ export function useApproveCollateral() {
   const { isLoading: isConfirming, isSuccess } = useWaitForTransactionReceipt({ hash });
 
   const approve = useCallback((tokenAddress: string, amount: bigint) => {
+    console.log('[useApproveCollateral] Approving token:', { tokenAddress, spender: ORDER_BOOK_ADDRESS, amount: amount.toString() });
     writeContract({
       address: tokenAddress as `0x${string}`,
       abi: [
@@ -263,6 +272,15 @@ export function useApproveCollateral() {
       chainId: baseSepolia.id,
     });
   }, [writeContract]);
+
+  useEffect(() => {
+    if (error) {
+      console.error('[useApproveCollateral] Error:', error);
+    }
+    if (isSuccess) {
+      console.log('[useApproveCollateral] Approval successful');
+    }
+  }, [error, isSuccess]);
 
   return { approve, hash, isPending, isConfirming, isSuccess, error, reset };
 }
