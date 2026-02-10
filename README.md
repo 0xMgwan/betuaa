@@ -11,18 +11,28 @@ A fully decentralized prediction market platform built on Base blockchain with a
 ## 🌟 Features
 
 ### Core Functionality
-- **Create Markets** - Binary outcome markets (Yes/No) on any topic
+- **Create Markets** - Binary outcome markets (Yes/No) on any topic with market creation fee (1 USDC)
 - **Pyth Markets** - Markets that auto-resolve using Pyth price feeds
 - **CLOB Trading** - Central Limit Order Book for peer-to-peer trading
   - Limit orders (place orders at custom prices)
   - Market orders (instant execution against best available price)
   - Real-time order book with bid/ask spreads
   - Order cancellation and management
+  - **Multi-token support** - Trade on markets with any collateral token
 - **Position Token Trading** - Buy/sell outcome tokens at fixed prices
+- **Market Cancellation** - Creators can cancel markets and receive refunds
 - **Automatic Resolution** - Keeper bot auto-resolves expired Pyth markets
 - **Manual Resolution** - Market creators can manually resolve non-Pyth markets
 - **Claim Winnings** - Winners redeem winning tokens for collateral
 - **Portfolio Tracking** - Real-time P&L tracking and position management
+
+### V2 Upgrades (Feb 2026)
+- **UUPS Upgradeability** - Smart contracts can be upgraded without losing state
+- **Market Creation Fee** - 1 USDC fee per market (anti-spam)
+- **Market Cancellation** - Creators can cancel and refund all participants
+- **Rich Metadata** - Store categories, option images, and market cover images on-chain
+- **Batch Trade Execution** - Operator-assisted matching for efficient order settlement
+- **Dynamic Collateral** - OrderBook reads collateral token per-market (fixes multi-token trading)
 
 ### Pyth Network Integration
 - **Price Feeds** - 100+ cryptocurrency price feeds from Pyth Network
@@ -77,12 +87,21 @@ A fully decentralized prediction market platform built on Base blockchain with a
 - **Purpose**: Auto-resolves expired Pyth markets
 
 ### Contract Addresses (Base Sepolia)
+
+**V2 Contracts (Current - UUPS Upgradeable):**
+```
+CTFPredictionMarketV2 (Proxy): 0xfb4224B9826b0e1c4d2113103dAD1167D0EdE69d
+CTFPredictionMarketV2 (Impl): 0x13d81834f02A9eB952D2415ff10338CbF4DaC5c4
+OrderBookV2 (Proxy): 0x90E274E7AbD5eb7c4b164455c158a649b8012a84
+OrderBookV2 (Impl): 0xD64796e001CB7398eb1689ed4C65A3e934e5Fc59
+USDC (Collateral): 0x036CbD53842c5426634e7929541eC2318f3dCF7e
+```
+
+**V1 Contracts (Legacy):**
 ```
 CTFPredictionMarket: 0xb46Ff34C716570b90472D2b8d709252618126052
 PythResolver: 0xc3c8523FaC61b6E35DC553BB5a1F542982753F62
 OrderBook (CLOB): 0x62f80b6433ca877c0e723061fa8222925ea4b709
-USDC (Collateral): 0x036CbD53842c5426634e7929541eC2318f3dCF7e
-MockUSDC: 0x7c476223C59E2106511C7238c1A3f78C4d8AF7a1
 ```
 
 ### Pyth Network Configuration
@@ -261,9 +280,66 @@ The keeper bot will:
 
 ## 🔐 Smart Contracts
 
-### CTFPredictionMarket.sol
+### CTFPredictionMarketV2.sol (V2 - Current)
 
-**Purpose**: Main contract for binary outcome prediction markets
+**Purpose**: Upgradeable main contract for binary outcome prediction markets with UUPS proxy pattern
+
+**Key Features:**
+- **UUPS Upgradeability** - Can be upgraded without losing state or market data
+- **Market Creation Fee** - 1 USDC fee per market (configurable, anti-spam)
+- **Market Cancellation** - Creators can cancel markets and refund all participants
+- **Rich Metadata** - Store categories, option titles, option images, and cover images on-chain
+- **Creator Fee Sharing** - Configurable creator fee (default 1%) on trades
+- **Batch Trade Execution** - Operator-assisted matching for efficient settlement
+
+**Key Functions:**
+- `createMarket()` - Create new market with rich metadata (categories, images, etc.)
+- `mintPositionTokens()` - Buy outcome tokens (1 collateral = 1 YES + 1 NO token)
+- `burnPositionTokens()` - Sell outcome tokens back to contract
+- `resolveMarket()` - Declare winning outcome (only creator, owner, or authorized resolver)
+- `redeemWinningTokens()` - Claim payouts from resolved markets
+- `cancelMarket()` - Cancel market and refund all participants
+- `claimRefund()` - Claim refund from cancelled market
+- `getMarketCollateral()` - Get collateral token for a specific market
+- `setAuthorizedOperator()` - Authorize operator for batch trades
+- `executeTrades()` - Batch execute multiple trades (operator only)
+
+**Market Structure:**
+```solidity
+struct Market {
+    uint256 id;
+    string question;
+    string description;
+    address creator;
+    address collateralToken;
+    uint256 createdAt;
+    uint256 closingTime;
+    uint256 resolutionTime;
+    bytes32 conditionId;
+    uint256 outcomeCount;
+    uint256 winningOutcome;
+    MarketStatus status;  // Active, Resolved, Canceled
+    bool paused;
+    string[] categories;
+    string[] optionTitles;
+    string[] optionImages;
+    string imageUrl;
+}
+```
+
+**Features:**
+- Binary outcomes (0 = Yes, 1 = No)
+- Multi-token support (any ERC20)
+- Proper decimal handling
+- Reentrancy protection
+- Access control for resolution
+- UUPS proxy pattern for upgrades
+- Market cancellation with refunds
+- Rich on-chain metadata
+
+### CTFPredictionMarket.sol (V1 - Legacy)
+
+**Purpose**: Original contract for binary outcome prediction markets
 
 **Key Functions:**
 - `createMarket()` - Create new market with title, description, token, and closing time
@@ -272,21 +348,6 @@ The keeper bot will:
 - `resolveMarket()` - Declare winning outcome (only creator, owner, or authorized resolver)
 - `redeemWinningTokens()` - Claim payouts from resolved markets
 - `setAuthorizedResolver()` - Authorize external resolver contracts (owner only)
-
-**Market Structure:**
-```solidity
-struct Market {
-    string title;
-    string description;
-    address creator;
-    address paymentToken;
-    uint256 closingTime;
-    bool resolved;
-    uint256 resolutionTime;
-    uint256 winningOutcomeId;
-    uint256 outcomeCount;
-}
-```
 
 **Features:**
 - Binary outcomes (0 = Yes, 1 = No)
@@ -328,31 +389,66 @@ struct PythMarket {
 - Automatic winner determination
 - Proper int64 scaling for prices
 
-### OrderBook.sol (CLOB)
+### OrderBookV2.sol (V2 - Current CLOB)
 
-**Purpose**: Central Limit Order Book for peer-to-peer trading of outcome tokens
+**Purpose**: Upgradeable Central Limit Order Book for peer-to-peer trading of outcome tokens with multi-token support
+
+**Key Features:**
+- **UUPS Upgradeability** - Can be upgraded without losing order state
+- **Dynamic Collateral** - Reads collateral token per-market from CTF contract (fixes multi-token trading)
+- **Multi-Token Support** - Works with any ERC20 collateral token
+- **Automatic Matching** - Crossing orders fill immediately
+- **Partial Fills** - Orders can be partially filled and rested
+- **Platform Fees** - Configurable fee collection
 
 **Key Functions:**
 - `placeLimitOrder()` - Place limit order at custom price
-  - Buy: deposits collateral (USDC)
+  - Buy: deposits collateral (reads token per-market)
   - Sell: deposits outcome tokens (ERC1155)
 - `placeMarketOrder()` - Instant execution against best available price
 - `cancelOrder()` - Cancel resting limit order
+- `cancelAllOrders()` - Cancel all orders for a user
 - `getOrderBook()` - View all orders at each price level
 - `getMarketBookSummary()` - Get best bid/ask and volume
+- `getUserActiveOrders()` - Get all active orders for a user
+- `getMarketCollateral()` - Get collateral token for a market (internal helper)
 
 **Order Structure:**
 ```solidity
 struct Order {
     uint256 orderId;
     address maker;
+    uint256 marketId;
+    uint256 outcomeIndex;
     Side side;           // BUY or SELL
     uint256 price;       // In basis points (0-10000)
     uint256 size;        // Amount of shares
     uint256 filled;      // Amount already filled
+    uint256 timestamp;
     bool active;         // Is order still active
 }
 ```
+
+**Features:**
+- Automatic order matching (crossing orders fill immediately)
+- Partial fills supported
+- ERC1155 approval required for sell orders
+- ERC20 approval required for buy orders (uses market-specific token)
+- Platform fee collection (configurable)
+- Reentrancy protection
+- UUPS proxy pattern for upgrades
+- Dynamic collateral token per-market
+
+### OrderBook.sol (V1 - Legacy CLOB)
+
+**Purpose**: Original Central Limit Order Book for peer-to-peer trading of outcome tokens
+
+**Key Functions:**
+- `placeLimitOrder()` - Place limit order at custom price
+- `placeMarketOrder()` - Instant execution against best available price
+- `cancelOrder()` - Cancel resting limit order
+- `getOrderBook()` - View all orders at each price level
+- `getMarketBookSummary()` - Get best bid/ask and volume
 
 **Features:**
 - Automatic order matching (crossing orders fill immediately)
@@ -636,25 +732,48 @@ vercel deploy
 
 ### Smart Contracts (Base Sepolia)
 
-**Deploy CTFPredictionMarket:**
+**Deploy V2 Contracts (UUPS Upgradeable):**
+```bash
+cd contracts
+# Set your private key
+export PRIVATE_KEY=0x...
+
+# Deploy fresh V2 contracts with proxies
+forge script script/DeployV2.s.sol:DeployV2Script --rpc-url https://sepolia.base.org --broadcast -vvv
+
+# Update contract addresses in lib/contracts.ts with new proxy addresses
+```
+
+**Upgrade Existing V2 Contracts:**
+```bash
+cd contracts
+# Set your private key
+export PRIVATE_KEY=0x...
+
+# Upgrade to new implementation (proxies stay the same)
+forge script script/UpgradeV2.s.sol:UpgradeV2Script --rpc-url https://sepolia.base.org --broadcast -vvv
+```
+
+**Deploy V1 Contracts (Legacy):**
 ```bash
 cd contracts
 forge script script/Deploy.s.sol:DeployScript --rpc-url https://sepolia.base.org --broadcast --verify
-```
-
-**Deploy OrderBook (CLOB):**
-```bash
-cd contracts
-forge script script/DeployOrderBook.s.sol:DeployOrderBookScript --rpc-url https://sepolia.base.org --broadcast --verify
 ```
 
 **Update contract addresses in `lib/contracts.ts`:**
 ```typescript
 export const CONTRACTS = {
   baseSepolia: {
-    ctfPredictionMarket: '0xb46Ff34C716570b90472D2b8d709252618126052',
-    orderBook: '0x62f80b6433ca877c0e723061fa8222925ea4b709',
+    // V2 Upgradeable Contracts (UUPS Proxy addresses)
+    ctfPredictionMarket: '0xfb4224B9826b0e1c4d2113103dAD1167D0EdE69d',
+    orderBook: '0x90E274E7AbD5eb7c4b164455c158a649b8012a84',
+    
+    // Supporting contracts
     pythResolver: '0xc3c8523FaC61b6E35DC553BB5a1F542982753F62',
+    
+    // Legacy V1 contracts
+    ctfPredictionMarketV1: '0xb46Ff34C716570b90472D2b8d709252618126052',
+    orderBookV1: '0x62f80b6433ca877c0e723061fa8222925ea4b709',
   },
 };
 ```
