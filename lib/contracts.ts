@@ -1,3 +1,11 @@
+// RPC endpoints — use PRIMARY, fall back to FALLBACK on errors
+export const RPC = {
+  baseSepolia: {
+    primary: 'https://sepolia.base.org',
+    fallback: 'https://base-sepolia-rpc.publicnode.com',
+  },
+} as const;
+
 // Contract addresses for Stretch platform
 export const CONTRACTS = {
   baseSepolia: {

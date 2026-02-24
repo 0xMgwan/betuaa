@@ -1,15 +1,18 @@
-import { createPublicClient, http } from 'viem';
+import { createPublicClient, http, fallback } from 'viem';
 import { baseSepolia } from 'viem/chains';
-import { CONTRACTS } from '@/lib/contracts';
+import { CONTRACTS, RPC } from '@/lib/contracts';
 import CTFPredictionMarketABI from '@/lib/abis/CTFPredictionMarketV2.json';
+
+const publicClient = createPublicClient({
+  chain: baseSepolia,
+  transport: fallback([
+    http(RPC.baseSepolia.primary),
+    http(RPC.baseSepolia.fallback),
+  ]),
+});
 
 export async function GET() {
   try {
-    const publicClient = createPublicClient({
-      chain: baseSepolia,
-      transport: http('https://sepolia.base.org'),
-    });
-
     const marketCount = await publicClient.readContract({
       address: CONTRACTS.baseSepolia.ctfPredictionMarket as `0x${string}`,
       abi: CTFPredictionMarketABI,
@@ -19,7 +22,6 @@ export async function GET() {
     return Response.json({
       success: true,
       marketCount: Number(marketCount),
-      marketId: Number(marketCount) - 1,
     });
   } catch (error) {
     console.error('Error fetching market count:', error);

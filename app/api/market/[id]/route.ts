@@ -1,16 +1,24 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { createPublicClient, http } from 'viem';
+import { createPublicClient, http, fallback } from 'viem';
 import { baseSepolia } from 'viem/chains';
-import { CONTRACTS } from '@/lib/contracts';
+import { CONTRACTS, RPC } from '@/lib/contracts';
 import CTFPredictionMarketABI from '@/lib/abis/CTFPredictionMarketV2.json';
 import { fetchMarketData } from '@/lib/graphql';
 
+// MarketStatus enum from CTFPredictionMarketV2.sol
+const MarketStatus = { Active: 0, Resolved: 1, Canceled: 2 } as const;
+const MarketStatusLabel = ['Active', 'Resolved', 'Canceled'] as const;
+
+// CTFPredictionMarketV2 fee defaults (basis points)
+const PLATFORM_FEE_BPS = 50;   // 0.5%
+const CREATOR_FEE_BPS  = 100;  // 1.0%
+
 const publicClient = createPublicClient({
   chain: baseSepolia,
-  transport: http('https://base-sepolia-rpc.publicnode.com', {
-    retryCount: 3,
-    retryDelay: 1000,
-  }),
+  transport: fallback([
+    http(RPC.baseSepolia.primary, { retryCount: 3, retryDelay: 1000 }),
+    http(RPC.baseSepolia.fallback, { retryCount: 2, retryDelay: 1000 }),
+  ]),
 });
 
 // Simple in-memory cache with 5 second TTL (shorter for faster updates)
@@ -142,6 +150,10 @@ export async function GET(
       // Description is not JSON or doesn't have image field
     }
 
+    // V2 uses MarketStatus enum (uint8): 0=Active, 1=Resolved, 2=Canceled
+    const statusCode = Number(market.status ?? 0);
+    const statusLabel = MarketStatusLabel[statusCode] ?? 'Active';
+
     const response = {
       id: marketId,
       title: market.question,
@@ -149,12 +161,14 @@ export async function GET(
       creator: market.creator,
       paymentToken: market.collateralToken,
       closingDate: market.closingTime.toString(),
-      resolved: market.resolved,
+      status: statusLabel,
+      resolved: statusCode === MarketStatus.Resolved,
+      canceled: statusCode === MarketStatus.Canceled,
       winningOutcomeId: Number(market.winningOutcome || 0),
       totalVolume: totalVolume.toString(),
       participantCount: participantCount,
-      creatorFeePercent: 0, // CTF uses platform fee only
-      platformFeePercent: 200, // 2% platform fee (200 basis points)
+      platformFeeBps: PLATFORM_FEE_BPS,
+      creatorFeeBps: CREATOR_FEE_BPS,
       image: imageUrl,
     };
 

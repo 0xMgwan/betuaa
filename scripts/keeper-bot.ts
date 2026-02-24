@@ -3,36 +3,36 @@
 /**
  * Pyth Keeper Bot - Production Ready
  * Automatically resolves expired Pyth markets using current price data
- * 
+ *
  * Usage (runs continuously by default):
  * PRIVATE_KEY=0x... npm run keeper-bot
- * 
+ *
  * Or run a single check and exit:
  * PRIVATE_KEY=0x... npm run keeper-bot -- --once
- * 
+ *
  * The keeper bot checks for resolvable markets every 60 seconds and resolves them automatically.
  * Markets are auto-resolved based on Pyth price feeds when they expire.
  */
 
-import { createPublicClient, createWalletClient, http, parseEther, formatEther } from 'viem';
+import { createPublicClient, createWalletClient, http, parseEther, formatEther, fallback } from 'viem';
 import { privateKeyToAccount } from 'viem/accounts';
-import { baseSepolia, base } from 'viem/chains';
+import { baseSepolia } from 'viem/chains';
+import { CONTRACTS, RPC } from '../lib/contracts';
 
-// Configuration
+// Configuration — all addresses come from lib/contracts.ts (single source of truth)
 const PRIVATE_KEY = process.env.PRIVATE_KEY as `0x${string}`;
-const CHAIN = process.env.CHAIN === 'mainnet' ? 'mainnet' : 'sepolia';
-const RPC_URL = CHAIN === 'mainnet' 
-  ? 'https://mainnet.base.org'
-  : 'https://sepolia.base.org';
-const PYTH_RESOLVER = '0xc3c8523FaC61b6E35DC553BB5a1F542982753F62' as `0x${string}`;
-const CTF_ADDRESS = '0xA5Bf04D3D079BE92981EE8208b18B0514eBd370C' as `0x${string}`;
+const PYTH_RESOLVER = CONTRACTS.baseSepolia.pythResolver as `0x${string}`;
+const CTF_ADDRESS = CONTRACTS.baseSepolia.ctfPredictionMarket as `0x${string}`;
 const HERMES_API = 'https://hermes.pyth.network';
 const CHECK_INTERVAL = 60000; // 60 seconds
 // Watch mode is ON by default - keeper bot runs continuously
 // Use --once to run a single check and exit
 const WATCH_MODE = !process.argv.includes('--once');
+// Safe ETH buffer sent with resolveMarket — Pyth update fee is typically ~0.001 ETH,
+// any excess is refunded by the contract.
+const PYTH_UPDATE_FEE_BUFFER = parseEther('0.002');
 
-// Contract ABIs
+// Minimal ABIs (inline — avoids server-side JSON import issues with tsx)
 const CTF_ABI = [
   {
     inputs: [{ name: 'marketId', type: 'uint256' }, { name: 'winningOutcome', type: 'uint256' }],
@@ -105,21 +105,28 @@ class KeeperBot {
 
     this.account = privateKeyToAccount(PRIVATE_KEY);
     this.publicClient = createPublicClient({
-      chain: CHAIN === 'mainnet' ? base : baseSepolia,
-      transport: http(RPC_URL),
+      chain: baseSepolia,
+      transport: fallback([
+        http(RPC.baseSepolia.primary),
+        http(RPC.baseSepolia.fallback),
+      ]),
     });
 
     this.walletClient = createWalletClient({
       account: this.account,
-      chain: CHAIN === 'mainnet' ? base : baseSepolia,
-      transport: http(RPC_URL),
+      chain: baseSepolia,
+      transport: fallback([
+        http(RPC.baseSepolia.primary),
+        http(RPC.baseSepolia.fallback),
+      ]),
     });
   }
 
   async initialize() {
     console.log('\n🤖 Pyth Keeper Bot Initializing...\n');
-    console.log(`📍 Network: ${CHAIN === 'mainnet' ? 'Base Mainnet' : 'Base Sepolia'}`);
+    console.log(`📍 Network: Base Sepolia`);
     console.log(`👛 Keeper Address: ${this.account.address}`);
+    console.log(`📝 CTF Contract: ${CTF_ADDRESS}`);
     console.log(`📝 PythResolver: ${PYTH_RESOLVER}`);
     console.log(`⏱️  Check Interval: ${CHECK_INTERVAL / 1000}s`);
     console.log(`🔄 Watch Mode: ${WATCH_MODE ? 'ON' : 'OFF'}\n`);
@@ -236,49 +243,39 @@ class KeeperBot {
 
   async resolveMarket(market: PythMarket): Promise<boolean> {
     try {
-      console.log(`\n🎯 Resolving Market ${market.id}...`);
+      console.log(`\n🎯 Resolving Market ${market.id} via PythResolver...`);
 
-      // Get current price
+      // Log expected outcome for transparency (PythResolver determines winner on-chain)
       const priceData = await this.getPythPrice(market.priceId);
-      if (!priceData) {
-        console.log(`   ❌ Could not fetch price`);
-        return false;
+      if (priceData) {
+        const currentPrice = priceData.price * Math.pow(10, priceData.expo);
+        const thresholdPrice = Number(market.threshold) / 1e8;
+        console.log(`   💹 Current Price: $${currentPrice.toFixed(2)}`);
+        console.log(`   📊 Threshold: $${thresholdPrice.toFixed(2)}`);
+        const expectedOutcome = market.isAbove
+          ? currentPrice >= thresholdPrice ? 0 : 1
+          : currentPrice < thresholdPrice ? 0 : 1;
+        console.log(`   🎲 Expected Outcome: ${expectedOutcome === 0 ? 'YES' : 'NO'} (verified on-chain by PythResolver)`);
       }
 
-      const currentPrice = priceData.price * Math.pow(10, priceData.expo);
-      const thresholdPrice = Number(market.threshold) / 1e8;
-
-      console.log(`   💹 Current Price: $${currentPrice.toFixed(2)}`);
-      console.log(`   📊 Threshold: $${thresholdPrice.toFixed(2)}`);
-
-      // Determine outcome
-      let outcome: number;
-      if (market.isAbove) {
-        outcome = currentPrice >= thresholdPrice ? 0 : 1;
-        console.log(`   🎲 Outcome: ${outcome === 0 ? 'YES (Above)' : 'NO (Below)'}`);
-      } else {
-        outcome = currentPrice < thresholdPrice ? 0 : 1;
-        console.log(`   🎲 Outcome: ${outcome === 0 ? 'YES (Below)' : 'NO (Above)'}`);
-      }
-
-      // Get price update data
+      // Get fresh VAA price update data required by PythResolver
       const updateData = await this.getPriceUpdateData(market.priceId);
       if (!updateData) {
-        console.log(`   ❌ Could not fetch update data`);
+        console.log(`   ❌ Could not fetch Hermes VAA update data`);
         return false;
       }
+      console.log(`   📦 VAA Update Data: ${updateData.length} item(s)`);
 
-      console.log(`   📦 Update Data: ${updateData.length} item(s)`);
-
-      // Send resolution transaction directly to CTF contract
-      // The keeper wallet is the owner, so it's authorized to resolve
-      console.log(`   📤 Sending resolution transaction...`);
-      
+      // Call PythResolver.resolveMarket — it verifies price freshness on-chain
+      // and calls CTF.resolveMarket internally. Send ETH buffer for Pyth update fee;
+      // the contract refunds any excess back to this wallet.
+      console.log(`   📤 Calling PythResolver.resolveMarket...`);
       const hash = await this.walletClient.writeContract({
-        address: CTF_ADDRESS,
-        abi: CTF_ABI,
+        address: PYTH_RESOLVER,
+        abi: PYTH_RESOLVER_ABI,
         functionName: 'resolveMarket',
-        args: [BigInt(market.id), BigInt(outcome)],
+        args: [BigInt(market.id), updateData],
+        value: PYTH_UPDATE_FEE_BUFFER,
       });
 
       console.log(`   ✅ Transaction sent: ${hash}`);
@@ -290,7 +287,7 @@ class KeeperBot {
       });
 
       if (receipt.status === 'success') {
-        console.log(`   ✅ Market ${market.id} resolved successfully!`);
+        console.log(`   ✅ Market ${market.id} resolved successfully via PythResolver!`);
         return true;
       } else {
         console.log(`   ❌ Transaction failed`);
