@@ -40,19 +40,22 @@ interface CreateMarketModalProps {
 
 export default function CreateMarketModal({ isOpen, onClose }: CreateMarketModalProps) {
   const { t } = useTranslation();
-  const { address: web3Address } = useAccount();
+  const { address: web3Address, isConnected: web3Connected } = useAccount();
   
   // Check nTZS authentication
   const [ntzsUser, setNtzsUser] = useState<any>(null);
-  const isConnected = !!ntzsUser;
+  const isConnected = !!ntzsUser || web3Connected;
   const address = ntzsUser?.walletAddress || web3Address;
 
+  // Reload user data when modal opens or wallet connects
   useEffect(() => {
-    const storedUser = localStorage.getItem('ntzsUser');
-    if (storedUser) {
-      setNtzsUser(JSON.parse(storedUser));
+    if (isOpen || web3Address) {
+      const storedUser = localStorage.getItem('ntzsUser');
+      if (storedUser) {
+        setNtzsUser(JSON.parse(storedUser));
+      }
     }
-  }, []);
+  }, [isOpen, web3Address]);
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
   const [closingDate, setClosingDate] = useState('');

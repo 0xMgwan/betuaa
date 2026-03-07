@@ -12,11 +12,13 @@ library StablecoinRegistry {
     address public constant USDT_BASE = 0xfde4C96c8593536E31F229EA8f37b2ADa2699bb2;
     address public constant CNGN_BASE = 0x46C85152bFe9f96829aA94755D9f915F9B10EF5F; // cNGN (Nigerian Naira)
     address public constant IDRX_BASE = 0x18Bc5bcC660cf2B9cE3cd51a404aFe1a0cBD3C22; // IDRX (Indonesian Rupiah)
+    address public constant NTZS_BASE = 0x0000000000000000000000000000000000000000; // nTZS (Tanzania Shilling) - TODO: Add mainnet address
     
     // Base Sepolia Testnet Addresses
     address public constant USDC_BASE_SEPOLIA = 0x036CbD53842c5426634e7929541eC2318f3dCF7e;
     address public constant USDT_BASE_SEPOLIA = 0x036CbD53842c5426634e7929541eC2318f3dCF7e; // Using USDC address for testing
     address public constant CNGN_BASE_SEPOLIA = 0x929A08903C22440182646Bb450a67178Be402f7f;
+    address public constant NTZS_BASE_SEPOLIA = 0x3920bb2b82005082484E4219752A449921167778; // nTZS (Tanzania Shilling)
     
     struct StablecoinInfo {
         address tokenAddress;
@@ -64,6 +66,14 @@ library StablecoinRegistry {
                 decimals: 18,
                 isActive: true
             });
+        } else if (_token == NTZS_BASE || _token == NTZS_BASE_SEPOLIA) {
+            return StablecoinInfo({
+                tokenAddress: _token,
+                symbol: "nTZS",
+                name: "Tanzania Shilling",
+                decimals: 18,
+                isActive: true
+            });
         }
         
         // Return empty info for unsupported tokens
@@ -88,6 +98,8 @@ library StablecoinRegistry {
                _token == USDT_BASE_SEPOLIA ||
                _token == CNGN_BASE ||
                _token == CNGN_BASE_SEPOLIA ||
-               _token == IDRX_BASE;
+               _token == IDRX_BASE ||
+               _token == NTZS_BASE ||
+               _token == NTZS_BASE_SEPOLIA;
     }
 }
