@@ -13,7 +13,7 @@ import { BlockchainMarket, useAllMarkets } from "@/hooks/useMarkets";
 import { useActivityFeed } from "@/hooks/useActivityFeed";
 import { useTranslation } from "@/hooks/useTranslation";
 import TradingModal from "@/components/TradingModal";
-import { ConnectButton } from '@rainbow-me/rainbowkit';
+import CustomConnectButton from "@/components/CustomConnectButton";
 import { useAccount } from 'wagmi';
 import { STABLECOINS } from '@/lib/contracts';
 import { extractCategory } from '@/lib/categoryUtils';
@@ -361,7 +361,7 @@ export default function Home() {
               Please connect your wallet to start trading on this market.
             </p>
             <div className="flex flex-col gap-2">
-              <ConnectButton />
+              <CustomConnectButton />
               <button
                 onClick={() => setShowConnectPrompt(false)}
                 className="px-4 py-2 bg-gray-200 dark:bg-gray-700 text-gray-900 dark:text-white rounded-lg hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors"

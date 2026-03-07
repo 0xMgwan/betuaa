@@ -2,7 +2,6 @@
 
 import { useState, useEffect } from 'react';
 import { useAccount } from 'wagmi';
-import { ConnectButton } from '@rainbow-me/rainbowkit';
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import SellModal from "@/components/SellModal";
@@ -12,7 +11,7 @@ import { useUserPositions } from '@/hooks/useUserPositions';
 import { useCTFRedeemWinningTokens } from '@/hooks/useCTFMarket';
 import { useAllMarkets } from '@/hooks/useMarkets';
 import { STABLECOINS } from '@/lib/contracts';
-import { TrendingUp, TrendingDown, DollarSign, Sparkles, Award, Target, Star, Activity, Plus } from 'lucide-react';
+import { TrendingUp, TrendingDown, DollarSign, Sparkles, Award, Target, Star, Activity, Plus, Wallet } from 'lucide-react';
 import CompactMarketCard from '@/components/CompactMarketCard';
 import BlockchainMarketModal from '@/components/BlockchainMarketModal';
 import { useTranslation } from '@/hooks/useTranslation';
@@ -21,7 +20,17 @@ import { SkeletonStats, SkeletonPortfolioGrid, SkeletonMarketGrid } from '@/comp
 
 export default function Portfolio() {
   const { t } = useTranslation();
-  const { address, isConnected } = useAccount();
+  const [ntzsUser, setNtzsUser] = useState<any>(null);
+  const address = ntzsUser?.walletAddress;
+  const isConnected = !!ntzsUser;
+
+  // Load nTZS user from localStorage
+  useEffect(() => {
+    const storedUser = localStorage.getItem('ntzsUser');
+    if (storedUser) {
+      setNtzsUser(JSON.parse(storedUser));
+    }
+  }, []);
   const { positions, activePositions, claimablePositions, isLoading, totalValue, totalPnL, totalPnLPercent } = useUserPositions();
   const { markets: blockchainMarkets } = useAllMarkets();
   const [selectedPosition, setSelectedPosition] = useState<any>(null);
@@ -62,17 +71,17 @@ export default function Portfolio() {
         <div className="pt-24 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-12">
           <div className="text-center py-12 md:py-20">
             <div className="w-16 h-16 md:w-20 md:h-20 bg-gradient-to-br from-blue-600 to-purple-600 rounded-full flex items-center justify-center mx-auto mb-4 md:mb-6">
-              <Sparkles className="w-8 h-8 md:w-10 md:h-10 text-white" />
+              <Wallet className="w-8 h-8 md:w-10 md:h-10 text-white" />
             </div>
             <h1 className="text-2xl md:text-4xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent mb-3 md:mb-4">
-              Connect Your Wallet
+              Sign In to View Portfolio
             </h1>
             <p className="text-gray-600 dark:text-gray-400 text-base md:text-lg mb-6 md:mb-8">
-              Please connect your wallet to view your portfolio.
+              Sign in with your email or phone to view your trading positions.
             </p>
-            <div className="flex justify-center">
-              <ConnectButton />
-            </div>
+            <p className="text-sm text-gray-500 dark:text-gray-500">
+              Click the "Sign In" button in the top right corner to get started.
+            </p>
           </div>
         </div>
         <Footer />

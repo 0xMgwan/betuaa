@@ -1,14 +1,18 @@
 import { http, createConfig } from 'wagmi'
 import { base, baseSepolia } from 'wagmi/chains'
-import { getDefaultConfig } from '@rainbow-me/rainbowkit'
+import { ntzsWalletConnector } from './ntzs-wallet-connector'
 
-export const config = getDefaultConfig({
-  appName: 'BetUAA',
-  projectId: '420ee053eafb031c96425e4c4a694bd8',
-  chains: [base, baseSepolia],
+/**
+ * Wagmi config — nTZS wallet only.
+ * Users connect via phone number (nTZS provisions a Base wallet address).
+ * No MetaMask, Coinbase, Rainbow, or other browser extensions needed.
+ */
+export const config = createConfig({
+  chains: [baseSepolia, base],
+  connectors: [ntzsWalletConnector()],
   transports: {
-    [base.id]: http('https://mainnet.base.org'),
     [baseSepolia.id]: http('https://sepolia.base.org'),
+    [base.id]:        http('https://mainnet.base.org'),
   },
 })
 

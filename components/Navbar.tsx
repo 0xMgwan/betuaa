@@ -3,9 +3,8 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import { Moon, Sun, Menu, X, Plus, Trophy, Wallet, BarChart3, User, Languages, LogOut, Mail } from "lucide-react";
-import { ConnectButton } from "@rainbow-me/rainbowkit";
-import { useAccount } from "wagmi";
-import CustomConnectButton from "./CustomConnectButton";
+import { useAccount, useDisconnect } from "wagmi";
+import NtzsConnectButton from "./NtzsConnectButton";
 import SearchBar from "./SearchBar";
 import CreateMarketModal from "./CreateMarketModal";
 import UsernameModal from "./UsernameModal";
@@ -47,6 +46,7 @@ export default function Navbar({
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const { address, isConnected } = useAccount();
+  const { disconnect } = useDisconnect();
   const { username, hasUsername, isLoading, saveUsername } = useUsername();
   const { language, setLanguage } = useLanguage();
   const shortAddress = address ? `${address.slice(0, 6)}...${address.slice(-4)}` : "Guest";
@@ -126,7 +126,7 @@ export default function Navbar({
                 <Moon className="h-5 w-5 text-gray-600 dark:text-gray-300" />
               )}
             </button>
-            <CustomConnectButton />
+            <NtzsConnectButton />
           </div>
 
           <div className="md:hidden flex items-center gap-2">
@@ -352,19 +352,14 @@ export default function Navbar({
             </div>
 
             <div className="px-4 py-4 border-t border-gray-200 dark:border-white/10">
-              <ConnectButton.Custom>
-                {({ openConnectModal, openAccountModal, mounted }) => (
-                  <button
-                    type="button"
-                    onClick={isConnected ? openAccountModal : openConnectModal}
-                    className="w-full flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-gray-100 text-gray-700 dark:bg-white/10 dark:text-white font-semibold transition-colors"
-                    disabled={!mounted}
-                  >
-                    <LogOut className="h-4 w-4" />
-                    {isConnected ? "Disconnect" : "Connect"}
-                  </button>
-                )}
-              </ConnectButton.Custom>
+              <button
+                type="button"
+                onClick={() => { isConnected ? disconnect() : setIsMenuOpen(false); }}
+                className="w-full flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-gray-100 text-gray-700 dark:bg-white/10 dark:text-white font-semibold transition-colors"
+              >
+                <LogOut className="h-4 w-4" />
+                {isConnected ? "Disconnect" : "Close"}
+              </button>
             </div>
           </div>
         </div>

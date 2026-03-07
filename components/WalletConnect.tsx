@@ -3,34 +3,34 @@
 import { useAccount, useConnect, useDisconnect, useBalance } from 'wagmi';
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { Wallet, LogOut, Settings, TrendingUp, DollarSign } from 'lucide-react';
+import { Wallet, LogOut, Settings, TrendingUp, DollarSign, ArrowUpRight } from 'lucide-react';
 import { Button } from './ui/button';
 import UsernameModal from './UsernameModal';
 import DepositModal from './DepositModal';
+import NTZSWithdrawModal from './NTZSWithdrawModal';
+import { useNTZSBalance } from '@/hooks/useNTZS';
 
 // USDC contract address on Base Sepolia
 const USDC_ADDRESS = '0x036CbD53842c5426634e7929541eC2318f3dCF7e' as `0x${string}`;
 
 export default function WalletConnect() {
   const { address, isConnected } = useAccount();
-  const { connect, connectors } = useConnect();
-  const { disconnect } = useDisconnect();
-  const [showUsernameModal, setShowUsernameModal] = useState(false);
-  const [showDepositModal, setShowDepositModal] = useState(false);
-  const [showDropdown, setShowDropdown] = useState(false);
-  const [username, setUsername] = useState<string | null>(null);
+  const { connect, connectors }  = useConnect();
+  const { disconnect }           = useDisconnect();
+  const [showUsernameModal, setShowUsernameModal]   = useState(false);
+  const [showDepositModal,  setShowDepositModal]    = useState(false);
+  const [showWithdrawModal, setShowWithdrawModal]   = useState(false);
+  const [showDropdown,      setShowDropdown]        = useState(false);
+  const [username,          setUsername]            = useState<string | null>(null);
 
-  // Get real wallet balances
-  const { data: ethBalance } = useBalance({
-    address: address,
-  });
+  // On-chain balances
+  const { data: ethBalance }  = useBalance({ address });
+  const { data: usdcBalance } = useBalance({ address, token: USDC_ADDRESS });
 
-  const { data: usdcBalance } = useBalance({
-    address: address,
-    token: USDC_ADDRESS,
-  });
+  // nTZS balance (M-Pesa rails)
+  const { balance: ntzsBalance } = useNTZSBalance(address);
 
-  // Calculate display balance (prefer USDC, fallback to ETH)
+  // Display balance: prefer USDC, fallback to ETH
   const displayBalance = usdcBalance?.formatted || ethBalance?.formatted || '0.00';
 
   useEffect(() => {
@@ -46,9 +46,7 @@ export default function WalletConnect() {
 
   const handleConnect = () => {
     const coinbaseConnector = connectors.find(c => c.id === 'coinbaseWalletSDK');
-    if (coinbaseConnector) {
-      connect({ connector: coinbaseConnector });
-    }
+    if (coinbaseConnector) connect({ connector: coinbaseConnector });
   };
 
   const handleUsernameSet = (newUsername: string) => {
@@ -90,9 +88,10 @@ export default function WalletConnect() {
         </button>
 
         {showDropdown && (
-          <div className="absolute right-0 mt-2 w-64 bg-white dark:bg-gray-900 rounded-xl shadow-xl border border-gray-200 dark:border-gray-800 py-2 z-50">
+          <div className="absolute right-0 mt-2 w-72 bg-white dark:bg-gray-900 rounded-xl shadow-xl border border-gray-200 dark:border-gray-800 py-2 z-50">
+            {/* Profile header */}
             <div className="px-4 py-3 border-b border-gray-200 dark:border-gray-800">
-              <div className="flex items-center gap-3 mb-2">
+              <div className="flex items-center gap-3 mb-3">
                 <div className="w-10 h-10 rounded-full bg-gradient-to-br from-pink-500 to-purple-500 flex items-center justify-center">
                   <span className="text-lg font-bold text-white">
                     {username ? username[0].toUpperCase() : '?'}
@@ -105,29 +104,55 @@ export default function WalletConnect() {
                   </div>
                 </div>
               </div>
-              <div className="flex items-center justify-between mt-3">
-                <div>
-                  <div className="text-xs text-gray-600 dark:text-gray-400">Portfolio</div>
-                  <div className="text-lg font-bold text-green-600">
-                    {usdcBalance ? `${parseFloat(usdcBalance.formatted).toFixed(2)} USDC` : 
-                     ethBalance ? `${parseFloat(ethBalance.formatted).toFixed(4)} ETH` : 
-                     '$0.00'}
+
+              {/* Balances */}
+              <div className="space-y-1.5 mb-3">
+                <div className="flex items-center justify-between px-2.5 py-2 bg-gray-100 dark:bg-gray-800 rounded-lg">
+                  <div className="text-xs text-gray-500 dark:text-gray-400">USDC</div>
+                  <div className="text-sm font-bold text-green-600">
+                    {usdcBalance
+                      ? `${parseFloat(usdcBalance.formatted).toFixed(2)} USDC`
+                      : ethBalance
+                        ? `${parseFloat(ethBalance.formatted).toFixed(4)} ETH`
+                        : '$0.00'}
                   </div>
                 </div>
-                <Button 
-                  size="sm" 
-                  onClick={() => {
-                    setShowDropdown(false);
-                    setShowDepositModal(true);
-                  }}
-                  className="gap-1"
+                {ntzsBalance && (
+                  <div className="flex items-center justify-between px-2.5 py-2 bg-emerald-50 dark:bg-emerald-900/20 rounded-lg border border-emerald-200/50 dark:border-emerald-700/30">
+                    <div className="flex items-center gap-1.5">
+                      <span className="text-[11px]">🇹🇿</span>
+                      <span className="text-xs text-emerald-700 dark:text-emerald-400">nTZS</span>
+                    </div>
+                    <div className="text-sm font-bold text-emerald-600 dark:text-emerald-400">
+                      {(ntzsBalance.balanceTzs ?? 0).toLocaleString()} TZS
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              {/* Action buttons */}
+              <div className="flex gap-2">
+                <Button
+                  size="sm"
+                  onClick={() => { setShowDropdown(false); setShowDepositModal(true); }}
+                  className="flex-1 gap-1 bg-green-600 hover:bg-green-700 text-white"
                 >
                   <DollarSign className="h-3 w-3" />
                   Deposit
                 </Button>
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={() => { setShowDropdown(false); setShowWithdrawModal(true); }}
+                  className="flex-1 gap-1 border-orange-500/50 text-orange-500 hover:bg-orange-500/10"
+                >
+                  <ArrowUpRight className="h-3 w-3" />
+                  Withdraw
+                </Button>
               </div>
             </div>
 
+            {/* Nav links */}
             <div className="py-1">
               <Link
                 href={`/profile/${address}`}
@@ -190,8 +215,13 @@ export default function WalletConnect() {
         onDeposit={(amount: string) => {
           console.log('Deposit completed:', amount);
           setShowDepositModal(false);
-          // Balance will update automatically via wagmi hooks
         }}
+      />
+
+      <NTZSWithdrawModal
+        isOpen={showWithdrawModal}
+        onClose={() => setShowWithdrawModal(false)}
+        walletAddress={address}
       />
     </>
   );

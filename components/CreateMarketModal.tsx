@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import { X, Zap, Calendar, DollarSign, Tag, FileText, ChevronDown, Wallet, Bitcoin, Trophy, Building2, Clapperboard, Cpu, BarChart3, Zap as ZapIcon } from 'lucide-react';
 import { useAccount } from 'wagmi';
-import { ConnectButton } from '@rainbow-me/rainbowkit';
+import NTZSConnectModal from './NTZSConnectModal';
 import { STABLECOINS } from '@/lib/contracts';
 import { useCTFCreateMarket, useCTFCreateMarketFee } from '@/hooks/useCTFMarket';
 import { useTokenAllowance, useApproveToken } from '@/hooks/useERC20';
@@ -40,14 +40,29 @@ interface CreateMarketModalProps {
 
 export default function CreateMarketModal({ isOpen, onClose }: CreateMarketModalProps) {
   const { t } = useTranslation();
-  const { isConnected, address } = useAccount();
+  const { address: web3Address } = useAccount();
+  
+  // Check nTZS authentication
+  const [ntzsUser, setNtzsUser] = useState<any>(null);
+  const isConnected = !!ntzsUser;
+  const address = ntzsUser?.walletAddress || web3Address;
+
+  useEffect(() => {
+    const storedUser = localStorage.getItem('ntzsUser');
+    if (storedUser) {
+      setNtzsUser(JSON.parse(storedUser));
+    }
+  }, []);
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
   const [closingDate, setClosingDate] = useState('');
-  const [selectedToken, setSelectedToken] = useState<string>(STABLECOINS.baseSepolia[0].address);
+  const [selectedToken, setSelectedToken] = useState<string>(
+    STABLECOINS.baseSepolia.find(t => t.symbol === 'nTZS')?.address || STABLECOINS.baseSepolia[0].address
+  );
   const [category, setCategory] = useState('crypto');
   const [step, setStep] = useState<'form' | 'create'>('form');
   const [isTokenDropdownOpen, setIsTokenDropdownOpen] = useState(false);
+  const [showNTZSConnect, setShowNTZSConnect] = useState(false);
   
   // Resolution type and outcomes
   const [resolutionType, setResolutionType] = useState<'yesno' | 'custom'>('yesno');
@@ -67,10 +82,21 @@ export default function CreateMarketModal({ isOpen, onClose }: CreateMarketModal
   const { createMarket, isPending: isCreating, isSuccess, hash: createHash, reset: resetCreateMarket } = useCTFCreateMarket();
   const { configurePythMarket, isPending: isConfiguringPyth, isSuccess: isPythConfigured } = useConfigurePythMarket();
 
-  // V2: Market creation fee
+  // Get selected stablecoin first
+  const selectedStablecoin = STABLECOINS.baseSepolia.find(t => t.address === selectedToken);
+
+  // V2: Market creation fee - different amounts for nTZS vs USDC
   const { data: createMarketFee } = useCTFCreateMarketFee();
-  const creationFeeAmount = createMarketFee ? BigInt(createMarketFee as any) : BigInt(0);
-  const creationFeeDisplay = creationFeeAmount > 0 ? (Number(creationFeeAmount) / 1e6).toFixed(2) : '0';
+  const isNTZS = selectedStablecoin?.symbol === 'nTZS';
+  
+  // 2500 nTZS (18 decimals) or 1 USDC (6 decimals)
+  const creationFeeAmount = isNTZS 
+    ? BigInt('2500000000000000000000') // 2500 * 10^18
+    : BigInt('1000000'); // 1 * 10^6
+  
+  const creationFeeDisplay = isNTZS 
+    ? '2500' 
+    : '1';
 
   // V2: USDC approval for creation fee
   const ctfAddress = CONTRACTS.baseSepolia.ctfPredictionMarket as `0x${string}`;
@@ -82,8 +108,6 @@ export default function CreateMarketModal({ isOpen, onClose }: CreateMarketModal
   const currentAllowance = allowanceData ? BigInt(allowanceData as any) : BigInt(0);
   const needsFeeApproval = creationFeeAmount > 0 && currentAllowance < creationFeeAmount;
   const { approve: approveFee, isPending: isApprovingFee, isSuccess: feeApproved } = useApproveToken();
-
-  const selectedStablecoin = STABLECOINS.baseSepolia.find(t => t.address === selectedToken);
   
   // Store Pyth market data for configuration after creation
   const [pythMarketData, setPythMarketData] = useState<{
@@ -882,8 +906,8 @@ export default function CreateMarketModal({ isOpen, onClose }: CreateMarketModal
             <label className="block text-xs md:text-sm font-medium text-gray-700 dark:text-gray-300 mb-1 md:mb-2 flex items-center gap-2">
               <div className="w-5 h-5 rounded-full bg-white border border-gray-200 dark:border-gray-600 flex items-center justify-center overflow-hidden">
                 <Image 
-                  src="/USDC logo.png" 
-                  alt="USDC"
+                  src="/ntzs.png" 
+                  alt="nTZS"
                   width={20}
                   height={20}
                   className="w-full h-full object-cover"
@@ -916,7 +940,9 @@ export default function CreateMarketModal({ isOpen, onClose }: CreateMarketModal
               
               {isTokenDropdownOpen && (
                 <div className="absolute z-10 w-full mt-1 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg shadow-lg max-h-48 overflow-y-auto">
-                  {STABLECOINS.baseSepolia.map((token) => (
+                  {STABLECOINS.baseSepolia
+                    .filter(token => token.symbol === 'USDC' || token.symbol === 'nTZS')
+                    .map((token) => (
                     <button
                       key={token.address}
                       type="button"
@@ -1009,35 +1035,25 @@ export default function CreateMarketModal({ isOpen, onClose }: CreateMarketModal
             </button>
             {!isConnected ? (
               <div className="flex-1">
-                <ConnectButton.Custom>
-                  {({ openConnectModal }) => (
-                    <button
-                      type="button"
-                      onClick={openConnectModal}
-                      className="w-full px-4 md:px-6 py-2 md:py-3 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white rounded-lg md:rounded-xl text-sm md:text-base font-bold transition-all shadow-lg hover:shadow-xl flex items-center justify-center gap-2"
-                    >
-                      <Wallet className="w-4 h-4 md:w-5 md:h-5" />
-                      Connect Wallet
-                    </button>
-                  )}
-                </ConnectButton.Custom>
+                <p className="text-sm text-gray-600 dark:text-gray-400 mb-2 text-center">
+                  Please sign in to create a market
+                </p>
+                <button
+                  type="button"
+                  onClick={onClose}
+                  className="w-full px-4 md:px-6 py-2 md:py-3 bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white rounded-lg md:rounded-xl text-sm md:text-base font-bold transition-all shadow-lg hover:shadow-xl flex items-center justify-center gap-2"
+                >
+                  <Wallet className="w-4 h-4 md:w-5 md:h-5" />
+                  Sign In
+                </button>
               </div>
-            ) : needsFeeApproval ? (
-              <button
-                type="button"
-                disabled={isApprovingFee}
-                onClick={() => approveFee(selectedToken as `0x${string}`, ctfAddress, creationFeeAmount)}
-                className="flex-1 px-4 md:px-6 py-2 md:py-3 bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 disabled:from-gray-400 disabled:to-gray-500 text-white rounded-lg md:rounded-xl text-sm md:text-base font-bold transition-all shadow-lg hover:shadow-xl disabled:shadow-none"
-              >
-                {isApprovingFee ? 'Approving...' : `Approve ${creationFeeDisplay} ${selectedStablecoin?.symbol || 'USDC'}`}
-              </button>
             ) : (
               <button
                 type="submit"
                 disabled={isCreating || !agreedToTerms}
                 className="flex-1 px-4 md:px-6 py-2 md:py-3 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 disabled:from-gray-400 disabled:to-gray-500 text-white rounded-lg md:rounded-xl text-sm md:text-base font-bold transition-all shadow-lg hover:shadow-xl disabled:shadow-none"
               >
-                {isCreating ? 'Creating...' : `Create Market${creationFeeAmount > 0 ? ` (${creationFeeDisplay} ${selectedStablecoin?.symbol || 'USDC'} fee)` : ''}`}
+                {isCreating ? 'Creating...' : 'Create Market'}
               </button>
             )}
           </div>
@@ -1051,6 +1067,11 @@ export default function CreateMarketModal({ isOpen, onClose }: CreateMarketModal
           )}
         </form>
       </div>
+
+      <NTZSConnectModal
+        isOpen={showNTZSConnect}
+        onClose={() => setShowNTZSConnect(false)}
+      />
     </div>
   );
 }

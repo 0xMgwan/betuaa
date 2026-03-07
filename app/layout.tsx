@@ -1,7 +1,6 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
-import '@rainbow-me/rainbowkit/styles.css';
 import { Providers } from "./providers";
 import { ThemeProvider } from '@/components/ThemeProvider';
 import { LanguageProvider } from '@/contexts/LanguageContext';

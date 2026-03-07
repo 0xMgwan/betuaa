@@ -60,6 +60,13 @@ export const STABLECOINS = {
       decimals: 6,
       icon: '🧪',
     },
+    {
+      address: '0x3920bb2b82005082484E4219752A449921167778',
+      symbol: 'nTZS',
+      name: 'Tanzania Shilling',
+      decimals: 18,
+      icon: '/ntzs.png',
+    },
   ],
   base: [
     {
@@ -89,6 +96,14 @@ export const STABLECOINS = {
       name: 'Indonesian Rupiah',
       decimals: 18,
       icon: '🇮🇩',
+    },
+    {
+      // Fill in with real address from nTZS dashboard → set NEXT_PUBLIC_NTZS_TOKEN_ADDRESS in .env.local
+      address: (process.env.NEXT_PUBLIC_NTZS_TOKEN_ADDRESS || '') as `0x${string}`,
+      symbol: 'nTZS',
+      name: 'Tanzania Shilling (nTZS)',
+      decimals: 18,
+      icon: '🇹🇿',
     },
   ],
 } as const;
