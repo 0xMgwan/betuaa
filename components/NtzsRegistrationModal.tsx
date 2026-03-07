@@ -28,6 +28,7 @@ export default function NtzsRegistrationModal({ isOpen, onClose, onSuccess }: Nt
   const [error, setError] = useState('');
   const [ntzsUserId, setNtzsUserId] = useState('');
   const [walletAddress, setWalletAddress] = useState('');
+  const [isExistingUser, setIsExistingUser] = useState(false);
 
   const handleContactSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -37,17 +38,13 @@ export default function NtzsRegistrationModal({ isOpen, onClose, onSuccess }: Nt
     try {
       const contactValue = contactMethod === 'email' ? email : phone;
       
-      // Use the known wallet address for this user
-      const knownWalletAddress = '0xAd66adA45a60f66A9090f98FB65074eC1B06CC54';
-      
-      // First, try to find existing user by wallet address
+      // First, try to find existing user by email or phone in database
       const loginRes = await fetch('/api/ntzs/login', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           email: contactMethod === 'email' ? email : undefined,
           phone: contactMethod === 'phone' ? phone : undefined,
-          walletAddress: knownWalletAddress,
         }),
       });
 
@@ -55,11 +52,15 @@ export default function NtzsRegistrationModal({ isOpen, onClose, onSuccess }: Nt
 
       // If user exists, log them in directly
       if (loginData.user) {
+        setIsExistingUser(true);
         localStorage.setItem('ntzsUser', JSON.stringify(loginData.user));
         onSuccess(loginData.user);
         onClose();
         return;
       }
+
+      // New user - continue to create account
+      setIsExistingUser(false);
 
       // User doesn't exist, create new account
       const res = await fetch('/api/ntzs/users', {
@@ -149,6 +150,9 @@ export default function NtzsRegistrationModal({ isOpen, onClose, onSuccess }: Nt
     setError('');
     setNtzsUserId('');
     setWalletAddress('');
+    setIsExistingUser(false);
+    // Clear old user data from localStorage
+    localStorage.removeItem('ntzsUser');
   };
 
   if (!isOpen) return null;
@@ -188,8 +192,12 @@ export default function NtzsRegistrationModal({ isOpen, onClose, onSuccess }: Nt
                 <span className="text-2xl">🇹🇿</span>
               </div>
               <div>
-                <h2 className="text-white font-bold text-xl">Create nTZS Account</h2>
-                <p className="text-white/80 text-sm">Get your digital TZS wallet</p>
+                <h2 className="text-white font-bold text-xl">
+                  {isLoading && step === 'contact' ? 'Signing In...' : isExistingUser ? 'Welcome Back!' : 'Create nTZS Account'}
+                </h2>
+                <p className="text-white/80 text-sm">
+                  {isLoading && step === 'contact' ? 'Checking your account' : 'Get your digital TZS wallet'}
+                </p>
               </div>
             </div>
           </div>
@@ -274,7 +282,7 @@ export default function NtzsRegistrationModal({ isOpen, onClose, onSuccess }: Nt
                   {isLoading ? (
                     <>
                       <Loader className="w-5 h-5 animate-spin" />
-                      Creating Account...
+                      Signing In...
                     </>
                   ) : (
                     'Continue'

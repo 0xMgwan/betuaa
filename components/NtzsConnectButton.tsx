@@ -1,24 +1,63 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
-import { User, LogOut, Wallet as WalletIcon, ArrowDownCircle, ArrowUpCircle } from 'lucide-react';
-import Link from 'next/link';
+import React, { useState, useEffect, useCallback } from 'react';
+import { User, LogOut, Wallet as WalletIcon, Trophy, BarChart3 } from 'lucide-react';
+import { useAccount, useDisconnect } from 'wagmi';
 import NtzsRegistrationModal from './NtzsRegistrationModal';
 import WalletModal from './WalletModal';
+import ProfileModal from './ProfileModal';
+import PortfolioModal from './PortfolioModal';
+import LeaderboardModal from './LeaderboardModal';
 
 export default function NtzsConnectButton() {
+  const { address, isConnected } = useAccount();
+  const { disconnect } = useDisconnect();
+
   const [showRegistration, setShowRegistration] = useState(false);
   const [showWallet, setShowWallet] = useState(false);
+  const [showProfile, setShowProfile] = useState(false);
+  const [showPortfolio, setShowPortfolio] = useState(false);
+  const [showLeaderboard, setShowLeaderboard] = useState(false);
   const [ntzsUser, setNtzsUser] = useState<any>(null);
   const [showDropdown, setShowDropdown] = useState(false);
 
-  useEffect(() => {
-    // Check if user is already registered
+  // Load user from localStorage, checking wallet address matches
+  const loadUser = useCallback(() => {
     const storedUser = localStorage.getItem('ntzsUser');
     if (storedUser) {
-      setNtzsUser(JSON.parse(storedUser));
+      const parsed = JSON.parse(storedUser);
+      // Only use stored user if wallet matches current connected wallet
+      if (address && parsed.walletAddress && 
+          parsed.walletAddress.toLowerCase() === address.toLowerCase()) {
+        setNtzsUser(parsed);
+      } else {
+        // Wallet mismatch — clear stale data
+        localStorage.removeItem('ntzsUser');
+        setNtzsUser(null);
+      }
+    } else {
+      setNtzsUser(null);
     }
-  }, []);
+  }, [address]);
+
+  // Re-check whenever address changes or component mounts
+  useEffect(() => {
+    loadUser();
+  }, [loadUser]);
+
+  // Also listen for storage changes from other components
+  useEffect(() => {
+    const onStorage = () => loadUser();
+    window.addEventListener('storage', onStorage);
+    return () => window.removeEventListener('storage', onStorage);
+  }, [loadUser]);
+
+  // When disconnected, clear user
+  useEffect(() => {
+    if (!isConnected) {
+      setNtzsUser(null);
+    }
+  }, [isConnected]);
 
   const handleRegistrationSuccess = (userData: any) => {
     setNtzsUser(userData);
@@ -27,8 +66,13 @@ export default function NtzsConnectButton() {
 
   const handleLogout = () => {
     localStorage.removeItem('ntzsUser');
+    // Clear all username_ keys too
+    Object.keys(localStorage).forEach(key => {
+      if (key.startsWith('username_')) localStorage.removeItem(key);
+    });
     setNtzsUser(null);
     setShowDropdown(false);
+    disconnect();
   };
 
   if (!ntzsUser) {
@@ -102,10 +146,7 @@ export default function NtzsConnectButton() {
             {/* Menu Items */}
             <div className="py-2">
               <button
-                onClick={() => {
-                  setShowDropdown(false);
-                  setShowWallet(true);
-                }}
+                onClick={() => { setShowDropdown(false); setShowWallet(true); }}
                 className="w-full flex items-center gap-3 px-4 py-3 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
               >
                 <WalletIcon className="w-5 h-5 text-gray-600 dark:text-gray-400" />
@@ -115,41 +156,38 @@ export default function NtzsConnectButton() {
                 </div>
               </button>
 
-              <Link
-                href={`/profile/${ntzsUser.walletAddress}`}
-                onClick={() => setShowDropdown(false)}
-                className="flex items-center gap-3 px-4 py-3 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+              <button
+                onClick={() => { setShowDropdown(false); setShowProfile(true); }}
+                className="w-full flex items-center gap-3 px-4 py-3 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
               >
                 <User className="w-5 h-5 text-gray-600 dark:text-gray-400" />
-                <div>
+                <div className="text-left">
                   <p className="text-sm font-medium text-gray-900 dark:text-white">Profile</p>
                   <p className="text-xs text-gray-500 dark:text-gray-400">View your profile</p>
                 </div>
-              </Link>
+              </button>
 
-              <Link
-                href="/portfolio"
-                onClick={() => setShowDropdown(false)}
-                className="flex items-center gap-3 px-4 py-3 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+              <button
+                onClick={() => { setShowDropdown(false); setShowPortfolio(true); }}
+                className="w-full flex items-center gap-3 px-4 py-3 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
               >
-                <ArrowDownCircle className="w-5 h-5 text-gray-600 dark:text-gray-400" />
-                <div>
+                <BarChart3 className="w-5 h-5 text-gray-600 dark:text-gray-400" />
+                <div className="text-left">
                   <p className="text-sm font-medium text-gray-900 dark:text-white">Portfolio</p>
                   <p className="text-xs text-gray-500 dark:text-gray-400">Your positions</p>
                 </div>
-              </Link>
+              </button>
 
-              <Link
-                href="/leaderboard"
-                onClick={() => setShowDropdown(false)}
-                className="flex items-center gap-3 px-4 py-3 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+              <button
+                onClick={() => { setShowDropdown(false); setShowLeaderboard(true); }}
+                className="w-full flex items-center gap-3 px-4 py-3 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
               >
-                <ArrowUpCircle className="w-5 h-5 text-gray-600 dark:text-gray-400" />
-                <div>
+                <Trophy className="w-5 h-5 text-gray-600 dark:text-gray-400" />
+                <div className="text-left">
                   <p className="text-sm font-medium text-gray-900 dark:text-white">Leaderboard</p>
                   <p className="text-xs text-gray-500 dark:text-gray-400">Top traders</p>
                 </div>
-              </Link>
+              </button>
 
               <div className="border-t border-gray-200 dark:border-gray-700 my-2"></div>
 
@@ -165,13 +203,47 @@ export default function NtzsConnectButton() {
         </>
       )}
 
-      {/* Wallet Modal */}
+      {/* Modals */}
       {ntzsUser && (
-        <WalletModal
-          isOpen={showWallet}
-          onClose={() => setShowWallet(false)}
-          ntzsUser={ntzsUser}
-        />
+        <>
+          <WalletModal
+            isOpen={showWallet}
+            onClose={() => setShowWallet(false)}
+            ntzsUser={ntzsUser}
+          />
+          <ProfileModal
+            isOpen={showProfile}
+            onClose={() => setShowProfile(false)}
+            user={{
+              walletAddress: ntzsUser.walletAddress || '',
+              username: ntzsUser.username || '',
+              email: ntzsUser.email,
+              phone: ntzsUser.phone,
+            }}
+            onUpdate={async (data) => {
+              const res = await fetch('/api/profile', {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ walletAddress: ntzsUser.walletAddress, ...data }),
+              });
+              const result = await res.json();
+              if (result.user) {
+                const updated = { ...ntzsUser, ...data };
+                localStorage.setItem('ntzsUser', JSON.stringify(updated));
+                setNtzsUser(updated);
+              }
+            }}
+          />
+          <PortfolioModal
+            isOpen={showPortfolio}
+            onClose={() => setShowPortfolio(false)}
+            walletAddress={ntzsUser.walletAddress || ''}
+          />
+          <LeaderboardModal
+            isOpen={showLeaderboard}
+            onClose={() => setShowLeaderboard(false)}
+          />
+        </>
       )}
     </div>
   );

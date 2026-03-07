@@ -1,41 +1,57 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getUserByWallet } from '@/lib/ntzs';
+import { prisma } from '@/lib/prisma';
 
 /**
  * POST /api/ntzs/login
- * Body: { email?, phone?, walletAddress }
- * Checks if user exists in nTZS and returns their data
+ * Body: { email?, phone?, walletAddress? }
+ * Checks if user exists in database by email, phone, or walletAddress
  */
 export async function POST(req: NextRequest) {
   try {
     const { email, phone, walletAddress } = await req.json();
 
-    if (!walletAddress) {
-      return NextResponse.json({ error: 'Wallet address required' }, { status: 400 });
+    if (!walletAddress && !email && !phone) {
+      return NextResponse.json({ error: 'Email, phone, or wallet address required' }, { status: 400 });
     }
 
-    // Look up user in nTZS by wallet address (which is used as externalId during deposits)
-    console.log(`[Login API] Looking up user by wallet address: ${walletAddress}`);
-    
-    const ntzsUser = await getUserByWallet(walletAddress);
+    console.log(`[Login API] Looking up user:`, { email, phone, walletAddress });
 
-    if (!ntzsUser) {
-      console.log(`[Login API] User not found for ${walletAddress}`);
+    let dbUser = null;
+
+    // Try wallet address first
+    if (walletAddress) {
+      dbUser = await prisma.user.findUnique({ where: { walletAddress } });
+    }
+
+    // Then try email
+    if (!dbUser && email) {
+      dbUser = await prisma.user.findFirst({ where: { email } });
+    }
+
+    // Then try phone
+    if (!dbUser && phone) {
+      dbUser = await prisma.user.findFirst({ where: { phone } });
+    }
+
+    if (!dbUser) {
+      console.log(`[Login API] User not found`);
       return NextResponse.json({ user: null });
     }
 
-    console.log(`[Login API] Found user:`, ntzsUser);
+    console.log(`[Login API] Found user:`, {
+      username: dbUser.username,
+      email: dbUser.email,
+      phone: dbUser.phone,
+      walletAddress: dbUser.walletAddress,
+    });
 
-    // Return user data - use email as username if no username exists
-    const username = email ? email.split('@')[0] : phone?.slice(-4) || 'user';
-    
     return NextResponse.json({
       user: {
-        userId: ntzsUser.id,
-        walletAddress: ntzsUser.walletAddress,
-        username: username,
-        email: email,
-        phone: phone,
+        userId: dbUser.ntzsUserId || dbUser.id,
+        walletAddress: dbUser.walletAddress,
+        username: dbUser.username,
+        email: dbUser.email,
+        phone: dbUser.phone,
       },
     });
   } catch (err) {

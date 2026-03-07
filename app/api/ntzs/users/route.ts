@@ -1,82 +1,87 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { NtzsClient, NtzsApiError } from '@/lib/ntzs/client';
+import { createOrGetUser } from '@/lib/ntzs';
 
-const ntzs = new NtzsClient({
-  apiKey: process.env.NTZS_API_KEY!,
-  baseUrl: process.env.NTZS_API_BASE_URL || 'https://api.ntzs.co.tz',
-});
-
-// Create a new nTZS user
+// Create a new nTZS user (idempotent - returns existing user if already exists)
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
     const { externalId, email, phone } = body;
 
-    if (!externalId || !email) {
+    if (!externalId) {
       return NextResponse.json(
-        { error: 'externalId and email are required' },
+        { error: 'externalId is required' },
         { status: 400 }
       );
     }
 
-    const user = await ntzs.users.create({
-      externalId,
-      email,
+    // For phone registrations, create a placeholder email
+    const userEmail = email || (phone ? `${phone}@ntzs.local` : undefined);
+
+    if (!userEmail) {
+      return NextResponse.json(
+        { error: 'Either email or phone is required' },
+        { status: 400 }
+      );
+    }
+
+    console.log('[nTZS Users API] Creating/getting user:', { externalId, email: userEmail, phone });
+
+    // Use createOrGetUser which is idempotent
+    const user = await createOrGetUser({
+      walletAddress: externalId,
+      email: userEmail,
       phone,
     });
+
+    console.log('[nTZS Users API] User created/retrieved:', user.id);
 
     return NextResponse.json(user);
   } catch (error) {
     console.error('Error creating nTZS user:', error);
+    const message = error instanceof Error ? error.message : 'Failed to create user';
     
-    if (error instanceof NtzsApiError) {
-      return NextResponse.json(
-        { error: error.message },
-        { status: error.status }
-      );
-    }
-
     return NextResponse.json(
-      { error: 'Failed to create user' },
+      { error: message },
       { status: 500 }
     );
   }
 }
 
-// Get user by external ID
+// Get user by external ID (wallet address)
 export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url);
     const externalId = searchParams.get('externalId');
-    const userId = searchParams.get('userId');
 
-    if (!externalId && !userId) {
+    if (!externalId) {
       return NextResponse.json(
-        { error: 'externalId or userId is required' },
+        { error: 'externalId is required' },
         { status: 400 }
       );
     }
 
-    let user;
-    if (externalId) {
-      user = await ntzs.users.getByExternalId(externalId);
-    } else if (userId) {
-      user = await ntzs.users.get(userId);
+    // Try to get user from database first
+    const { prisma } = await import('@/lib/prisma');
+    const dbUser = await prisma.user.findUnique({
+      where: { walletAddress: externalId },
+    });
+
+    if (dbUser) {
+      return NextResponse.json({
+        id: dbUser.ntzsUserId || dbUser.id,
+        walletAddress: dbUser.walletAddress,
+        email: dbUser.email,
+        phone: dbUser.phone,
+      });
     }
 
-    return NextResponse.json(user);
+    return NextResponse.json({ error: 'User not found' }, { status: 404 });
   } catch (error) {
     console.error('Error fetching nTZS user:', error);
+    const message = error instanceof Error ? error.message : 'Failed to fetch user';
     
-    if (error instanceof NtzsApiError) {
-      return NextResponse.json(
-        { error: error.message },
-        { status: error.status }
-      );
-    }
-
     return NextResponse.json(
-      { error: 'Failed to fetch user' },
+      { error: message },
       { status: 500 }
     );
   }

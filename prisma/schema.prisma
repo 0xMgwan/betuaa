@@ -1,0 +1,66 @@
+// Prisma schema for Betuaa prediction market platform
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id            String   @id @default(cuid())
+  walletAddress String   @unique
+  ntzsUserId    String?  @unique // nTZS user ID
+  username      String   @unique
+  email         String?
+  phone         String?
+  bio           String?
+  avatar        String?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  positions     Position[]
+  trades        Trade[]
+
+  @@index([walletAddress])
+  @@index([ntzsUserId])
+}
+
+model Position {
+  id            String   @id @default(cuid())
+  userId        String
+  user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  marketId      Int
+  outcomeIndex  Int      // 0=YES, 1=NO, etc.
+  shares        String   // BigInt as string (18 decimals)
+  costTzs       Float
+  
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  @@unique([userId, marketId, outcomeIndex])
+  @@index([userId])
+  @@index([marketId])
+}
+
+model Trade {
+  id            String   @id @default(cuid())
+  userId        String
+  user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  marketId      Int
+  outcomeIndex  Int
+  shares        String   // BigInt as string
+  amountTzs     Float
+  type          String   // "BUY" or "SELL"
+  txHash        String?
+  
+  createdAt     DateTime @default(now())
+
+  @@index([userId])
+  @@index([marketId])
+  @@index([createdAt])
+}

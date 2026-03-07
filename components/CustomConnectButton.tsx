@@ -8,6 +8,9 @@ import UsernameModal from './UsernameModal';
 import NTZSConnectModal from './NTZSConnectModal';
 import DepositModal from './DepositModal';
 import NTZSWithdrawModal from './NTZSWithdrawModal';
+import ProfileModal from './ProfileModal';
+import PortfolioModal from './PortfolioModal';
+import LeaderboardModal from './LeaderboardModal';
 import { useUsername } from '@/hooks/useUsername';
 import { useNTZSBalance } from '@/hooks/useNTZS';
 import { useLanguage } from '@/contexts/LanguageContext';
@@ -29,6 +32,9 @@ export default function CustomConnectButton() {
   const [showDropdown,      setShowDropdown]      = useState(false);
   const [showDeposit,       setShowDeposit]       = useState(false);
   const [showWithdraw,      setShowWithdraw]      = useState(false);
+  const [showProfile,       setShowProfile]       = useState(false);
+  const [showPortfolio,     setShowPortfolio]     = useState(false);
+  const [showLeaderboard,   setShowLeaderboard]   = useState(false);
   const [hasChecked,        setHasChecked]        = useState(false);
 
   // nTZS balance
@@ -40,6 +46,28 @@ export default function CustomConnectButton() {
   useEffect(() => {
     if (isConnected) setNtzsPhone(getNtzsPhone());
   }, [isConnected]);
+
+  // Clear old user data when wallet address changes
+  useEffect(() => {
+    if (address) {
+      const storedUser = localStorage.getItem('ntzsUser');
+      if (storedUser) {
+        const userData = JSON.parse(storedUser);
+        // If stored wallet doesn't match current wallet, clear it
+        if (userData.walletAddress && userData.walletAddress.toLowerCase() !== address.toLowerCase()) {
+          console.log('[CustomConnectButton] Wallet changed, clearing old user data');
+          localStorage.removeItem('ntzsUser');
+          // Also clear username for the old wallet
+          Object.keys(localStorage).forEach(key => {
+            if (key.startsWith('username_')) {
+              localStorage.removeItem(key);
+            }
+          });
+          setHasChecked(false); // Reset to trigger registration modal
+        }
+      }
+    }
+  }, [address]);
 
   // Show username modal on first connect
   useEffect(() => {
@@ -157,26 +185,29 @@ export default function CustomConnectButton() {
 
             {/* Nav links */}
             <div className="py-1.5">
-              <Link href={`/profile/${address}`} onClick={() => setShowDropdown(false)}
-                className="flex items-center gap-2.5 px-4 py-2 text-sm text-gray-300 hover:bg-gray-800 hover:text-white transition-colors">
+              <button
+                onClick={() => { setShowDropdown(false); setShowProfile(true); }}
+                className="w-full flex items-center gap-2.5 px-4 py-2 text-sm text-gray-300 hover:bg-gray-800 hover:text-white transition-colors">
                 <User className="w-4 h-4" />
                 {t('nav.profile')}
-              </Link>
-              <Link href="/portfolio" onClick={() => setShowDropdown(false)}
-                className="flex items-center gap-2.5 px-4 py-2 text-sm text-gray-300 hover:bg-gray-800 hover:text-white transition-colors">
+              </button>
+              <button
+                onClick={() => { setShowDropdown(false); setShowPortfolio(true); }}
+                className="w-full flex items-center gap-2.5 px-4 py-2 text-sm text-gray-300 hover:bg-gray-800 hover:text-white transition-colors">
                 <Wallet className="w-4 h-4" />
                 {t('nav.portfolio')}
-              </Link>
+              </button>
               <Link href="/stats" onClick={() => setShowDropdown(false)}
                 className="flex items-center gap-2.5 px-4 py-2 text-sm text-gray-300 hover:bg-gray-800 hover:text-white transition-colors">
                 <BarChart3 className="w-4 h-4" />
                 {t('nav.stats')}
               </Link>
-              <Link href="/leaderboard" onClick={() => setShowDropdown(false)}
-                className="flex items-center gap-2.5 px-4 py-2 text-sm text-gray-300 hover:bg-gray-800 hover:text-white transition-colors">
+              <button
+                onClick={() => { setShowDropdown(false); setShowLeaderboard(true); }}
+                className="w-full flex items-center gap-2.5 px-4 py-2 text-sm text-gray-300 hover:bg-gray-800 hover:text-white transition-colors">
                 <Trophy className="w-4 h-4" />
                 {t('nav.leaderboard')}
-              </Link>
+              </button>
 
               {/* Language toggle */}
               <div className="px-4 py-2 border-t border-gray-800 mt-1">
@@ -202,7 +233,18 @@ export default function CustomConnectButton() {
             {/* Disconnect */}
             <div className="border-t border-gray-800">
               <button
-                onClick={() => { disconnect(); setShowDropdown(false); }}
+                onClick={() => { 
+                  // Clear localStorage to prevent showing old account data
+                  localStorage.removeItem('ntzsUser');
+                  // Clear all usernames
+                  Object.keys(localStorage).forEach(key => {
+                    if (key.startsWith('username_')) {
+                      localStorage.removeItem(key);
+                    }
+                  });
+                  disconnect(); 
+                  setShowDropdown(false); 
+                }}
                 className="w-full flex items-center gap-2.5 px-4 py-3 text-sm text-red-400 hover:bg-red-500/10 transition-colors"
               >
                 <LogOut className="w-4 h-4" />
@@ -230,6 +272,29 @@ export default function CustomConnectButton() {
         isOpen={showWithdraw}
         onClose={() => setShowWithdraw(false)}
         walletAddress={address}
+      />
+      <ProfileModal
+        isOpen={showProfile}
+        onClose={() => setShowProfile(false)}
+        user={{
+          walletAddress: address || '',
+          username: username || '',
+          email: undefined,
+          phone: ntzsPhone || undefined,
+        }}
+        onUpdate={async (data) => {
+          // TODO: Update profile in database
+          console.log('Update profile:', data);
+        }}
+      />
+      <PortfolioModal
+        isOpen={showPortfolio}
+        onClose={() => setShowPortfolio(false)}
+        walletAddress={address || ''}
+      />
+      <LeaderboardModal
+        isOpen={showLeaderboard}
+        onClose={() => setShowLeaderboard(false)}
       />
     </>
   );

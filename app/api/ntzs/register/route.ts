@@ -1,14 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-
-// Simple in-memory storage (replace with database in production)
-const users = new Map<string, {
-  ntzsUserId: string;
-  walletAddress: string;
-  username: string;
-  email?: string;
-  phone?: string;
-  createdAt: string;
-}>();
+import { prisma } from '@/lib/prisma';
 
 // Register a new nTZS user with username
 export async function POST(request: NextRequest) {
@@ -24,26 +15,34 @@ export async function POST(request: NextRequest) {
     }
 
     // Check if username already exists
-    for (const [_, user] of users) {
-      if (user.username.toLowerCase() === username.toLowerCase()) {
-        return NextResponse.json(
-          { error: 'Username already taken' },
-          { status: 409 }
-        );
+    const existingUser = await prisma.user.findFirst({
+      where: {
+        OR: [
+          { username: { equals: username, mode: 'insensitive' } },
+          { walletAddress },
+          { ntzsUserId },
+        ],
+      },
+    });
+
+    if (existingUser) {
+      if (existingUser.username.toLowerCase() === username.toLowerCase()) {
+        return NextResponse.json({ error: 'Username already taken' }, { status: 409 });
       }
+      // User exists, return existing user
+      return NextResponse.json({ success: true, user: existingUser });
     }
 
-    // Store user
-    const userData = {
-      ntzsUserId,
-      walletAddress,
-      username,
-      email,
-      phone,
-      createdAt: new Date().toISOString(),
-    };
-
-    users.set(ntzsUserId, userData);
+    // Create new user
+    const user = await prisma.user.create({
+      data: {
+        ntzsUserId,
+        walletAddress,
+        username,
+        email,
+        phone,
+      },
+    });
 
     console.log('[nTZS Register] New user registered:', {
       username,
@@ -53,7 +52,7 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json({
       success: true,
-      user: userData,
+      user,
     });
   } catch (error) {
     console.error('Error registering user:', error);
