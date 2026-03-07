@@ -61,7 +61,7 @@ export const STABLECOINS = {
       icon: '🧪',
     },
     {
-      address: '0x3920bb2b82005082484E4219752A449921167778',
+      address: '0x6A9525A5C82F92E10741Fcdcb16DbE9111630077',
       symbol: 'nTZS',
       name: 'Tanzania Shilling',
       decimals: 18,

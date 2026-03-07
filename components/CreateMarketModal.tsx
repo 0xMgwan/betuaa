@@ -6,6 +6,7 @@ import { useAccount } from 'wagmi';
 import NTZSConnectModal from './NTZSConnectModal';
 import { STABLECOINS } from '@/lib/contracts';
 import { useCTFCreateMarket, useCTFCreateMarketFee } from '@/hooks/useCTFMarket';
+import { useNTZSCreateMarket } from '@/hooks/useNTZSMarket';
 import { useTokenAllowance, useApproveToken } from '@/hooks/useERC20';
 import { CONTRACTS } from '@/lib/contracts';
 import { useTranslation } from '@/hooks/useTranslation';
@@ -40,14 +41,15 @@ interface CreateMarketModalProps {
 
 export default function CreateMarketModal({ isOpen, onClose }: CreateMarketModalProps) {
   const { t } = useTranslation();
-  const { address: web3Address, isConnected: web3Connected } = useAccount();
+  const { address: web3Address, isConnected: web3Connected, connector } = useAccount();
   
-  // Check nTZS authentication
-  const [ntzsUser, setNtzsUser] = useState<any>(null);
-  const isConnected = !!ntzsUser || web3Connected;
-  const address = ntzsUser?.walletAddress || web3Address;
+  // Check if using nTZS wallet connector
+  const isNTZSConnector = connector?.id === 'ntzs-wallet';
+  const isConnected = web3Connected;
+  const address = web3Address;
 
-  // Reload user data when modal opens or wallet connects
+  // For backwards compatibility, also check localStorage
+  const [ntzsUser, setNtzsUser] = useState<any>(null);
   useEffect(() => {
     if (isOpen || web3Address) {
       const storedUser = localStorage.getItem('ntzsUser');
@@ -82,7 +84,19 @@ export default function CreateMarketModal({ isOpen, onClose }: CreateMarketModal
   const [isAbove, setIsAbove] = useState(true);
   const [expiryDays, setExpiryDays] = useState(1);
 
-  const { createMarket, isPending: isCreating, isSuccess, hash: createHash, reset: resetCreateMarket } = useCTFCreateMarket();
+  // Wallet-based market creation (for non-nTZS users)
+  const walletHook = useCTFCreateMarket();
+  // API-based market creation (for nTZS users)
+  const ntzsHook = useNTZSCreateMarket();
+  
+  // Pick the right hook based on whether user is using nTZS connector
+  const useNTZS = isNTZSConnector || !!ntzsUser;
+  const createMarket = useNTZS ? ntzsHook.createMarket : walletHook.createMarket;
+  const isCreating = useNTZS ? ntzsHook.isPending : walletHook.isPending;
+  const isSuccess = useNTZS ? ntzsHook.isSuccess : walletHook.isSuccess;
+  const createHash = useNTZS ? ntzsHook.hash : walletHook.hash;
+  const resetCreateMarket = useNTZS ? ntzsHook.reset : walletHook.reset;
+
   const { configurePythMarket, isPending: isConfiguringPyth, isSuccess: isPythConfigured } = useConfigurePythMarket();
 
   // Get selected stablecoin first
@@ -101,15 +115,15 @@ export default function CreateMarketModal({ isOpen, onClose }: CreateMarketModal
     ? '2500' 
     : '1';
 
-  // V2: USDC approval for creation fee
+  // V2: USDC approval for creation fee (skip for nTZS users - platform wallet handles it)
   const ctfAddress = CONTRACTS.baseSepolia.ctfPredictionMarket as `0x${string}`;
   const { data: allowanceData } = useTokenAllowance(
     selectedToken as `0x${string}`,
-    (address || '0x0000000000000000000000000000000000000000') as `0x${string}`,
+    useNTZS ? '0x0000000000000000000000000000000000000000' as `0x${string}` : (address || '0x0000000000000000000000000000000000000000') as `0x${string}`,
     ctfAddress
   );
   const currentAllowance = allowanceData ? BigInt(allowanceData as any) : BigInt(0);
-  const needsFeeApproval = creationFeeAmount > 0 && currentAllowance < creationFeeAmount;
+  const needsFeeApproval = !useNTZS && creationFeeAmount > 0 && currentAllowance < creationFeeAmount;
   const { approve: approveFee, isPending: isApprovingFee, isSuccess: feeApproved } = useApproveToken();
   
   // Store Pyth market data for configuration after creation

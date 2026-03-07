@@ -9,6 +9,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { useAccount } from "wagmi";
 import { parseUnits } from "viem";
 import { useCTFMintPositionTokens } from "@/hooks/useCTFMarket";
+import { useNTZSMintPositionTokens, useNTZSApproveToken } from "@/hooks/useNTZSMarket";
 import { useApproveToken, useTokenAllowance } from "@/hooks/useERC20";
 import { CONTRACTS } from "@/lib/contracts";
 import PurchaseSuccessModal from "./PurchaseSuccessModal";
@@ -71,8 +72,19 @@ function CompactMarketCard({
 
   // Wallet hooks
   const { address, isConnected } = useAccount();
-  const { mintPositionTokens, isPending: isMinting, isSuccess: isMintSuccess } = useCTFMintPositionTokens();
-  const { approve, isPending: isApproving, isSuccess: isApproveSuccess } = useApproveToken();
+  
+  // Detect nTZS user
+  const [isNTZSUser, setIsNTZSUser] = useState(false);
+  useEffect(() => {
+    setIsNTZSUser(!!localStorage.getItem('ntzsUser'));
+  }, []);
+
+  const walletMint = useCTFMintPositionTokens();
+  const ntzsMint = useNTZSMintPositionTokens();
+  const walletApprove = useApproveToken();
+  const ntzsApprove = useNTZSApproveToken();
+  const { mintPositionTokens, isPending: isMinting, isSuccess: isMintSuccess } = isNTZSUser ? ntzsMint : walletMint;
+  const { approve, isPending: isApproving, isSuccess: isApproveSuccess } = isNTZSUser ? ntzsApprove : walletApprove;
   
   // Type guard for paymentToken - use a dummy address if undefined to satisfy TypeScript
   const validPaymentToken = (paymentToken && paymentToken.startsWith('0x') ? paymentToken : '0x0000000000000000000000000000000000000000') as `0x${string}`;

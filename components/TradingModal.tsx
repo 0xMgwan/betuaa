@@ -6,6 +6,7 @@ import Image from 'next/image';
 import { parseUnits, formatUnits } from 'viem';
 import { useAccount } from 'wagmi';
 import { useCTFMintPositionTokens } from '@/hooks/useCTFMarket';
+import { useNTZSMintPositionTokens, useNTZSApproveToken } from '@/hooks/useNTZSMarket';
 import { useApproveToken, useTokenBalance, useTokenAllowance } from '@/hooks/useERC20';
 import { CONTRACTS } from '@/lib/contracts';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -37,8 +38,21 @@ export default function TradingModal({
   const [amount, setAmount] = useState('');
   const [step, setStep] = useState<'input' | 'approve' | 'mint'>('input');
 
-  const { mintPositionTokens, isPending: isMinting, isSuccess: mintSuccess } = useCTFMintPositionTokens();
-  const { approve, isPending: isApproving, isSuccess: approveSuccess } = useApproveToken();
+  // Detect nTZS user
+  const [isNTZSUser, setIsNTZSUser] = useState(false);
+  useEffect(() => {
+    setIsNTZSUser(!!localStorage.getItem('ntzsUser'));
+  }, [isOpen]);
+
+  // Wallet-based hooks
+  const walletMint = useCTFMintPositionTokens();
+  const walletApprove = useApproveToken();
+  // nTZS API-based hooks
+  const ntzsMint = useNTZSMintPositionTokens();
+  const ntzsApprove = useNTZSApproveToken();
+
+  const { mintPositionTokens, isPending: isMinting, isSuccess: mintSuccess } = isNTZSUser ? ntzsMint : walletMint;
+  const { approve, isPending: isApproving, isSuccess: approveSuccess } = isNTZSUser ? ntzsApprove : walletApprove;
 
   // Get user's token balance
   const { data: balance } = useTokenBalance(

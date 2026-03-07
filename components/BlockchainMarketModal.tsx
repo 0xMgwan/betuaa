@@ -20,6 +20,7 @@ import CategoryBadge from './CategoryBadge';
 import { BlockchainMarket } from '@/hooks/useMarkets';
 import { cleanDescription, extractCategory, extractResolutionType, extractCustomOutcomes } from '@/lib/categoryUtils';
 import { useCTFCancelMarket, useCTFClaimRefund } from '@/hooks/useCTFMarket';
+import { useNTZSCancelMarket, useNTZSClaimRefund } from '@/hooks/useNTZSMarket';
 import { useAccount } from 'wagmi';
 import Image from 'next/image';
 
@@ -41,9 +42,16 @@ export default function BlockchainMarketModal({
   const [showCLOBModal, setShowCLOBModal] = useState(false);
   const [selectedCLOBOutcome, setSelectedCLOBOutcome] = useState<{ index: number; name: string } | null>(null);
 
+  // Detect nTZS user
+  const isNTZSUser = typeof window !== 'undefined' && !!localStorage.getItem('ntzsUser');
+
   // V2: Cancel market & claim refund
-  const { cancelMarket, isPending: isCanceling, isSuccess: cancelSuccess } = useCTFCancelMarket();
-  const { claimRefund, isPending: isClaiming, isSuccess: claimSuccess } = useCTFClaimRefund();
+  const walletCancel = useCTFCancelMarket();
+  const ntzsCancel = useNTZSCancelMarket();
+  const walletRefund = useCTFClaimRefund();
+  const ntzsRefund = useNTZSClaimRefund();
+  const { cancelMarket, isPending: isCanceling, isSuccess: cancelSuccess } = isNTZSUser ? ntzsCancel : walletCancel;
+  const { claimRefund, isPending: isClaiming, isSuccess: claimSuccess } = isNTZSUser ? ntzsRefund : walletRefund;
   const isCreator = address?.toLowerCase() === market.creator?.toLowerCase();
 
   // Determine outcomes list (standard Yes/No or custom multi-outcome)

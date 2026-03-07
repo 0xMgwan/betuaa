@@ -5,6 +5,7 @@ import { WagmiProvider } from 'wagmi';
 import { ReactNode } from 'react';
 import { config } from '@/lib/wagmi';
 import { ThemeProvider } from '@/components/ThemeProvider';
+import NtzsAutoConnect from '@/components/NtzsAutoConnect';
 
 const queryClient = new QueryClient();
 
@@ -17,6 +18,7 @@ export function Providers({ children }: { children: ReactNode }) {
     <WagmiProvider config={config}>
       <QueryClientProvider client={queryClient}>
         <ThemeProvider>
+          <NtzsAutoConnect />
           {children}
         </ThemeProvider>
       </QueryClientProvider>

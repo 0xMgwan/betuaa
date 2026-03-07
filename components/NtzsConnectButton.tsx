@@ -135,14 +135,6 @@ export default function NtzsConnectButton() {
               </div>
             </div>
 
-            {/* Wallet Address */}
-            <div className="p-3 bg-gray-50 dark:bg-gray-700/50 border-b border-gray-200 dark:border-gray-700">
-              <p className="text-xs text-gray-500 dark:text-gray-400 mb-1">Wallet Address</p>
-              <p className="text-xs font-mono text-gray-900 dark:text-white">
-                {ntzsUser.walletAddress.slice(0, 10)}...{ntzsUser.walletAddress.slice(-8)}
-              </p>
-            </div>
-
             {/* Menu Items */}
             <div className="py-2">
               <button

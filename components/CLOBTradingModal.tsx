@@ -24,6 +24,12 @@ import {
   usdcToRaw,
   PRICE_PRECISION,
 } from '@/hooks/useOrderBook';
+import {
+  useNTZSPlaceLimitOrder,
+  useNTZSPlaceMarketOrder,
+  useNTZSCancelOrder,
+  useNTZSApproveToken,
+} from '@/hooks/useNTZSMarket';
 
 interface CLOBTradingModalProps {
   isOpen: boolean;
@@ -59,15 +65,30 @@ export default function CLOBTradingModal({
   const [slippage, setSlippage] = useState('2');
   const [showOrderBook, setShowOrderBook] = useState(true);
 
-  // Hooks
+  // Detect nTZS user
+  const [isNTZSUser, setIsNTZSUser] = useState(false);
+  useEffect(() => {
+    setIsNTZSUser(!!localStorage.getItem('ntzsUser'));
+  }, [isOpen]);
+
+  // Wallet-based hooks
+  const walletLimit = usePlaceLimitOrder();
+  const walletMarket = usePlaceMarketOrder();
+  const walletCancelOrder = useCancelOrder();
+  // nTZS API-based hooks
+  const ntzsLimit = useNTZSPlaceLimitOrder();
+  const ntzsMarket = useNTZSPlaceMarketOrder();
+  const ntzsCancelOrder = useNTZSCancelOrder();
+
+  // Hooks — pick wallet or nTZS
   const { orderBookData } = useOrderBookData(marketId, outcomeIndex);
-  const { placeLimitOrder, isPending: isLimitPending, isSuccess: limitSuccess, error: limitError, reset: resetLimit } = usePlaceLimitOrder();
-  const { placeMarketOrder, isPending: isMarketPending, isSuccess: marketSuccess, error: marketError, reset: resetMarket } = usePlaceMarketOrder();
+  const { placeLimitOrder, isPending: isLimitPending, isSuccess: limitSuccess, error: limitError, reset: resetLimit } = isNTZSUser ? ntzsLimit : walletLimit;
+  const { placeMarketOrder, isPending: isMarketPending, isSuccess: marketSuccess, error: marketError, reset: resetMarket } = isNTZSUser ? ntzsMarket : walletMarket;
   const { approve: approveCollateral, isPending: isApprovingCollateral, isSuccess: approveCollateralSuccess, reset: resetApproveCollateral } = useApproveCollateral();
   const { approveAll: approveTokens, isPending: isApprovingTokens, isSuccess: approveTokensSuccess, reset: resetApproveTokens } = useApproveOutcomeTokens();
   const { splitShares, isPending: isSplitting, isSuccess: splitSuccess, error: splitError, reset: resetSplit } = useSplitShares();
   const { orders: userOrders, refetch: refetchOrders } = useUserOrders();
-  const { cancelOrder, isPending: isCancelling } = useCancelOrder();
+  const { cancelOrder, isPending: isCancelling } = isNTZSUser ? ntzsCancelOrder : walletCancelOrder;
 
   // Balance
   const { data: balance } = useTokenBalance(

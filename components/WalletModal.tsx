@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
-import { X, ArrowDownCircle, ArrowUpCircle, RefreshCw, CheckCircle, XCircle, Loader } from 'lucide-react';
+import { X, ArrowDownCircle, ArrowUpCircle, RefreshCw, CheckCircle, XCircle, Loader, Copy, Check } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useNTZSBalance, useNTZSDeposit, useNTZSWithdraw } from '@/hooks/useNTZS';
 import Image from 'next/image';
@@ -22,6 +22,13 @@ export default function WalletModal({ isOpen, onClose, ntzsUser }: WalletModalPr
   const [activeTab, setActiveTab] = useState<'deposit' | 'withdraw'>('deposit');
   const [phone, setPhone] = useState(ntzsUser.phone || '');
   const [amount, setAmount] = useState('');
+  const [copied, setCopied] = useState(false);
+
+  const copyAddress = () => {
+    navigator.clipboard.writeText(ntzsUser.walletAddress);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  };
 
   const { balance, isLoading: balanceLoading, refresh: refreshBalance } = useNTZSBalance(ntzsUser.walletAddress, ntzsUser.email);
   const { status: depositStatus, depositId, txHash, error: depositError, initiateDeposit, reset: resetDeposit } = useNTZSDeposit();
@@ -104,9 +111,25 @@ export default function WalletModal({ isOpen, onClose, ntzsUser }: WalletModalPr
                   className="rounded-full"
                 />
               </div>
-              <div>
+              <div className="flex-1">
                 <h2 className="text-white font-bold text-xl">nTZS Wallet</h2>
                 <p className="text-white/80 text-sm">@{ntzsUser.username}</p>
+                <div className="flex items-center gap-2 mt-1">
+                  <p className="text-white/60 text-xs font-mono">
+                    {ntzsUser.walletAddress.slice(0, 6)}...{ntzsUser.walletAddress.slice(-4)}
+                  </p>
+                  <button
+                    onClick={copyAddress}
+                    className="p-1 hover:bg-white/20 rounded transition-colors"
+                    title="Copy address"
+                  >
+                    {copied ? (
+                      <Check className="w-3 h-3 text-green-300" />
+                    ) : (
+                      <Copy className="w-3 h-3 text-white/60" />
+                    )}
+                  </button>
+                </div>
               </div>
             </div>
             

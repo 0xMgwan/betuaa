@@ -1,9 +1,10 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { X, AlertCircle } from 'lucide-react';
 import { formatUnits } from 'viem';
 import { useCTFBurnPositionTokens } from '@/hooks/useCTFMarket';
+import { useNTZSBurnPositionTokens } from '@/hooks/useNTZSMarket';
 
 interface SellModalProps {
   isOpen: boolean;
@@ -25,7 +26,16 @@ export default function SellModal({
   position,
 }: SellModalProps) {
   const [amount, setAmount] = useState('');
-  const { burnPositionTokens, isPending, isSuccess, error } = useCTFBurnPositionTokens();
+
+  // Detect nTZS user
+  const [isNTZSUser, setIsNTZSUser] = useState(false);
+  useEffect(() => {
+    setIsNTZSUser(!!localStorage.getItem('ntzsUser'));
+  }, [isOpen]);
+
+  const walletBurn = useCTFBurnPositionTokens();
+  const ntzsBurn = useNTZSBurnPositionTokens();
+  const { burnPositionTokens, isPending, isSuccess, error } = isNTZSUser ? ntzsBurn : walletBurn;
   
   // Log errors
   if (error) {
