@@ -153,7 +153,7 @@ export default function WalletModal({ isOpen, onClose, ntzsUser }: WalletModalPr
               </p>
               {balance && (
                 <p className="text-white/60 text-xs mt-1">
-                  {balance.balanceNtzs} nTZS
+                  {balance.balanceTzs.toLocaleString(undefined, { maximumFractionDigits: 4 })} nTZS on-chain
                 </p>
               )}
             </div>

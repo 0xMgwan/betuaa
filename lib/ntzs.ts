@@ -3,7 +3,7 @@
  * Never import this in client components — use /api/ntzs/* routes instead.
  */
 
-const BASE_URL = process.env.NTZS_API_BASE_URL || 'https://api.ntzs.co';
+const BASE_URL = process.env.NTZS_API_BASE_URL || 'https://www.ntzs.co.tz';
 const API_KEY  = process.env.NTZS_API_KEY!;
 
 if (!API_KEY && process.env.NODE_ENV === 'production') {
@@ -90,9 +90,10 @@ export async function createOrGetUser(params: {
   email?: string;
   phone?: string;
 }): Promise<NtzsUser> {
+  const email = params.email || `${params.walletAddress.toLowerCase()}@betua.app`;
   return request<NtzsUser>('POST', '/api/v1/users', {
-    externalId: params.walletAddress.toLowerCase(),
-    email:      params.email,
+    externalId: email,
+    email:      email,
     phone:      params.phone,
   });
 }

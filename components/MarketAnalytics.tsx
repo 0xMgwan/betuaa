@@ -23,7 +23,7 @@ export default function MarketAnalytics({
   totalVolume,
   participantCount,
   outcomes,
-  tokenSymbol = 'USDC'
+  tokenSymbol = 'TZS'
 }: MarketAnalyticsProps) {
   const [activeTab, setActiveTab] = useState<'overview' | 'depth' | 'volume' | 'traders'>('overview');
   const { priceHistory, isLoading: isPriceLoading } = usePriceHistory(marketId);
@@ -33,9 +33,9 @@ export default function MarketAnalytics({
   const noPrice = outcomes[1]?.price || 50;
 
   // Calculate real volume distribution (simulate daily breakdown from total)
-  // Convert from wei to USDC (divide by 1e6 for USDC decimals)
-  const totalVolumeUSDC = totalVolume / 1e6;
-  const dailyVolume = totalVolumeUSDC / 7; // Distribute total volume across 7 days
+  // Convert from wei to TZS (divide by 1e18 for nTZS decimals)
+  const totalVolumeTZS = totalVolume / 1e18;
+  const dailyVolume = totalVolumeTZS / 7; // Distribute total volume across 7 days
   
   // Create realistic daily volume with variance
   const volumeData = Array.from({ length: 7 }, (_, i) => {
@@ -73,7 +73,7 @@ export default function MarketAnalytics({
   ];
 
   // Calculate trader distribution based on market data
-  const avgTradeSize = participantCount > 0 ? totalVolumeUSDC / participantCount : 0;
+  const avgTradeSize = participantCount > 0 ? totalVolumeTZS / participantCount : 0;
   
   // Estimate distribution based on average trade size
   let whalePercent = 0;
@@ -157,7 +157,7 @@ export default function MarketAnalytics({
             <TrendingUp className="w-3 h-3 md:w-4 md:h-4" />
             <span className="text-[10px] md:text-xs font-medium opacity-90">Yes Price</span>
           </div>
-          <p className="text-sm md:text-xl font-bold font-mono">{yesPrice}¢</p>
+          <p className="text-sm md:text-xl font-bold font-mono">{yesPrice}%</p>
         </div>
 
         <div className="bg-gradient-to-br from-orange-500 to-orange-600 rounded-lg md:rounded-xl p-2 md:p-3 text-white">
@@ -201,11 +201,11 @@ export default function MarketAnalytics({
               <div className="flex items-center gap-3 text-xs font-medium">
                 <span className="flex items-center gap-1.5">
                   <span className="w-2 h-2 bg-green-500 rounded-full"></span>
-                  <span className="font-mono">Yes {yesPrice}¢</span>
+                  <span className="font-mono">Yes {yesPrice}%</span>
                 </span>
                 <span className="flex items-center gap-1.5">
                   <span className="w-2 h-2 bg-red-500 rounded-full"></span>
-                  <span className="font-mono">No {noPrice}¢</span>
+                  <span className="font-mono">No {noPrice}%</span>
                 </span>
               </div>
             </div>
@@ -238,7 +238,7 @@ export default function MarketAnalytics({
                 <XAxis 
                   dataKey="price" 
                   tick={{ fontSize: 11, fontFamily: 'ui-monospace, monospace' }}
-                  label={{ value: 'Price (¢)', position: 'insideBottom', offset: -5, fontSize: 11 }} 
+                  label={{ value: 'Price (%)', position: 'insideBottom', offset: -5, fontSize: 11 }} 
                 />
                 <YAxis 
                   tick={{ fontSize: 11, fontFamily: 'ui-monospace, monospace' }}
@@ -274,7 +274,7 @@ export default function MarketAnalytics({
               </BarChart>
             </ResponsiveContainer>
             <p className="text-xs text-gray-600 dark:text-gray-400 mt-2 font-mono">
-              Total: {totalVolumeUSDC.toFixed(2)} {tokenSymbol} • 7-day distribution
+              Total: {totalVolumeTZS.toFixed(0)} {tokenSymbol} • 7-day distribution
             </p>
           </div>
         )}

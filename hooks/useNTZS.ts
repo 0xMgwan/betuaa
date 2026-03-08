@@ -19,15 +19,15 @@ export function useNTZSBalance(walletAddress: string | undefined, email?: string
   const [isLoading, setIsLoading] = useState(false);
 
   const fetch = useCallback(async () => {
-    if (!walletAddress || !email) return;
+    if (!walletAddress) return;
     setIsLoading(true);
     try {
-      const res  = await window.fetch(`/api/ntzs/balance?address=${walletAddress}&email=${encodeURIComponent(email)}`);
+      const res  = await window.fetch(`/api/ntzs/balance?address=${walletAddress}`);
       const data = await res.json();
       if (!data.error) setBalance(data);
     } catch { /* silent */ }
     finally { setIsLoading(false); }
-  }, [walletAddress, email]);
+  }, [walletAddress]);
 
   // Initial fetch + 15s polling
   useEffect(() => {
@@ -55,20 +55,26 @@ export function useNTZSDeposit() {
   const pollStatus = useCallback((id: string) => {
     pollRef.current = setInterval(async () => {
       try {
-        const res  = await window.fetch(`/api/ntzs/deposit/${id}`);
+        const res  = await window.fetch(`/api/ntzs/deposits?depositId=${id}`);
         const data = await res.json();
+        console.log('[useNTZSDeposit] Poll response:', data);
         if (data.status === 'minted') {
+          console.log('[useNTZSDeposit] Deposit minted, stopping polling');
           setStatus('minted');
           setTxHash(data.txHash || null);
           stopPolling();
-        } else if (data.status === 'failed') {
+        } else if (data.status === 'failed' || data.status === 'rejected') {
+          console.log('[useNTZSDeposit] Deposit failed/rejected, stopping polling');
           setStatus('failed');
           setError('Deposit failed. Please try again.');
           stopPolling();
         } else {
+          console.log('[useNTZSDeposit] Deposit status:', data.status);
           setStatus(data.status);
         }
-      } catch { /* keep polling */ }
+      } catch (err) { 
+        console.error('[useNTZSDeposit] Poll error:', err);
+      }
     }, 3_000);
   }, [stopPolling]);
 
@@ -84,33 +90,56 @@ export function useNTZSDeposit() {
     setTxHash(null);
 
     try {
-      const res = await window.fetch('/api/ntzs/deposit', {
+      // First, get or create the nTZS user
+      const userRes = await window.fetch('/api/ntzs/user', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(params),
+        body: JSON.stringify({
+          walletAddress: params.walletAddress,
+          email: params.email || `${params.walletAddress.toLowerCase()}@betua.app`,
+        }),
+      });
+      const userData = await userRes.json();
+      
+      if (userData.error) throw new Error(userData.error);
+
+      // Now create the deposit using the nTZS API
+      const res = await window.fetch('/api/ntzs/deposits', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          userId: userData.ntzsUserId,
+          amountTzs: params.amountTzs,
+          phone: params.phone,
+        }),
       });
       const data = await res.json();
 
       if (data.error) throw new Error(data.error);
 
-      setDepositId(data.depositId);
+      setDepositId(data.id);
       setStatus(data.status ?? 'pending');
       setTxHash(data.txHash);
 
+      // Start polling for status updates
+      if (data.id) {
+        pollStatus(data.id);
+      }
+
       // Store the nTZS user ID in localStorage for balance lookups
-      if (data.ntzsUserId) {
+      if (userData.ntzsUserId) {
         const storedUser = localStorage.getItem('ntzsUser');
         if (storedUser) {
-          const userData = JSON.parse(storedUser);
-          userData.ntzsUserId = data.ntzsUserId;
-          localStorage.setItem('ntzsUser', JSON.stringify(userData));
+          const userDataParsed = JSON.parse(storedUser);
+          userDataParsed.ntzsUserId = userData.ntzsUserId;
+          localStorage.setItem('ntzsUser', JSON.stringify(userDataParsed));
         }
       }
     } catch (err) {
       setStatus('failed');
       setError(err instanceof Error ? err.message : 'Failed to initiate deposit');
     }
-  }, []);
+  }, [pollStatus]);
 
   const reset = useCallback(() => {
     stopPolling();
@@ -155,16 +184,34 @@ export function useNTZSWithdraw(): {
     setWithdrawalId(null);
 
     try {
-      const res  = await window.fetch('/api/ntzs/withdraw', {
-        method:  'POST',
+      // First, get or create the nTZS user
+      const userRes = await window.fetch('/api/ntzs/user', {
+        method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body:    JSON.stringify(params),
+        body: JSON.stringify({
+          walletAddress: params.walletAddress,
+          email: params.email || `${params.walletAddress.toLowerCase()}@betua.app`,
+        }),
+      });
+      const userData = await userRes.json();
+      
+      if (userData.error) throw new Error(userData.error);
+
+      // Now create the withdrawal using the nTZS API
+      const res = await window.fetch('/api/ntzs/withdrawals', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          userId: userData.ntzsUserId,
+          amountTzs: params.amountTzs,
+          phone: params.phone,
+        }),
       });
       const data = await res.json();
 
       if (data.error) throw new Error(data.error);
 
-      setWithdrawalId(data.withdrawalId);
+      setWithdrawalId(data.id);
       setStatus(data.status ?? 'pending');
     } catch (err) {
       setStatus('failed');

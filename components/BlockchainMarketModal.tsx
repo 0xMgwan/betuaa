@@ -20,7 +20,7 @@ import CategoryBadge from './CategoryBadge';
 import { BlockchainMarket } from '@/hooks/useMarkets';
 import { cleanDescription, extractCategory, extractResolutionType, extractCustomOutcomes } from '@/lib/categoryUtils';
 import { useCTFCancelMarket, useCTFClaimRefund } from '@/hooks/useCTFMarket';
-import { useNTZSCancelMarket, useNTZSClaimRefund } from '@/hooks/useNTZSMarket';
+import { useNTZSCancelMarketV2, useNTZSClaimRefundV2 } from '@/hooks/useNTZSMarketV2';
 import { useAccount } from 'wagmi';
 import Image from 'next/image';
 
@@ -47,11 +47,11 @@ export default function BlockchainMarketModal({
 
   // V2: Cancel market & claim refund
   const walletCancel = useCTFCancelMarket();
-  const ntzsCancel = useNTZSCancelMarket();
+  const ntzsCancelV2 = useNTZSCancelMarketV2();
   const walletRefund = useCTFClaimRefund();
-  const ntzsRefund = useNTZSClaimRefund();
-  const { cancelMarket, isPending: isCanceling, isSuccess: cancelSuccess } = isNTZSUser ? ntzsCancel : walletCancel;
-  const { claimRefund, isPending: isClaiming, isSuccess: claimSuccess } = isNTZSUser ? ntzsRefund : walletRefund;
+  const ntzsRefundV2 = useNTZSClaimRefundV2();
+  const { cancelMarket, isPending: isCanceling, isSuccess: cancelSuccess } = isNTZSUser ? ntzsCancelV2 : walletCancel;
+  const { claimRefund, isPending: isClaiming, isSuccess: claimSuccess } = isNTZSUser ? ntzsRefundV2 : walletRefund;
   const isCreator = address?.toLowerCase() === market.creator?.toLowerCase();
 
   // Determine outcomes list (standard Yes/No or custom multi-outcome)
@@ -194,13 +194,13 @@ export default function BlockchainMarketModal({
                 <div className="text-xs text-gray-600 dark:text-gray-400 mb-1 font-semibold">Volume</div>
                 <div className="text-sm md:text-xl font-black text-gray-900 dark:text-white flex items-center gap-1.5">
                   <Image 
-                    src="/USDC logo.png" 
-                    alt="USDC"
+                    src="/ntzs.png" 
+                    alt="nTZS"
                     width={16}
                     height={16}
                     className="w-4 h-4 md:w-5 md:h-5 rounded-full"
                   />
-                  {displayVolume} USDC
+                  {displayVolume} TZS
                 </div>
               </motion.div>
               <motion.div 
@@ -287,11 +287,11 @@ export default function BlockchainMarketModal({
                 <div className="flex items-center gap-3 text-xs">
                   <div className="flex items-center gap-1.5 bg-green-100 dark:bg-green-900/30 px-2 py-1 rounded-lg">
                     <div className="w-2.5 h-2.5 bg-green-500 rounded-full animate-pulse"></div>
-                    <span className="text-gray-900 dark:text-gray-200 font-semibold">Yes {yesOutcome?.price || 50}¢</span>
+                    <span className="text-gray-900 dark:text-gray-200 font-semibold">Yes {yesOutcome?.price || 50}%</span>
                   </div>
                   <div className="flex items-center gap-1.5 bg-red-100 dark:bg-red-900/30 px-2 py-1 rounded-lg">
                     <div className="w-2.5 h-2.5 bg-red-500 rounded-full animate-pulse"></div>
-                    <span className="text-gray-900 dark:text-gray-200 font-semibold">No {noOutcome?.price || 50}¢</span>
+                    <span className="text-gray-900 dark:text-gray-200 font-semibold">No {noOutcome?.price || 50}%</span>
                   </div>
                 </div>
               </div>
@@ -311,8 +311,8 @@ export default function BlockchainMarketModal({
               outcomeIndex={selectedCLOBOutcome.index}
               outcomeName={selectedCLOBOutcome.name}
               paymentToken={market.paymentToken}
-              tokenSymbol={token?.symbol || 'USDC'}
-              tokenDecimals={token?.decimals || 6}
+              tokenSymbol="nTZS"
+              tokenDecimals={18}
             />
           )}
 

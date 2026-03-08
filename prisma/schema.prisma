@@ -18,14 +18,28 @@ model User {
   phone         String?
   bio           String?
   avatar        String?
+  balanceTzs    Float    @default(0)  // in-platform NTZS balance (TZS units)
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
 
   positions     Position[]
   trades        Trade[]
+  deposits      Deposit[]
 
   @@index([walletAddress])
   @@index([ntzsUserId])
+}
+
+model Deposit {
+  id          String   @id @default(cuid())
+  userId      String
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  txHash      String   @unique
+  amountTzs   Float
+  fromAddress String
+  createdAt   DateTime @default(now())
+
+  @@index([userId])
 }
 
 model Position {

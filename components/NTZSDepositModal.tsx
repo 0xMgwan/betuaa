@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { X, Smartphone, CheckCircle, XCircle, Loader2, ArrowRight } from 'lucide-react';
 import { Button } from './ui/button';
 import { useNTZSDeposit } from '@/hooks/useNTZS';
@@ -23,13 +23,28 @@ const STEPS = [
 export default function NTZSDepositModal({ isOpen, onClose, walletAddress }: NTZSDepositModalProps) {
   const [phone,     setPhone]     = useState('255');
   const [amountTzs, setAmountTzs] = useState('');
+  const successLocked = useRef(false);
 
   const { status, txHash, error, initiateDeposit, reset } = useNTZSDeposit();
+
+  // Lock the success state to prevent re-renders
+  useEffect(() => {
+    if (status === 'minted') {
+      successLocked.current = true;
+    }
+  }, [status]);
+
+  // Reset lock when modal closes
+  useEffect(() => {
+    if (!isOpen) {
+      successLocked.current = false;
+    }
+  }, [isOpen]);
 
   if (!isOpen) return null;
 
   const isSubmitting = status === 'pending' || status === 'processing';
-  const isDone       = status === 'minted';
+  const isDone       = status === 'minted' || successLocked.current;
   const isFailed     = status === 'failed';
 
   const currentStep = STEPS.findIndex(s => s.key === status);

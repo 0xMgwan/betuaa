@@ -1,11 +1,11 @@
 import { useState, useEffect } from 'react';
 import { useReadContract } from 'wagmi';
 import { CONTRACTS } from '@/lib/contracts';
-import PredictionMarketABI from '@/lib/abis/PredictionMarket.json';
+import CTFPredictionMarketNTZSABI from '@/lib/abis/CTFPredictionMarketNTZS.json';
 import { baseSepolia } from 'wagmi/chains';
 import { BlockchainMarket } from './useMarkets';
 
-const CONTRACT_ADDRESS = CONTRACTS.baseSepolia.predictionMarket as `0x${string}`;
+const CTF_NTZS_ADDRESS = CONTRACTS.baseSepolia.ctfPredictionMarketNTZS as `0x${string}`;
 
 export interface MarketOutcome {
   name: string;
@@ -17,38 +17,37 @@ export function useMarketDetails(marketId: number) {
   const [outcomes, setOutcomes] = useState<MarketOutcome[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
-  // Fetch market outcomes
-  const { data: outcomesData, isLoading: isLoadingOutcomes } = useReadContract({
-    address: CONTRACT_ADDRESS,
-    abi: PredictionMarketABI,
-    functionName: 'getMarketOutcomes',
+  // Fetch market data from nTZS contract
+  const { data: marketData, isLoading: isLoadingMarket } = useReadContract({
+    address: CTF_NTZS_ADDRESS,
+    abi: CTFPredictionMarketNTZSABI,
+    functionName: 'getMarket',
     args: [BigInt(marketId)],
     chainId: baseSepolia.id,
   });
 
   useEffect(() => {
-    if (outcomesData && Array.isArray(outcomesData)) {
-      const formattedOutcomes = outcomesData.map((outcome: any, index: number) => {
-        // Calculate price based on total shares (simple AMM pricing)
-        const totalShares = Number(outcome.totalShares);
-        const allShares = outcomesData.reduce((sum: number, o: any) => sum + Number(o.totalShares), 0);
-        
-        // If no shares yet, default to 50/50
-        const price = allShares > 0 ? Math.round((totalShares / allShares) * 100) : 50;
+    if (marketData) {
+      const market = marketData as any;
+      const outcomeCount = Number(market.outcomeCount || 2);
+      
+      // For binary markets: Yes/No outcomes, default 50/50 pricing
+      const outcomeNames = outcomeCount === 2 
+        ? ['Yes', 'No'] 
+        : Array.from({ length: outcomeCount }, (_, i) => `Outcome ${i + 1}`);
 
-        return {
-          name: outcome.name,
-          totalShares: outcome.totalShares,
-          price: Math.min(Math.max(price, 1), 99), // Clamp between 1-99
-        };
-      });
+      const formattedOutcomes = outcomeNames.map((name, index) => ({
+        name,
+        totalShares: BigInt(0), // nTZS contract tracks positions per-user, not globally
+        price: Math.round(100 / outcomeCount), // Equal split by default
+      }));
 
       setOutcomes(formattedOutcomes);
       setIsLoading(false);
     }
-  }, [outcomesData]);
+  }, [marketData]);
 
-  return { outcomes, isLoading: isLoadingOutcomes || isLoading };
+  return { outcomes, isLoading: isLoadingMarket || isLoading };
 }
 
 export function convertBlockchainMarketToModalFormat(
@@ -64,17 +63,17 @@ export function convertBlockchainMarketToModalFormat(
   return {
     id: market.id,
     question: market.title,
-    category: 'Crypto', // Default category, could be enhanced
+    category: 'Crypto',
     yesPrice: (yesOutcome?.price || 50) / 100,
     noPrice: (noOutcome?.price || 50) / 100,
-    volume: `${(Number(market.totalVolume) / 1e6).toFixed(1)}K USDC`, // Assuming 6 decimals
+    volume: `${Number(market.totalVolume || 0).toFixed(0)} TZS`,
     endDate: closingDate.toLocaleDateString('en-US', { 
       month: 'short', 
       day: 'numeric', 
       year: 'numeric' 
     }),
-    participants: 0, // Would need to track this separately
-    priceHistory: [], // Would need historical data
+    participants: 0,
+    priceHistory: [],
     description: market.description,
   };
 }

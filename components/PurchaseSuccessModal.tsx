@@ -123,8 +123,8 @@ export default function PurchaseSuccessModal({
                       </div>
                       <div className="flex items-center gap-1.5 text-sm font-bold text-green-600 dark:text-green-400">
                         <Image 
-                          src="/USDC logo.png" 
-                          alt="USDC" 
+                          src="/ntzs.png" 
+                          alt="nTZS" 
                           width={20} 
                           height={20}
                           className="rounded-full"

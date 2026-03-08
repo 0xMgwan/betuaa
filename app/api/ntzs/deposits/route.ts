@@ -52,6 +52,7 @@ export async function GET(request: NextRequest) {
 
     if (depositId) {
       const deposit = await ntzs.deposits.get(depositId);
+      console.log(`[deposits GET] Deposit ${depositId} status:`, deposit.status, 'txHash:', deposit.txHash);
       return NextResponse.json(deposit);
     } else if (userId) {
       const deposits = await ntzs.deposits.list(userId);

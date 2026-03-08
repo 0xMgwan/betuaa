@@ -54,17 +54,37 @@ export function ntzsWalletConnector() {
             case 'eth_getBlockByNumber':
               return publicClient.request({ method, params } as never)
 
-            // Transaction signing — nTZS custodial flow
-            case 'eth_sendTransaction':
+            // Transaction signing — route through backend API for nTZS embedded wallets
+            case 'eth_sendTransaction': {
+              const [txParams] = params as [{ from: string; to: string; data?: string; value?: string; gas?: string }];
+              
+              // Send transaction through our backend API which uses nTZS
+              const response = await fetch('/api/ntzs/send-transaction', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                  from: txParams.from,
+                  to: txParams.to,
+                  data: txParams.data || '0x',
+                  value: txParams.value || '0x0',
+                }),
+              });
+              
+              if (!response.ok) {
+                const error = await response.json();
+                throw new Error(error.error || 'Transaction failed');
+              }
+              
+              const result = await response.json();
+              return result.hash;
+            }
+            
             case 'eth_signTransaction':
             case 'personal_sign':
             case 'eth_sign':
             case 'eth_signTypedData':
             case 'eth_signTypedData_v4':
-              throw new Error(
-                'nTZS wallet: transaction signing is handled server-side via nTZS API. ' +
-                'Use the platform actions (buy/sell/create market) which route through nTZS.'
-              )
+              throw new Error('nTZS embedded wallets: Message signing not yet supported. Use transaction execution instead.')
 
             default:
               return publicClient.request({ method, params } as never)

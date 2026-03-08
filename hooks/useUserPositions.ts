@@ -1,15 +1,18 @@
 import { useState, useEffect } from 'react';
 import { useAccount, useReadContract } from 'wagmi';
-import { CONTRACTS } from '@/lib/contracts';
-import CTFPredictionMarketABI from '@/lib/abis/CTFPredictionMarketV2.json';
+import { CONTRACTS, RPC } from '@/lib/contracts';
+import CTFPredictionMarketNTZSABI from '@/lib/abis/CTFPredictionMarketNTZS.json';
 import { baseSepolia } from 'wagmi/chains';
-import { createPublicClient, http } from 'viem';
+import { createPublicClient, http, fallback } from 'viem';
 
-const CONTRACT_ADDRESS = CONTRACTS.baseSepolia.ctfPredictionMarket as `0x${string}`;
+const CONTRACT_ADDRESS = CONTRACTS.baseSepolia.ctfPredictionMarketNTZS as `0x${string}`;
 
 const publicClient = createPublicClient({
   chain: baseSepolia,
-  transport: http(),
+  transport: fallback([
+    http(RPC.baseSepolia.primary, { retryCount: 3, retryDelay: 1000 }),
+    http(RPC.baseSepolia.fallback, { retryCount: 2, retryDelay: 1000 }),
+  ]),
 });
 
 export interface UserPosition {
@@ -35,7 +38,7 @@ export function useUserPositions() {
   // Get total market count from CTF contract
   const { data: marketCount } = useReadContract({
     address: CONTRACT_ADDRESS,
-    abi: CTFPredictionMarketABI,
+    abi: CTFPredictionMarketNTZSABI,
     functionName: 'marketCount',
     chainId: baseSepolia.id,
     query: {
@@ -58,14 +61,14 @@ export function useUserPositions() {
       const count = Number(marketCount);
 
       try {
-        // Fetch all market data in parallel
-        const marketPromises = [];
-        for (let marketId = 1; marketId <= count; marketId++) {
-          marketPromises.push(
-            fetch(`/api/market/${marketId}`).then(res => res.json()).catch(() => null)
-          );
-        }
-        const markets = await Promise.all(marketPromises);
+        // Fetch all markets from the API
+        const marketsRes = await fetch('/api/markets').then(r => r.json()).catch(() => ({ markets: [] }));
+        const marketsById: Record<number, any> = {};
+        (marketsRes.markets || []).forEach((m: any) => {
+          marketsById[Number(m.id)] = m;
+        });
+        // Build array indexed by market ID (1-based)
+        const markets = Array.from({ length: count }, (_, i) => marketsById[i + 1] || null);
 
         // Build contract call batches for all markets and outcomes
         const contractCalls = [];
@@ -79,7 +82,7 @@ export function useUserPositions() {
             // Get token ID
             contractCalls.push({
               address: CONTRACT_ADDRESS,
-              abi: CTFPredictionMarketABI,
+              abi: CTFPredictionMarketNTZSABI,
               functionName: 'outcomeTokens',
               args: [BigInt(marketId), BigInt(outcomeId)],
             });
@@ -121,7 +124,7 @@ export function useUserPositions() {
 
             balanceCalls.push({
               address: CONTRACT_ADDRESS,
-              abi: CTFPredictionMarketABI,
+              abi: CTFPredictionMarketNTZSABI,
               functionName: 'balanceOf',
               args: [address as `0x${string}`, tokenId],
             });
@@ -143,7 +146,7 @@ export function useUserPositions() {
           results.forEach((balance: any, idx) => {
             const meta = batchMeta[idx];
             if ((balance as bigint) > BigInt(0)) {
-              const shares = Number(balance as bigint) / 1e6;
+              const shares = Number(balance as bigint) / 1e18;
               const outcomeName = meta.outcomeId === 0 ? 'Yes' : 'No';
               const averageBuyPrice = 50;
               const costBasis = shares * (averageBuyPrice / 100);
@@ -211,7 +214,7 @@ export function useUserPositions() {
 
   // Calculate portfolio totals
   const totalValue = positions.reduce((sum, pos) => {
-    const shares = Number(pos.shares) / 1e6; // USDC has 6 decimals
+    const shares = Number(pos.shares) / 1e18; // nTZS has 18 decimals
     const value = shares * (pos.currentPrice / 100);
     return sum + value;
   }, 0);

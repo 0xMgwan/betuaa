@@ -84,7 +84,8 @@ export class NtzsClient {
 
     if (!response.ok) {
       const error = await response.json().catch(() => ({ message: 'Request failed' }));
-      throw new NtzsApiError(response.status, error.message || 'Request failed');
+      console.error(`[NtzsClient] Error ${response.status} from ${endpoint}:`, error);
+      throw new NtzsApiError(response.status, error.message || error.error || 'Request failed');
     }
 
     return response.json();
@@ -126,7 +127,11 @@ export class NtzsClient {
     }): Promise<NtzsDeposit> => {
       return this.request<NtzsDeposit>('/api/v1/deposits', {
         method: 'POST',
-        body: JSON.stringify(data),
+        body: JSON.stringify({
+          userId: data.userId,
+          amountTzs: data.amountTzs,
+          phoneNumber: data.phone,
+        }),
       });
     },
 
@@ -170,7 +175,11 @@ export class NtzsClient {
     }): Promise<NtzsWithdrawal> => {
       return this.request<NtzsWithdrawal>('/api/v1/withdrawals', {
         method: 'POST',
-        body: JSON.stringify(data),
+        body: JSON.stringify({
+          userId: data.userId,
+          amountTzs: data.amountTzs,
+          phoneNumber: data.phone,
+        }),
       });
     },
 

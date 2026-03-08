@@ -25,69 +25,36 @@ import { CONTRACTS } from '@/lib/contracts';
 import CTFPredictionMarketABI from '@/lib/abis/CTFPredictionMarketV2.json';
 import OrderBookABI from '@/lib/abis/OrderBook.json';
 import ERC20ABI from '@/lib/abis/ERC20.json';
-import { createOrGetUser, createTransfer } from '@/lib/ntzs';
+import { createOrGetUser } from '@/lib/ntzs';
 
 const CTF_ADDRESS = CONTRACTS.baseSepolia.ctfPredictionMarket as `0x${string}`;
 const ORDER_BOOK_ADDRESS = CONTRACTS.baseSepolia.orderBook as `0x${string}`;
 const NTZS_TOKEN = '0x6A9525A5C82F92E10741Fcdcb16DbE9111630077'.toLowerCase();
-
-/**
- * Transfer nTZS from user's wallet to platform wallet via nTZS API.
- * This moves real ERC-20 tokens on-chain so the platform wallet can
- * then call the smart contract with those tokens.
- */
-async function transferNTZSToplatform(userAddress: string, amountTzs: number) {
-  // Get or create both users via the idempotent createOrGetUser endpoint
-  // Use wallet address as email fallback since nTZS API requires email
-  const user = await createOrGetUser({ 
-    walletAddress: userAddress,
-    email: `${userAddress.toLowerCase()}@betua.app`
-  });
-  const platformUser = await createOrGetUser({ 
-    walletAddress: PLATFORM_ADDRESS!,
-    email: 'platform@betua.app'
-  });
-
-  console.log(`[trade] Transferring ${amountTzs} TZS from ${user.id} (${userAddress}) to ${platformUser.id} (${PLATFORM_ADDRESS})`);
-
-  const transfer = await createTransfer({
-    fromUserId: user.id,
-    toUserId: platformUser.id,
-    amountTzs,
-  });
-
-  console.log(`[trade] Transfer complete: ${transfer.id}, txHash: ${transfer.txHash}`);
-  return transfer;
-}
 
 function isNTZSToken(token?: string): boolean {
   return !!token && token.toLowerCase() === NTZS_TOKEN;
 }
 
 /**
- * Transfer nTZS from platform wallet back to user's wallet via nTZS API.
- * Used when user sells shares, redeems winnings, or claims refunds.
+ * Check user's nTZS balance via the nTZS API.
+ * Returns balance in TZS (whole units).
  */
-async function transferNTZSToUser(userAddress: string, amountTzs: number) {
-  const platformUser = await createOrGetUser({ 
-    walletAddress: PLATFORM_ADDRESS!,
-    email: 'platform@betua.app'
-  });
+async function checkNTZSBalance(userAddress: string): Promise<number> {
   const user = await createOrGetUser({ 
     walletAddress: userAddress,
     email: `${userAddress.toLowerCase()}@betua.app`
   });
-
-  console.log(`[trade] Transferring ${amountTzs} TZS back from platform to ${user.id} (${userAddress})`);
-
-  const transfer = await createTransfer({
-    fromUserId: platformUser.id,
-    toUserId: user.id,
-    amountTzs,
+  
+  // Fetch user profile which includes balanceTzs
+  const BASE_URL = process.env.NTZS_API_BASE_URL || 'https://www.ntzs.co.tz';
+  const API_KEY = process.env.NTZS_API_KEY!;
+  const res = await fetch(`${BASE_URL}/api/v1/users/${user.id}`, {
+    headers: { 'Authorization': `Bearer ${API_KEY}` },
   });
-
-  console.log(`[trade] Transfer back complete: ${transfer.id}, txHash: ${transfer.txHash}`);
-  return transfer;
+  
+  if (!res.ok) throw new Error('Failed to check nTZS balance');
+  const data = await res.json();
+  return data.balanceTzs || 0;
 }
 
 export async function POST(req: NextRequest) {
@@ -131,27 +98,8 @@ export async function POST(req: NextRequest) {
 
         const token = (collateralToken || CONTRACTS.baseSepolia.mockUSDC) as `0x${string}`;
 
-        // If nTZS, transfer tokens from user's wallet to platform wallet via nTZS API
-        // The on-chain contract fee is 1000000 wei (0.000000000001 nTZS for 18 decimals).
-        // We charge the user 2500 TZS via the nTZS API, which executes a real ERC-20 transfer on-chain.
-        // This gives the platform wallet enough nTZS to cover the contract fee.
         if (isNTZSToken(collateralToken)) {
-          const NTZS_CREATION_FEE = 2500;
-          console.log(`[trade] nTZS market creation — transferring ${NTZS_CREATION_FEE} TZS from user to platform`);
-          
-          try {
-            const transfer = await transferNTZSToplatform(userAddress, NTZS_CREATION_FEE);
-            console.log(`[trade] nTZS transfer complete. TxHash: ${transfer.txHash}, waiting for on-chain confirmation...`);
-            
-            // Wait a bit for the on-chain transfer to settle
-            await new Promise(resolve => setTimeout(resolve, 3000));
-            console.log(`[trade] Proceeding with market creation`);
-          } catch (transferError: any) {
-            console.error(`[trade] nTZS transfer failed:`, transferError);
-            return NextResponse.json({ 
-              error: `Transfer failed: ${transferError.message || 'Please try again later or contact support.'}` 
-            }, { status: 500 });
-          }
+          console.log(`[trade] nTZS market creation for user ${userAddress}`);
         }
 
         // Ensure platform approved the CTF contract for this token
@@ -198,11 +146,18 @@ export async function POST(req: NextRequest) {
           return NextResponse.json({ error: 'marketId and amount are required' }, { status: 400 });
         }
 
-        // If nTZS, transfer the buy amount from user's wallet to platform wallet
+        // If nTZS, verify user has sufficient balance via nTZS API
+        // Platform wallet holds the nTZS pool and executes the contract call
         if (isNTZSToken(mintToken)) {
           const amountTzs = Number(BigInt(amount) / BigInt(1e18));
           if (amountTzs > 0) {
-            await transferNTZSToplatform(userAddress, amountTzs);
+            const balance = await checkNTZSBalance(userAddress);
+            if (balance < amountTzs) {
+              return NextResponse.json({ 
+                error: `Insufficient nTZS balance. You have ${balance} TZS but need ${amountTzs} TZS.` 
+              }, { status: 400 });
+            }
+            console.log(`[trade] nTZS buy: user ${userAddress} has ${balance} TZS, spending ${amountTzs} TZS`);
           }
         }
 
@@ -243,12 +198,10 @@ export async function POST(req: NextRequest) {
         hash = await platformWalletClient.writeContract(request);
         receipt = await platformPublicClient.waitForTransactionReceipt({ hash });
 
-        // If nTZS, transfer the redeemed collateral back to user
+        // nTZS collateral returns to platform wallet pool automatically
         if (isNTZSToken(sellToken)) {
           const amountTzs = Number(BigInt(amount) / BigInt(1e18));
-          if (amountTzs > 0) {
-            await transferNTZSToUser(userAddress, amountTzs);
-          }
+          console.log(`[trade] nTZS sell: ${amountTzs} TZS returned to platform pool for user ${userAddress}`);
         }
 
         return NextResponse.json({ success: true, action, hash, blockNumber: receipt.blockNumber.toString() });
@@ -272,12 +225,10 @@ export async function POST(req: NextRequest) {
         hash = await platformWalletClient.writeContract(request);
         receipt = await platformPublicClient.waitForTransactionReceipt({ hash });
 
-        // If nTZS, transfer winnings back to user
+        // nTZS winnings return to platform wallet pool automatically
         if (isNTZSToken(winToken)) {
           const amountTzs = Number(BigInt(amount) / BigInt(1e18));
-          if (amountTzs > 0) {
-            await transferNTZSToUser(userAddress, amountTzs);
-          }
+          console.log(`[trade] nTZS winnings: ${amountTzs} TZS returned to platform pool for user ${userAddress}`);
         }
 
         return NextResponse.json({ success: true, action, hash, blockNumber: receipt.blockNumber.toString() });
@@ -335,11 +286,17 @@ export async function POST(req: NextRequest) {
           return NextResponse.json({ error: 'marketId, outcomeIndex, side, priceBps, size required' }, { status: 400 });
         }
 
-        // If nTZS buy order, transfer collateral from user to platform
+        // If nTZS buy order, verify user has sufficient balance
         if (isNTZSToken(orderToken) && side === 0) {
           const amountTzs = Number(BigInt(size) / BigInt(1e18));
           if (amountTzs > 0) {
-            await transferNTZSToplatform(userAddress, amountTzs);
+            const balance = await checkNTZSBalance(userAddress);
+            if (balance < amountTzs) {
+              return NextResponse.json({ 
+                error: `Insufficient nTZS balance. You have ${balance} TZS but need ${amountTzs} TZS.` 
+              }, { status: 400 });
+            }
+            console.log(`[trade] nTZS limit order: user ${userAddress} has ${balance} TZS, using ${amountTzs} TZS`);
           }
         }
 

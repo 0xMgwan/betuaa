@@ -6,7 +6,8 @@ import Image from 'next/image';
 import { parseUnits, formatUnits } from 'viem';
 import { useAccount } from 'wagmi';
 import { useCTFMintPositionTokens } from '@/hooks/useCTFMarket';
-import { useNTZSMintPositionTokens, useNTZSApproveToken } from '@/hooks/useNTZSMarket';
+import { useNTZSMintPositionV2 } from '@/hooks/useNTZSMarketV2';
+import { useNTZSBalance } from '@/hooks/useNTZS';
 import { useApproveToken, useTokenBalance, useTokenAllowance } from '@/hooks/useERC20';
 import { CONTRACTS } from '@/lib/contracts';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -47,20 +48,29 @@ export default function TradingModal({
   // Wallet-based hooks
   const walletMint = useCTFMintPositionTokens();
   const walletApprove = useApproveToken();
-  // nTZS API-based hooks
-  const ntzsMint = useNTZSMintPositionTokens();
-  const ntzsApprove = useNTZSApproveToken();
+  // nTZS V2 API-based hooks (no on-chain collateral needed)
+  const ntzsV2Mint = useNTZSMintPositionV2();
 
-  const { mintPositionTokens, isPending: isMinting, isSuccess: mintSuccess } = isNTZSUser ? ntzsMint : walletMint;
-  const { approve, isPending: isApproving, isSuccess: approveSuccess } = isNTZSUser ? ntzsApprove : walletApprove;
+  const { mintPositionTokens, isPending: isMinting, isSuccess: mintSuccess } = isNTZSUser
+    ? { mintPositionTokens: async (mId: number, _amt: bigint) => {
+        const amountTzs = Number(_amt / BigInt(10 ** tokenDecimals));
+        await ntzsV2Mint.mintPosition(BigInt(mId), amountTzs);
+      }, isPending: ntzsV2Mint.isPending, isSuccess: ntzsV2Mint.isSuccess }
+    : walletMint;
+  const { approve, isPending: isApproving, isSuccess: approveSuccess } = walletApprove;
 
-  // Get user's token balance
-  const { data: balance } = useTokenBalance(
+  // Get user's token balance - wallet balance for wallet users, nTZS balance for nTZS users
+  const { data: walletBalance } = useTokenBalance(
     paymentToken as `0x${string}`,
     address as `0x${string}`
   );
+  const { balance: ntzsBalance } = useNTZSBalance(address);
+  
+  const balance = isNTZSUser && ntzsBalance 
+    ? BigInt(Math.floor(ntzsBalance.balanceTzs * 10 ** tokenDecimals))
+    : walletBalance;
 
-  // Get current allowance for CTF contract
+  // Get current allowance for CTF contract (not needed for nTZS V2)
   const { data: allowance } = useTokenAllowance(
     paymentToken as `0x${string}`,
     address as `0x${string}`,
@@ -69,8 +79,9 @@ export default function TradingModal({
 
   const mintAmount = amount ? parseUnits(amount, tokenDecimals) : BigInt(0);
   
-  // Estimate cost for display
-  const estimatedCostDisplay = amount ? parseFloat(amount) * (currentPrice / 100) : 0;
+  // In prediction markets, the cost is simply the amount you're spending
+  // The price determines how many shares you get: shares = amount / (price/100)
+  const estimatedCostDisplay = amount ? parseFloat(amount) : 0;
   
   // Use unlimited approval approach (standard in DeFi)
   // Approve max uint256 once, never need to approve again
@@ -78,7 +89,8 @@ export default function TradingModal({
   
   // Check if we have any meaningful allowance (> 1000 tokens)
   const minUsefulAllowance = parseUnits('1000', tokenDecimals);
-  const needsApproval = !allowance || (allowance as bigint) < minUsefulAllowance;
+  // nTZS V2 never needs on-chain approval (no collateral token transfer)
+  const needsApproval = isNTZSUser ? false : (!allowance || (allowance as bigint) < minUsefulAllowance);
 
   const handleApprove = async () => {
     if (!amount) return;
@@ -239,14 +251,14 @@ export default function TradingModal({
               <div className="flex items-center justify-between">
                 <span className="text-sm font-semibold text-gray-600 dark:text-gray-400">Amount Invested</span>
                 <span className="font-black text-gray-900 dark:text-white flex items-center gap-2">
-                  <Image src="/USDC logo.png" alt="USDC" width={16} height={16} className="rounded-full" />
+                  <Image src={tokenSymbol === 'nTZS' ? '/ntzs.png' : '/USDC logo.png'} alt={tokenSymbol} width={16} height={16} className="rounded-full" />
                   {amount} {tokenSymbol}
                 </span>
               </div>
               <div className="h-px bg-gradient-to-r from-green-200 to-emerald-200 dark:from-green-800 dark:to-emerald-800"></div>
               <div className="flex items-center justify-between">
                 <span className="text-sm font-semibold text-gray-600 dark:text-gray-400">Price per Share</span>
-                <span className="font-black text-gray-900 dark:text-white">{currentPrice}¢</span>
+                <span className="font-black text-gray-900 dark:text-white">{tokenSymbol === 'nTZS' ? `${currentPrice}%` : `${currentPrice}¢`}</span>
               </div>
               <div className="h-px bg-gradient-to-r from-green-200 to-emerald-200 dark:from-green-800 dark:to-emerald-800"></div>
               <div className="flex items-center justify-between">
@@ -334,14 +346,18 @@ export default function TradingModal({
                   <TrendingUp className="w-4 h-4 text-blue-600 dark:text-blue-400" />
                   Price per share
                 </span>
-                <span className="text-lg font-black text-blue-600 dark:text-blue-400">{currentPrice}¢</span>
+                <span className="text-lg font-black text-blue-600 dark:text-blue-400">{tokenSymbol === 'nTZS' ? `${currentPrice}%` : `${currentPrice}¢`}</span>
               </div>
               <div className="h-px bg-gradient-to-r from-blue-200 to-cyan-200 dark:from-blue-800 dark:to-cyan-800"></div>
               <div className="flex items-center justify-between">
                 <span className="text-sm font-semibold text-gray-600 dark:text-gray-400">Estimated cost</span>
                 <span className="text-lg font-black text-gray-900 dark:text-white flex items-center gap-2">
-                  <Image src="/USDC logo.png" alt="USDC" width={16} height={16} className="rounded-full" />
-                  ~{estimatedCostDisplay.toFixed(4)}
+                  {tokenSymbol === 'nTZS' ? (
+                    <Image src="/ntzs.png" alt="nTZS" width={16} height={16} className="rounded-full" />
+                  ) : (
+                    <Image src="/USDC logo.png" alt="USDC" width={16} height={16} className="rounded-full" />
+                  )}
+                  {estimatedCostDisplay.toFixed(2)}
                 </span>
               </div>
             </motion.div>

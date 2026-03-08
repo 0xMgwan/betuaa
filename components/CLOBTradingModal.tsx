@@ -90,13 +90,23 @@ export default function CLOBTradingModal({
   const { orders: userOrders, refetch: refetchOrders } = useUserOrders();
   const { cancelOrder, isPending: isCancelling } = isNTZSUser ? ntzsCancelOrder : walletCancelOrder;
 
-  // Balance
-  const { data: balance } = useTokenBalance(
+  // On-chain balance for wallet users
+  const { data: walletBalance } = useTokenBalance(
     paymentToken as `0x${string}`,
     address as `0x${string}`
   );
 
-  // Allowance for OrderBook
+  // NTZS on-chain balance (for NTZS users)
+  const [ntzsBalance, setNtzsBalance] = useState<number>(0);
+  useEffect(() => {
+    if (!isNTZSUser || !address) return;
+    fetch(`/api/ntzs/balance?address=${address}`)
+      .then(r => r.json())
+      .then(d => setNtzsBalance(d.balanceTzs || 0))
+      .catch(() => {});
+  }, [isNTZSUser, address, isOpen]);
+
+  // Allowance for OrderBook (wallet users only)
   const orderBookAddress = CONTRACTS.baseSepolia.orderBook as `0x${string}`;
   const { data: allowance, refetch: refetchAllowance } = useTokenAllowance(
     paymentToken as `0x${string}`,
@@ -104,15 +114,18 @@ export default function CLOBTradingModal({
     orderBookAddress
   );
 
-  const balanceFormatted = balance ? formatUnits(balance as bigint, tokenDecimals) : '0';
+  const balanceFormatted = isNTZSUser
+    ? ntzsBalance.toString()
+    : (walletBalance ? formatUnits(walletBalance as bigint, tokenDecimals) : '0');
   const MAX_UINT256 = BigInt('0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff');
   const minUsefulAllowance = parseUnits('1000', tokenDecimals);
   const { isApproved: isERC1155Approved, refetch: refetchERC1155Approval } = useIsApprovedForAll();
-  const needsCollateralApproval = !allowance || (allowance as bigint) < minUsefulAllowance;
+  // NTZS users never need collateral approval — platform wallet handles it
+  const needsCollateralApproval = isNTZSUser ? false : (!allowance || (allowance as bigint) < minUsefulAllowance);
   const [pendingTrade, setPendingTrade] = useState(false);
 
-  // Sell flow state machine: 'idle' | 'approving_usdc' | 'minting' | 'approving_erc1155' | 'placing_order'
-  const [sellStep, setSellStep] = useState<'idle' | 'approving_usdc' | 'minting' | 'approving_erc1155' | 'placing_order'>('idle');
+  // Sell flow state machine: 'idle' | 'approving_ntzs' | 'minting' | 'approving_erc1155' | 'placing_order'
+  const [sellStep, setSellStep] = useState<'idle' | 'approving_ntzs' | 'minting' | 'approving_erc1155' | 'placing_order'>('idle');
 
   // Order book empty detection
   const isOrderBookEmpty = !orderBookData || (orderBookData.bestAsk === 0 && orderBookData.bestBid === 0);
@@ -149,7 +162,7 @@ export default function CLOBTradingModal({
     }
   }, [tradeSide, orderBookData?.bestAsk, orderBookData?.bestBid]);
 
-  // === BUY FLOW: After USDC approval succeeds, place buy order ===
+  // === BUY FLOW: After collateral approval succeeds, place buy order ===
   useEffect(() => {
     if (tradeSide === 'buy' && approveCollateralSuccess && pendingTrade && amount && sizeRaw > BigInt(0)) {
       setPendingTrade(false);
@@ -163,9 +176,9 @@ export default function CLOBTradingModal({
   }, [approveCollateralSuccess]);
 
   // === SELL FLOW PIPELINE ===
-  // Step 1: After USDC approval for sell → mint tokens
+  // Step 1: After collateral approval for sell → mint tokens
   useEffect(() => {
-    if (sellStep === 'approving_usdc' && approveCollateralSuccess && sizeRaw > BigInt(0)) {
+    if (sellStep === 'approving_ntzs' && approveCollateralSuccess && sizeRaw > BigInt(0)) {
       setSellStep('minting');
       splitShares(marketId, sizeRaw);
     }
@@ -227,8 +240,19 @@ export default function CLOBTradingModal({
     e.preventDefault();
     if (!amount || sizeRaw === BigInt(0)) return;
 
+    if (isNTZSUser) {
+      // NTZS users: platform wallet handles approvals — go direct
+      const side = tradeSide === 'buy' ? OrderSide.BUY : OrderSide.SELL;
+      if (orderType === 'limit') {
+        placeLimitOrder(marketId, outcomeIndex, side, priceBps, sizeRaw);
+      } else {
+        placeMarketOrder(marketId, outcomeIndex, side, sizeRaw, parseInt(slippage) * 100);
+      }
+      return;
+    }
+
     if (tradeSide === 'buy') {
-      // Buy flow: approve USDC if needed, then place order
+      // Wallet buy flow: approve collateral if needed, then place order
       if (needsCollateralApproval) {
         setPendingTrade(true);
         approveCollateral(paymentToken, MAX_UINT256);
@@ -238,12 +262,11 @@ export default function CLOBTradingModal({
         placeMarketOrder(marketId, outcomeIndex, OrderSide.BUY, sizeRaw, parseInt(slippage) * 100);
       }
     } else {
-      // Sell flow: approve USDC → mint → approve ERC1155 → place sell order
+      // Wallet sell flow: approve collateral → mint → approve ERC1155 → place sell order
       if (needsCollateralApproval) {
-        setSellStep('approving_usdc');
+        setSellStep('approving_ntzs');
         approveCollateral(paymentToken, MAX_UINT256);
       } else {
-        // USDC already approved, go straight to minting
         setSellStep('minting');
         splitShares(marketId, sizeRaw);
       }
@@ -255,7 +278,7 @@ export default function CLOBTradingModal({
   const error = limitError || marketError || splitError;
 
   // Sell step status message
-  const sellStepMessage = sellStep === 'approving_usdc' ? 'Step 1/3: Approving USDC...'
+  const sellStepMessage = sellStep === 'approving_ntzs' ? 'Step 1/3: Approving nTZS...'
     : sellStep === 'minting' ? 'Step 2/3: Minting outcome tokens...'
     : sellStep === 'approving_erc1155' ? 'Step 3/4: Approving tokens for trading...'
     : sellStep === 'placing_order' ? 'Final step: Placing sell order...'
@@ -459,10 +482,10 @@ export default function CLOBTradingModal({
                   {orderType === 'limit' && (
                     <div>
                       <label className="block text-xs font-bold text-gray-700 dark:text-gray-300 mb-1.5">
-                        Price per share (USDC)
+                        Price per share (TZS)
                       </label>
                       <div className="relative">
-                        <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm">$</span>
+                        <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm">TZS</span>
                         <input
                           type="number"
                           value={price}
@@ -565,33 +588,35 @@ export default function CLOBTradingModal({
                     {orderType === 'limit' && (
                       <div className="flex justify-between">
                         <span className="text-gray-500 dark:text-gray-400">Price</span>
-                        <span className="font-bold text-gray-900 dark:text-white">${price}</span>
+                        <span className="font-bold text-gray-900 dark:text-white">{price} nTZS</span>
                       </div>
                     )}
                     {orderType === 'market' && orderBookData && (
                       <div className="flex justify-between">
                         <span className="text-gray-500 dark:text-gray-400">Est. Price</span>
                         <span className="font-bold text-gray-900 dark:text-white">
-                          ${tradeSide === 'buy'
+                          {tradeSide === 'buy'
                             ? bpsToPrice(orderBookData.bestAsk).toFixed(4)
-                            : bpsToPrice(orderBookData.bestBid).toFixed(4)}
+                            : bpsToPrice(orderBookData.bestBid).toFixed(4)} nTZS
                         </span>
                       </div>
                     )}
                     <div className="flex justify-between border-t border-gray-200 dark:border-gray-600 pt-2">
                       <span className="text-gray-500 dark:text-gray-400">Est. Cost</span>
                       <span className="font-bold text-gray-900 dark:text-white">
-                        ~${estimatedCost.toFixed(4)} {tokenSymbol}
+                        ~{(parseFloat(amount) || 0).toFixed(2)} {tokenSymbol}
                       </span>
                     </div>
                   </div>
 
-                  {/* Sell info - auto-mint explanation */}
+                  {/* Sell info */}
                   {tradeSide === 'sell' && sellStep === 'idle' && (
                     <div className="flex items-start gap-2 p-2.5 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-700 rounded-xl">
                       <BookOpen className="w-4 h-4 text-blue-600 flex-shrink-0 mt-0.5" />
                       <p className="text-xs text-blue-700 dark:text-blue-300">
-                        Selling will auto-mint tokens first (1 {tokenSymbol} → 1 Yes + 1 No token), then place your sell order. You&apos;ll keep the opposite token.
+                        {isNTZSUser
+                          ? 'Your sell order will be placed via the platform. Funds are credited back to your nTZS balance when matched.'
+                          : `Selling will auto-mint tokens first (1 ${tokenSymbol} → 1 Yes + 1 No token), then place your sell order. You'll keep the opposite token.`}
                       </p>
                     </div>
                   )}
@@ -639,7 +664,7 @@ export default function CLOBTradingModal({
                       {isPending
                         ? (sellStepMessage || 'Processing...')
                         : tradeSide === 'sell'
-                          ? `Mint & Sell ${outcomeName}`
+                          ? (isNTZSUser ? `Sell ${outcomeName}` : `Mint & Sell ${outcomeName}`)
                           : `Buy ${outcomeName}`}
                     </button>
                   </div>
@@ -663,7 +688,7 @@ export default function CLOBTradingModal({
                             {order.side === OrderSide.BUY ? 'BUY' : 'SELL'}
                           </span>
                           <span className="text-gray-600 dark:text-gray-400">
-                            ${bpsToPrice(Number(order.price)).toFixed(4)}
+                            {bpsToPrice(Number(order.price)).toFixed(4)} nTZS
                           </span>
                           <span className="text-gray-500 dark:text-gray-500">
                             {formatUnits(order.size - order.filled, tokenDecimals)} remaining

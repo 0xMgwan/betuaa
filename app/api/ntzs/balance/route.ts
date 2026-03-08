@@ -1,52 +1,47 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { createOrGetUser, getNtzsBalance } from '@/lib/ntzs';
+import { formatUnits } from 'viem';
+import { platformPublicClient } from '@/lib/platform-wallet';
+
+const NTZS_TOKEN = process.env.NEXT_PUBLIC_NTZS_TOKEN_ADDRESS as `0x${string}`;
+
+const ERC20_ABI = [
+  {
+    name: 'balanceOf',
+    type: 'function',
+    stateMutability: 'view',
+    inputs: [{ name: 'account', type: 'address' }],
+    outputs: [{ name: '', type: 'uint256' }],
+  },
+] as const;
 
 /**
- * GET /api/ntzs/balance?address=0x...&email=...
- * Uses createOrGetUser (idempotent POST) to get the user, then fetches balance.
+ * GET /api/ntzs/balance?address=0x...
+ * Returns the user's real on-chain NTZS token balance.
  */
 export async function GET(req: NextRequest) {
+  const address = req.nextUrl.searchParams.get('address') as `0x${string}` | null;
+
+  if (!address) {
+    return NextResponse.json({ balanceTzs: 0, balanceNtzs: '0', walletAddress: '0x0' });
+  }
+
   try {
-    const address = req.nextUrl.searchParams.get('address');
-    const email = req.nextUrl.searchParams.get('email');
+    const raw = await platformPublicClient.readContract({
+      address: NTZS_TOKEN,
+      abi: ERC20_ABI,
+      functionName: 'balanceOf',
+      args: [address],
+    });
 
-    if (!address) {
-      return NextResponse.json({
-        balanceTzs: 0,
-        balanceNtzs: '0',
-        walletAddress: '0x0',
-      });
-    }
-
-    if (!email) {
-      console.log(`[Balance API] No email provided, returning 0 balance`);
-      return NextResponse.json({
-        balanceTzs: 0,
-        balanceNtzs: '0',
-        walletAddress: address,
-      });
-    }
-
-    // createOrGetUser is idempotent — if user exists it returns existing user
-    console.log(`[Balance API] Getting user via createOrGetUser for ${address} / ${email}`);
-    const user = await createOrGetUser({ walletAddress: address, email });
-    console.log(`[Balance API] Got user ID: ${user.id}`);
-
-    const balance = await getNtzsBalance(user.id);
-    console.log(`[Balance API] Balance for user ${user.id}: ${balance.balanceTzs} TZS`);
+    const balanceTzs = parseFloat(formatUnits(raw, 18));
 
     return NextResponse.json({
-      balanceTzs:  balance.balanceTzs,
-      balanceNtzs: balance.balanceNtzs,
-      walletAddress: balance.walletAddress || address,
+      balanceTzs,
+      balanceNtzs: raw.toString(),
+      walletAddress: address,
     });
   } catch (err) {
-    const message = err instanceof Error ? err.message : 'Unknown error';
-    console.error(`[Balance API] Error:`, err);
-    return NextResponse.json({
-      balanceTzs: 0,
-      balanceNtzs: '0',
-      walletAddress: req.nextUrl.searchParams.get('address') || '0x0',
-    });
+    console.error('[balance] Error reading on-chain balance:', err);
+    return NextResponse.json({ balanceTzs: 0, balanceNtzs: '0', walletAddress: address });
   }
 }

@@ -7,6 +7,7 @@ import NTZSConnectModal from './NTZSConnectModal';
 import { STABLECOINS } from '@/lib/contracts';
 import { useCTFCreateMarket, useCTFCreateMarketFee } from '@/hooks/useCTFMarket';
 import { useNTZSCreateMarket } from '@/hooks/useNTZSMarket';
+import { useNTZSCreateMarketV2 } from '@/hooks/useNTZSMarketV2';
 import { useTokenAllowance, useApproveToken } from '@/hooks/useERC20';
 import { CONTRACTS } from '@/lib/contracts';
 import { useTranslation } from '@/hooks/useTranslation';
@@ -42,13 +43,8 @@ interface CreateMarketModalProps {
 export default function CreateMarketModal({ isOpen, onClose }: CreateMarketModalProps) {
   const { t } = useTranslation();
   const { address: web3Address, isConnected: web3Connected, connector } = useAccount();
-  
-  // Check if using nTZS wallet connector
-  const isNTZSConnector = connector?.id === 'ntzs-wallet';
-  const isConnected = web3Connected;
-  const address = web3Address;
 
-  // For backwards compatibility, also check localStorage
+  // Load nTZS user from localStorage first (needed for isConnected check below)
   const [ntzsUser, setNtzsUser] = useState<any>(null);
   useEffect(() => {
     if (isOpen || web3Address) {
@@ -58,6 +54,12 @@ export default function CreateMarketModal({ isOpen, onClose }: CreateMarketModal
       }
     }
   }, [isOpen, web3Address]);
+
+  // Check if using nTZS wallet connector
+  const isNTZSConnector = connector?.id === 'ntzs-wallet';
+  // nTZS users are in localStorage — treat them as connected
+  const isConnected = web3Connected || !!ntzsUser;
+  const address = web3Address || ntzsUser?.walletAddress;
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
   const [closingDate, setClosingDate] = useState('');
@@ -65,7 +67,7 @@ export default function CreateMarketModal({ isOpen, onClose }: CreateMarketModal
     STABLECOINS.baseSepolia.find(t => t.symbol === 'nTZS')?.address || STABLECOINS.baseSepolia[0].address
   );
   const [category, setCategory] = useState('crypto');
-  const [step, setStep] = useState<'form' | 'create'>('form');
+  const [step, setStep] = useState<'form' | 'approving_fee' | 'create'>('form');
   const [isTokenDropdownOpen, setIsTokenDropdownOpen] = useState(false);
   const [showNTZSConnect, setShowNTZSConnect] = useState(false);
   
@@ -84,47 +86,51 @@ export default function CreateMarketModal({ isOpen, onClose }: CreateMarketModal
   const [isAbove, setIsAbove] = useState(true);
   const [expiryDays, setExpiryDays] = useState(1);
 
-  // Wallet-based market creation (for non-nTZS users)
+  // Wallet-based market creation (for regular wallet users)
   const walletHook = useCTFCreateMarket();
-  // API-based market creation (for nTZS users)
-  const ntzsHook = useNTZSCreateMarket();
+  // API-based market creation (for nTZS embedded wallet users) - V2 uses new contract
+  const ntzsHookV2 = useNTZSCreateMarketV2();
   
-  // Pick the right hook based on whether user is using nTZS connector
+  // nTZS embedded wallets can't sign approvals, so use API-based flow
   const useNTZS = isNTZSConnector || !!ntzsUser;
-  const createMarket = useNTZS ? ntzsHook.createMarket : walletHook.createMarket;
-  const isCreating = useNTZS ? ntzsHook.isPending : walletHook.isPending;
-  const isSuccess = useNTZS ? ntzsHook.isSuccess : walletHook.isSuccess;
-  const createHash = useNTZS ? ntzsHook.hash : walletHook.hash;
-  const resetCreateMarket = useNTZS ? ntzsHook.reset : walletHook.reset;
+  const createMarket = useNTZS ? ntzsHookV2.createMarket : walletHook.createMarket;
+  const isCreating = useNTZS ? ntzsHookV2.isPending : walletHook.isPending;
+  const isSuccess = useNTZS ? ntzsHookV2.isSuccess : walletHook.isSuccess;
+  const createHash = useNTZS ? ntzsHookV2.hash : walletHook.hash;
+  const resetCreateMarket = useNTZS ? ntzsHookV2.reset : walletHook.reset;
 
   const { configurePythMarket, isPending: isConfiguringPyth, isSuccess: isPythConfigured } = useConfigurePythMarket();
 
   // Get selected stablecoin first
   const selectedStablecoin = STABLECOINS.baseSepolia.find(t => t.address === selectedToken);
 
-  // V2: Market creation fee - different amounts for nTZS vs USDC
+  // V2: Market creation fee in nTZS
   const { data: createMarketFee } = useCTFCreateMarketFee();
-  const isNTZS = selectedStablecoin?.symbol === 'nTZS';
+  const isNTZS = true; // All markets are now nTZS
   
-  // 2500 nTZS (18 decimals) or 1 USDC (6 decimals)
-  const creationFeeAmount = isNTZS 
-    ? BigInt('2500000000000000000000') // 2500 * 10^18
-    : BigInt('1000000'); // 1 * 10^6
-  
-  const creationFeeDisplay = isNTZS 
-    ? '2500' 
-    : '1';
+  // 2500 nTZS (18 decimals)
+  const creationFeeAmount = BigInt('2500000000000000000000'); // 2500 * 10^18
+  const creationFeeDisplay = '2,500';
 
-  // V2: USDC approval for creation fee (skip for nTZS users - platform wallet handles it)
+  // Platform address (public) for nTZS fee approval
+  const PLATFORM_ADDR = (process.env.NEXT_PUBLIC_PLATFORM_ADDRESS || '') as `0x${string}`;
+
+  // V2: Token approval for creation fee - only for non-nTZS users
   const ctfAddress = CONTRACTS.baseSepolia.ctfPredictionMarket as `0x${string}`;
+  const userAddr = (address || '0x0000000000000000000000000000000000000000') as `0x${string}`;
+  const nullAddr = '0x0000000000000000000000000000000000000000' as `0x${string}`;
+
+  // Check allowance to CTF contract (skip for nTZS users who use API-based flow)
   const { data: allowanceData } = useTokenAllowance(
     selectedToken as `0x${string}`,
-    useNTZS ? '0x0000000000000000000000000000000000000000' as `0x${string}` : (address || '0x0000000000000000000000000000000000000000') as `0x${string}`,
+    useNTZS ? nullAddr : userAddr,
     ctfAddress
   );
   const currentAllowance = allowanceData ? BigInt(allowanceData as any) : BigInt(0);
   const needsFeeApproval = !useNTZS && creationFeeAmount > 0 && currentAllowance < creationFeeAmount;
-  const { approve: approveFee, isPending: isApprovingFee, isSuccess: feeApproved } = useApproveToken();
+
+  const { approve: approveFee, isPending: isApprovingFee, isSuccess: feeApproved, error: approveError } = useApproveToken();
+  const [createError, setCreateError] = useState<string | null>(null);
   
   // Store Pyth market data for configuration after creation
   const [pythMarketData, setPythMarketData] = useState<{
@@ -147,6 +153,7 @@ export default function CreateMarketModal({ isOpen, onClose }: CreateMarketModal
     setAgreedToTerms(false);
     setMarketImage(null);
     setImagePreview(null);
+    setCreateError(null);
     resetCreateMarket();
   };
 
@@ -156,6 +163,19 @@ export default function CreateMarketModal({ isOpen, onClose }: CreateMarketModal
       resetCreateMarket();
     }
   }, [isOpen]);
+
+  // Auto-proceed to create after nTZS fee approval succeeds; reset on error
+  useEffect(() => {
+    if (step === 'approving_fee') {
+      if (feeApproved) {
+        setStep('create');
+        handleCreateMarket();
+      } else if (approveError) {
+        setStep('form');
+        setCreateError(approveError.message || 'Approval was rejected or failed. Please try again.');
+      }
+    }
+  }, [feeApproved, step, approveError]);
 
   // Remove auto-switch effect since crypto is now only in Pyth mode
 
@@ -266,6 +286,7 @@ export default function CreateMarketModal({ isOpen, onClose }: CreateMarketModal
   };
 
   const handleCreateMarket = async () => {
+    setCreateError(null);
     if (!selectedStablecoin) return;
 
     try {
@@ -341,21 +362,40 @@ export default function CreateMarketModal({ isOpen, onClose }: CreateMarketModal
       );
       
       console.log('✅ createMarket called successfully');
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error creating market:', error);
+      const msg = error?.message || String(error);
+      setCreateError(msg);
       setStep('form');
     }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+    setCreateError(null);
+
     if (!agreedToTerms) {
-      // Show alert or error message
       alert('Please agree to the Terms and Conditions to create a market.');
       return;
     }
-    
+
+    // All users: approve token to CTF contract if needed
+    if (needsFeeApproval) {
+      setStep('approving_fee');
+      try {
+        await approveFee(
+          selectedToken as `0x${string}`,
+          ctfAddress,
+          creationFeeAmount
+        );
+      } catch (err: any) {
+        console.error('Token approval failed:', err);
+        setCreateError(err.message || 'Failed to approve token. Please try again.');
+        setStep('form');
+        return;
+      }
+    }
+
     setStep('create');
     await handleCreateMarket();
   };
@@ -958,7 +998,7 @@ export default function CreateMarketModal({ isOpen, onClose }: CreateMarketModal
               {isTokenDropdownOpen && (
                 <div className="absolute z-10 w-full mt-1 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg shadow-lg max-h-48 overflow-y-auto">
                   {STABLECOINS.baseSepolia
-                    .filter(token => token.symbol === 'USDC' || token.symbol === 'nTZS')
+                    .filter(token => token.symbol === 'nTZS')
                     .map((token) => (
                     <button
                       key={token.address}
@@ -1011,7 +1051,7 @@ export default function CreateMarketModal({ isOpen, onClose }: CreateMarketModal
                 </div>
                 <div className="flex-1">
                   <p className="text-xs md:text-sm font-semibold text-amber-900 dark:text-amber-200">
-                    Market Creation Fee: {creationFeeDisplay} {selectedStablecoin?.symbol || 'USDC'}
+                    Market Creation Fee: {creationFeeDisplay} TZS
                   </p>
                   <p className="text-[10px] md:text-xs text-amber-700 dark:text-amber-400 mt-0.5">
                     A small fee is charged to prevent spam markets. This goes to the protocol.
@@ -1067,18 +1107,36 @@ export default function CreateMarketModal({ isOpen, onClose }: CreateMarketModal
             ) : (
               <button
                 type="submit"
-                disabled={isCreating || !agreedToTerms}
+                disabled={isCreating || isApprovingFee || step === 'approving_fee' || !agreedToTerms}
                 className="flex-1 px-4 md:px-6 py-2 md:py-3 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 disabled:from-gray-400 disabled:to-gray-500 text-white rounded-lg md:rounded-xl text-sm md:text-base font-bold transition-all shadow-lg hover:shadow-xl disabled:shadow-none"
               >
-                {isCreating ? 'Creating...' : 'Create Market'}
+                {isApprovingFee || step === 'approving_fee'
+                  ? `Step 1/2: Approving ${creationFeeDisplay} ${selectedStablecoin?.symbol}...`
+                  : isCreating
+                  ? 'Creating Market...'
+                  : needsFeeApproval ? 'Approve & Create Market' : 'Create Market'}
               </button>
             )}
           </div>
 
+          {step === 'approving_fee' && (
+            <div className="bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-lg p-3 md:p-4">
+              <p className="text-xs md:text-sm text-amber-800 dark:text-amber-200">
+                Step 1/2: Approve 2500 nTZS fee in your wallet, then the market will be created automatically.
+              </p>
+            </div>
+          )}
           {step === 'create' && (
             <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-3 md:p-4">
               <p className="text-xs md:text-sm text-blue-800 dark:text-blue-200">
                 Creating market on blockchain...
+              </p>
+            </div>
+          )}
+          {(createError || approveError) && (
+            <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg p-3 md:p-4">
+              <p className="text-xs md:text-sm font-semibold text-red-800 dark:text-red-200">
+                Error: {createError || approveError?.message}
               </p>
             </div>
           )}

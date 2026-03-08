@@ -13,6 +13,9 @@ export const CONTRACTS = {
     ctfPredictionMarket: '0xfb4224B9826b0e1c4d2113103dAD1167D0EdE69d',
     orderBook: '0x90E274E7AbD5eb7c4b164455c158a649b8012a84',
     
+    // nTZS-optimized CTF contract (no on-chain collateral, API balance tracking)
+    ctfPredictionMarketNTZS: '0xd2bEaB4253bd2E6d79eeBA5dAb65D98AcC4E115A',
+    
     // Supporting contracts
     pythResolver: '0xc3c8523FaC61b6E35DC553BB5a1F542982753F62',
     mockUSDC: '0x8FD3cf50315A4AA74e97516cC4F46150AB032616',

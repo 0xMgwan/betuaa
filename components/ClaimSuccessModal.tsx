@@ -77,8 +77,8 @@ export default function ClaimSuccessModal({
                 </div>
                 <div className="flex items-center gap-2 text-lg font-bold text-green-600 dark:text-green-400">
                   <Image 
-                    src="/USDC logo.png" 
-                    alt="USDC" 
+                    src="/ntzs.png" 
+                    alt="nTZS" 
                     width={24} 
                     height={24}
                     className="rounded-full"

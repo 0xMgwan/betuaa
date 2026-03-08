@@ -166,7 +166,7 @@ export default function Portfolio() {
                 </div>
               </div>
               <div className="text-2xl md:text-4xl font-black bg-gradient-to-br from-blue-600 to-cyan-600 bg-clip-text text-transparent truncate">
-                ${totalValue.toFixed(2)}
+                {totalValue.toFixed(2)} TZS
               </div>
             </div>
           </div>
@@ -275,7 +275,7 @@ export default function Portfolio() {
                   const noPosition = market.positions.find((p: any) => p.outcomeId === 1);
                   
                   const totalValue = market.positions.reduce((sum: number, p: any) => {
-                    const shares = Number(p.shares) / 1e6;
+                    const shares = Number(p.shares) / 1e18;
                     return sum + (shares * p.currentPrice) / 100;
                   }, 0);
                   
@@ -302,7 +302,7 @@ export default function Portfolio() {
                                   Yes
                                 </span>
                                 <span className="text-xs font-bold text-gray-900 dark:text-white">
-                                  {(Number(yesPosition.shares) / 1e6).toFixed(2)}
+                                  {(Number(yesPosition.shares) / 1e18).toFixed(2)}
                                 </span>
                               </div>
                               <button
@@ -325,7 +325,7 @@ export default function Portfolio() {
                                   No
                                 </span>
                                 <span className="text-xs font-bold text-gray-900 dark:text-white">
-                                  {(Number(noPosition.shares) / 1e6).toFixed(2)}
+                                  {(Number(noPosition.shares) / 1e18).toFixed(2)}
                                 </span>
                               </div>
                               <button
@@ -434,7 +434,7 @@ export default function Portfolio() {
                         category="CRYPTO"
                         yesPrice={0.50}
                         noPrice={0.50}
-                        volume={(() => { const vol = Number(market.totalVolume) / 1e6; return vol >= 1000 ? `${(vol / 1000).toFixed(1)}K USDC` : `${vol.toFixed(2)} USDC`; })()}
+                        volume={(() => { const vol = Number(market.totalVolume) / 1e18; return vol >= 1000 ? `${(vol / 1000).toFixed(1)}K nTZS` : `${vol.toFixed(0)} nTZS`; })()}
                         endDate={closingDate.toLocaleDateString()}
                         trend="up"
                         priceHistory={generatePriceHistory(50, 50)}
@@ -485,7 +485,7 @@ export default function Portfolio() {
                       <p className={`text-xs font-medium ${
                         position.unrealizedPnL >= 0 ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'
                       }`}>
-                        {position.unrealizedPnL >= 0 ? '+' : ''}{position.unrealizedPnL.toFixed(2)} USDC
+                        {position.unrealizedPnL >= 0 ? '+' : ''}{position.unrealizedPnL.toFixed(2)} nTZS
                       </p>
                     </div>
                   </div>
@@ -521,9 +521,9 @@ export default function Portfolio() {
             setClaimedPosition(null);
           }}
           marketTitle={claimedPosition.marketTitle}
-          shares={Number(claimedPosition.shares) / 1e6}
-          payout={(Number(claimedPosition.shares) / 1e6 * claimedPosition.currentPrice) / 100}
-          tokenSymbol={STABLECOINS.baseSepolia.find(t => t.address.toLowerCase() === claimedPosition.paymentToken.toLowerCase())?.symbol || 'USDC'}
+          shares={Number(claimedPosition.shares) / 1e18}
+          payout={(Number(claimedPosition.shares) / 1e18 * claimedPosition.currentPrice) / 100}
+          tokenSymbol={STABLECOINS.baseSepolia.find(t => t.address.toLowerCase() === claimedPosition.paymentToken.toLowerCase())?.symbol || 'nTZS'}
         />
       )}
 

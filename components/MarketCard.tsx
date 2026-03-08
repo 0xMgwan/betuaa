@@ -71,7 +71,7 @@ export default function MarketCard({
                 YES
               </div>
               <div className="text-2xl font-bold text-green-600 dark:text-green-400">
-                {yesPrice}¢
+                {yesPrice}%
               </div>
             </div>
             <div className="bg-gradient-to-br from-red-50 to-pink-50 dark:from-red-900/20 dark:to-pink-900/20 p-4 rounded-lg border border-red-200 dark:border-red-800">
@@ -79,7 +79,7 @@ export default function MarketCard({
                 NO
               </div>
               <div className="text-2xl font-bold text-red-600 dark:text-red-400">
-                {noPrice}¢
+                {noPrice}%
               </div>
             </div>
           </div>

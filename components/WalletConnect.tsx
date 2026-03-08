@@ -10,8 +10,7 @@ import DepositModal from './DepositModal';
 import NTZSWithdrawModal from './NTZSWithdrawModal';
 import { useNTZSBalance } from '@/hooks/useNTZS';
 
-// USDC contract address on Base Sepolia
-const USDC_ADDRESS = '0x036CbD53842c5426634e7929541eC2318f3dCF7e' as `0x${string}`;
+// nTZS uses off-chain balance, no ERC20 needed
 
 export default function WalletConnect() {
   const { address, isConnected } = useAccount();
@@ -25,13 +24,13 @@ export default function WalletConnect() {
 
   // On-chain balances
   const { data: ethBalance }  = useBalance({ address });
-  const { data: usdcBalance } = useBalance({ address, token: USDC_ADDRESS });
+  // usdcBalance removed — nTZS balance used instead
 
   // nTZS balance (M-Pesa rails)
   const { balance: ntzsBalance } = useNTZSBalance(address);
 
-  // Display balance: prefer USDC, fallback to ETH
-  const displayBalance = usdcBalance?.formatted || ethBalance?.formatted || '0.00';
+  // Display balance: prefer nTZS balance
+  const displayBalance = ntzsBalance > 0 ? ntzsBalance.toFixed(2) : (ethBalance?.formatted || '0.00');
 
   useEffect(() => {
     if (isConnected && address) {
@@ -108,13 +107,13 @@ export default function WalletConnect() {
               {/* Balances */}
               <div className="space-y-1.5 mb-3">
                 <div className="flex items-center justify-between px-2.5 py-2 bg-gray-100 dark:bg-gray-800 rounded-lg">
-                  <div className="text-xs text-gray-500 dark:text-gray-400">USDC</div>
+                  <div className="text-xs text-gray-500 dark:text-gray-400">nTZS</div>
                   <div className="text-sm font-bold text-green-600">
-                    {usdcBalance
-                      ? `${parseFloat(usdcBalance.formatted).toFixed(2)} USDC`
+                    {ntzsBalance > 0
+                      ? `${ntzsBalance.toFixed(2)} TZS`
                       : ethBalance
                         ? `${parseFloat(ethBalance.formatted).toFixed(4)} ETH`
-                        : '$0.00'}
+                        : '0.00 TZS'}
                   </div>
                 </div>
                 {ntzsBalance && (

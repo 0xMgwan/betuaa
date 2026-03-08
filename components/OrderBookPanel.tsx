@@ -55,7 +55,7 @@ export default function OrderBookPanel({
             Order Book
           </h3>
           <div className="flex items-center gap-2 text-xs text-gray-500 dark:text-gray-400">
-            <span>Spread: {spread > 0 ? `${bpsToPrice(spread).toFixed(2)}¢` : '—'}</span>
+            <span>Spread: {spread > 0 ? `${bpsToPrice(spread).toFixed(4)}` : '—'}</span>
             <span>({orderBookData.spreadPercent.toFixed(1)}%)</span>
           </div>
         </div>
@@ -89,10 +89,10 @@ export default function OrderBookPanel({
       <div className="px-4 py-2 bg-gray-50 dark:bg-gray-900/50 border-y border-gray-200 dark:border-gray-700">
         <div className="flex items-center justify-between">
           <span className="text-sm font-bold text-gray-900 dark:text-white">
-            {midPrice > 0 ? `$${bpsToPrice(midPrice).toFixed(4)}` : '—'}
+            {midPrice > 0 ? `${bpsToPrice(midPrice).toFixed(4)} nTZS` : '—'}
           </span>
           <span className="text-xs text-gray-500 dark:text-gray-400">
-            Last: {lastTradePrice > 0 ? `$${bpsToPrice(lastTradePrice).toFixed(4)}` : '—'}
+            Last: {lastTradePrice > 0 ? `${bpsToPrice(lastTradePrice).toFixed(4)} nTZS` : '—'}
           </span>
         </div>
       </div>
@@ -174,7 +174,7 @@ function calcCumulative(levels: OrderBookLevel[], upToIndex: number): string {
   return formatSizeShort(total);
 }
 
-function formatSizeShort(size: bigint, decimals: number = 6): string {
+function formatSizeShort(size: bigint, decimals: number = 18): string {
   const num = Number(size) / 10 ** decimals;
   if (num >= 1000000) return `${(num / 1000000).toFixed(1)}M`;
   if (num >= 1000) return `${(num / 1000).toFixed(1)}K`;
@@ -182,9 +182,9 @@ function formatSizeShort(size: bigint, decimals: number = 6): string {
   return num.toFixed(4);
 }
 
-function formatVolume(vol: bigint, decimals: number = 6): string {
+function formatVolume(vol: bigint, decimals: number = 18): string {
   const num = Number(vol) / 10 ** decimals;
-  if (num >= 1000000) return `$${(num / 1000000).toFixed(2)}M`;
-  if (num >= 1000) return `$${(num / 1000).toFixed(1)}K`;
-  return `$${num.toFixed(2)}`;
+  if (num >= 1000000) return `${(num / 1000000).toFixed(2)}M nTZS`;
+  if (num >= 1000) return `${(num / 1000).toFixed(1)}K nTZS`;
+  return `${num.toFixed(2)} nTZS`;
 }

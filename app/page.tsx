@@ -221,7 +221,7 @@ export default function Home() {
                                 category="CRYPTO"
                                 yesPrice={0.50}
                                 noPrice={0.50}
-                                volume={(() => { const vol = Number(market.totalVolume) / 1e6; return vol >= 1000 ? `${(vol / 1000).toFixed(1)}K USDC` : `${vol.toFixed(2)} USDC`; })()}
+                                volume={`${Number(market.totalVolume || 0).toFixed(0)} TZS`}
                                 endDate={closingDate.toLocaleDateString()}
                                 trend="up"
                                 priceHistory={generatePriceHistory(50, 50)}
@@ -254,7 +254,7 @@ export default function Home() {
                             category="CRYPTO"
                             yesPrice={0.50}
                             noPrice={0.50}
-                            volume={(() => { const vol = Number(market.totalVolume) / 1e6; return vol >= 1000 ? `${(vol / 1000).toFixed(1)}K USDC` : `${vol.toFixed(2)} USDC`; })()}
+                            volume={`${Number(market.totalVolume || 0).toFixed(0)} TZS`}
                             endDate={closingDate.toLocaleDateString()}
                             trend="up"
                             priceHistory={generatePriceHistory(50, 50)}
@@ -286,7 +286,7 @@ export default function Home() {
                               category="CRYPTO"
                               yesPrice={0.50}
                               noPrice={0.50}
-                              volume={(() => { const vol = Number(market.totalVolume) / 1e6; return vol >= 1000 ? `${(vol / 1000).toFixed(1)}K USDC` : `${vol.toFixed(2)} USDC`; })()}
+                              volume={`${Number(market.totalVolume || 0).toFixed(0)} TZS`}
                               endDate={closingDate.toLocaleDateString()}
                               trend="up"
                               priceHistory={generatePriceHistory(50, 50)}
@@ -386,8 +386,8 @@ export default function Home() {
           outcomeName={selectedTrade.outcomeName}
           currentPrice={selectedTrade.price}
           paymentToken={selectedTrade.paymentToken}
-          tokenSymbol={STABLECOINS.baseSepolia.find(t => t.address.toLowerCase() === selectedTrade.paymentToken.toLowerCase())?.symbol || 'USDC'}
-          tokenDecimals={STABLECOINS.baseSepolia.find(t => t.address.toLowerCase() === selectedTrade.paymentToken.toLowerCase())?.decimals || 6}
+          tokenSymbol="nTZS"
+          tokenDecimals={18}
         />
       )}
 

@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import { X, AlertCircle } from 'lucide-react';
 import { formatUnits } from 'viem';
 import { useCTFBurnPositionTokens } from '@/hooks/useCTFMarket';
-import { useNTZSBurnPositionTokens } from '@/hooks/useNTZSMarket';
+import { useNTZSRedeemPositionV2 } from '@/hooks/useNTZSMarketV2';
 
 interface SellModalProps {
   isOpen: boolean;
@@ -34,15 +34,25 @@ export default function SellModal({
   }, [isOpen]);
 
   const walletBurn = useCTFBurnPositionTokens();
-  const ntzsBurn = useNTZSBurnPositionTokens();
-  const { burnPositionTokens, isPending, isSuccess, error } = isNTZSUser ? ntzsBurn : walletBurn;
+  const ntzsV2Redeem = useNTZSRedeemPositionV2();
+  const { burnPositionTokens, isPending, isSuccess, error } = isNTZSUser
+    ? {
+        burnPositionTokens: (mId: number, _amt: bigint) => {
+          const amountTzs = Number(_amt / BigInt(1e6));
+          ntzsV2Redeem.redeemPosition(BigInt(mId), amountTzs);
+        },
+        isPending: ntzsV2Redeem.isPending,
+        isSuccess: ntzsV2Redeem.isSuccess,
+        error: ntzsV2Redeem.error,
+      }
+    : walletBurn;
   
   // Log errors
   if (error) {
     console.error('Burn error:', error);
   }
 
-  const maxShares = Number(position.shares) / 1e6; // USDC has 6 decimals
+  const maxShares = Number(position.shares) / 1e18; // nTZS has 18 decimals
   const sharesToSell = amount ? parseFloat(amount) : 0;
   const estimatedPayout = (sharesToSell * position.currentPrice) / 100;
 
@@ -52,7 +62,7 @@ export default function SellModal({
     if (!amount || sharesToSell <= 0) return;
 
     try {
-      const sharesAmount = BigInt(Math.floor(sharesToSell * 1e6)); // USDC has 6 decimals
+      const sharesAmount = BigInt(Math.floor(sharesToSell * 1e18)); // nTZS has 18 decimals
       console.log('Selling shares:', { marketId: position.marketId, amount: sharesToSell, sharesAmount: sharesAmount.toString() });
       burnPositionTokens(position.marketId, sharesAmount);
     } catch (error) {
@@ -146,7 +156,7 @@ export default function SellModal({
             <div className="bg-gray-50 dark:bg-gray-900 rounded-lg p-4 space-y-2">
               <div className="flex justify-between text-sm">
                 <span className="text-gray-600 dark:text-gray-400">Current price:</span>
-                <span className="font-medium text-gray-900 dark:text-white">{position.currentPrice}¢</span>
+                <span className="font-medium text-gray-900 dark:text-white">{position.currentPrice}%</span>
               </div>
               <div className="flex justify-between text-sm">
                 <span className="text-gray-600 dark:text-gray-400">Estimated payout:</span>

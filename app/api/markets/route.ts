@@ -2,11 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { createPublicClient, http, fallback } from 'viem';
 import { baseSepolia } from 'viem/chains';
 import { CONTRACTS, RPC } from '@/lib/contracts';
-import CTFPredictionMarketABI from '@/lib/abis/CTFPredictionMarketV2.json';
-
-// MarketStatus enum from CTFPredictionMarketV2.sol
-const MarketStatus = { Active: 0, Resolved: 1, Canceled: 2 } as const;
-const MarketStatusLabel = ['Active', 'Resolved', 'Canceled'] as const;
+import CTFPredictionMarketNTZSABI from '@/lib/abis/CTFPredictionMarketNTZS.json';
 
 const PLATFORM_FEE_BPS = 50;
 const CREATOR_FEE_BPS  = 100;
@@ -19,46 +15,37 @@ const publicClient = createPublicClient({
   ]),
 });
 
-const CTF_ADDRESS = CONTRACTS.baseSepolia.ctfPredictionMarket as `0x${string}`;
+const CTF_NTZS_ADDRESS = CONTRACTS.baseSepolia.ctfPredictionMarketNTZS as `0x${string}`;
 
 // Cache: 10 second TTL for the full list
 const listCache = new Map<string, { data: any; timestamp: number }>();
 const CACHE_TTL = 10_000;
 
 export async function GET(request: NextRequest) {
-  const { searchParams } = new URL(request.url);
-  const fromParam = parseInt(searchParams.get('from') ?? '1');
-  const toParam   = searchParams.get('to');
-
   try {
-    // Fetch total market count
     const marketCount = await publicClient.readContract({
-      address: CTF_ADDRESS,
-      abi: CTFPredictionMarketABI,
+      address: CTF_NTZS_ADDRESS,
+      abi: CTFPredictionMarketNTZSABI,
       functionName: 'marketCount',
-    });
+    }).catch(() => 0n);
 
     const total = Number(marketCount);
-    const from  = Math.max(1, fromParam);
-    const to    = Math.min(total, toParam ? parseInt(toParam) : total);
 
-    if (from > to || total === 0) {
-      return NextResponse.json({ markets: [], total });
+    if (total === 0) {
+      return NextResponse.json({ markets: [], total: 0 });
     }
 
-    const cacheKey = `markets-${from}-${to}`;
+    const cacheKey = `markets-ntzs-${total}`;
     const cached = listCache.get(cacheKey);
     if (cached && Date.now() - cached.timestamp < CACHE_TTL) {
       return NextResponse.json(cached.data);
     }
 
-    // Batch-fetch all markets in parallel
-    const ids = Array.from({ length: to - from + 1 }, (_, i) => from + i);
     const settled = await Promise.allSettled(
-      ids.map(id =>
+      Array.from({ length: total }, (_, i) => i + 1).map(id =>
         publicClient.readContract({
-          address: CTF_ADDRESS,
-          abi: CTFPredictionMarketABI,
+          address: CTF_NTZS_ADDRESS,
+          abi: CTFPredictionMarketNTZSABI,
           functionName: 'getMarket',
           args: [BigInt(id)],
         }).then(m => ({ id, market: m as any }))
@@ -69,8 +56,10 @@ export async function GET(request: NextRequest) {
       .filter(r => r.status === 'fulfilled' && (r.value as any).market?.question)
       .map(r => {
         const { id, market } = (r as PromiseFulfilledResult<{ id: number; market: any }>).value;
-        const statusCode  = Number(market.status ?? 0);
-        const statusLabel = MarketStatusLabel[statusCode] ?? 'Active';
+
+        const resolved = market.resolved ?? false;
+        const canceled = market.cancelled ?? false;
+        const statusLabel = canceled ? 'Canceled' : (resolved ? 'Resolved' : 'Active');
 
         let imageUrl: string | undefined;
         try {
@@ -83,15 +72,16 @@ export async function GET(request: NextRequest) {
           title: market.question,
           description: market.description,
           creator: market.creator,
-          paymentToken: market.collateralToken,
+          paymentToken: 'nTZS',
           closingDate: market.closingTime.toString(),
           status: statusLabel,
-          resolved: statusCode === MarketStatus.Resolved,
-          canceled: statusCode === MarketStatus.Canceled,
+          resolved,
+          canceled,
           winningOutcomeId: Number(market.winningOutcome || 0),
           platformFeeBps: PLATFORM_FEE_BPS,
           creatorFeeBps: CREATOR_FEE_BPS,
           image: imageUrl,
+          isNTZS: true,
         };
       });
 

@@ -97,12 +97,12 @@ export default function FeaturedMarket() {
               >
                 <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
                   <Button variant="success" className="w-full font-black text-sm md:text-base py-2 md:py-3 shadow-lg hover:shadow-xl">
-                    Yes 67¢
+                    Yes 67%
                   </Button>
                 </motion.div>
                 <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
                   <Button variant="danger" className="w-full font-black text-sm md:text-base py-2 md:py-3 shadow-lg hover:shadow-xl">
-                    No 33¢
+                    No 33%
                   </Button>
                 </motion.div>
               </motion.div>

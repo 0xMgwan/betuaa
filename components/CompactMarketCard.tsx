@@ -9,7 +9,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { useAccount } from "wagmi";
 import { parseUnits } from "viem";
 import { useCTFMintPositionTokens } from "@/hooks/useCTFMarket";
-import { useNTZSMintPositionTokens, useNTZSApproveToken } from "@/hooks/useNTZSMarket";
+import { useNTZSMintPositionV2 } from "@/hooks/useNTZSMarketV2";
 import { useApproveToken, useTokenAllowance } from "@/hooks/useERC20";
 import { CONTRACTS } from "@/lib/contracts";
 import PurchaseSuccessModal from "./PurchaseSuccessModal";
@@ -80,11 +80,15 @@ function CompactMarketCard({
   }, []);
 
   const walletMint = useCTFMintPositionTokens();
-  const ntzsMint = useNTZSMintPositionTokens();
+  const ntzsV2Mint = useNTZSMintPositionV2();
   const walletApprove = useApproveToken();
-  const ntzsApprove = useNTZSApproveToken();
-  const { mintPositionTokens, isPending: isMinting, isSuccess: isMintSuccess } = isNTZSUser ? ntzsMint : walletMint;
-  const { approve, isPending: isApproving, isSuccess: isApproveSuccess } = isNTZSUser ? ntzsApprove : walletApprove;
+  const { mintPositionTokens, isPending: isMinting, isSuccess: isMintSuccess } = isNTZSUser
+    ? { mintPositionTokens: async (mId: number, _amt: bigint) => {
+        const amountTzs = Number(_amt / BigInt(1e18));
+        await ntzsV2Mint.mintPosition(BigInt(mId), amountTzs || 1);
+      }, isPending: ntzsV2Mint.isPending, isSuccess: ntzsV2Mint.isSuccess }
+    : walletMint;
+  const { approve, isPending: isApproving, isSuccess: isApproveSuccess } = walletApprove;
   
   // Type guard for paymentToken - use a dummy address if undefined to satisfy TypeScript
   const validPaymentToken = (paymentToken && paymentToken.startsWith('0x') ? paymentToken : '0x0000000000000000000000000000000000000000') as `0x${string}`;
@@ -126,7 +130,7 @@ function CompactMarketCard({
   const handleDirectBuy = async (e: React.MouseEvent, outcomeName: string) => {
     e.stopPropagation();
     
-    if (!isConnected) {
+    if (!isConnected && !isNTZSUser) {
       alert("Please connect your wallet first");
       return;
     }
@@ -139,34 +143,36 @@ function CompactMarketCard({
     try {
       setIsBuying(true);
       setPurchasedOutcome(outcomeName);
-      const amountInWei = parseUnits(quickBuyAmount.toString(), 6); // USDC has 6 decimals
 
-      // Check allowance
-      const currentAllowance = allowance as bigint || BigInt(0);
-      
-      if (currentAllowance < amountInWei) {
-        setTxStatus('approving');
-        console.log('Requesting approval...');
+      if (isNTZSUser) {
+        // nTZS V2: No approval needed, just mint via API
+        setTxStatus('minting');
+        console.log('nTZS V2: Minting position tokens (no approval needed)...');
+        const amountInWei = parseUnits(quickBuyAmount.toString(), 18); // nTZS has 18 decimals
+        await mintPositionTokens(id, amountInWei);
+      } else {
+        // Regular wallet: Check allowance → approve → mint
+        const amountInWei = parseUnits(quickBuyAmount.toString(), 6); // USDC has 6 decimals
+        const currentAllowance = allowance as bigint || BigInt(0);
         
-        // Use max uint256 for infinite approval to avoid future approvals
-        const maxApproval = BigInt('0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff');
-        
-        await approve(
-          paymentToken as `0x${string}`,
-          CONTRACTS.baseSepolia.ctfPredictionMarket as `0x${string}`,
-          maxApproval
-        );
-        
-        console.log('Approval transaction submitted, waiting for confirmation...');
-        // Reduced wait time for faster flow
-        await new Promise(resolve => setTimeout(resolve, 500));
-        await refetchAllowance();
+        if (currentAllowance < amountInWei) {
+          setTxStatus('approving');
+          console.log('Requesting approval...');
+          const maxApproval = BigInt('0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff');
+          await approve(
+            paymentToken as `0x${string}`,
+            CONTRACTS.baseSepolia.ctfPredictionMarket as `0x${string}`,
+            maxApproval
+          );
+          console.log('Approval transaction submitted, waiting for confirmation...');
+          await new Promise(resolve => setTimeout(resolve, 500));
+          await refetchAllowance();
+        }
+
+        setTxStatus('minting');
+        console.log('Minting position tokens...');
+        await mintPositionTokens(id, amountInWei);
       }
-
-      // Mint position tokens
-      setTxStatus('minting');
-      console.log('Minting position tokens...');
-      await mintPositionTokens(id, amountInWei);
       
     } catch (error: any) {
       console.error("Buy error:", error);
@@ -495,7 +501,7 @@ function CompactMarketCard({
                             >
                               <div className="flex items-center justify-center gap-1.5">
                                 <div className="text-[9px] font-semibold text-green-700 dark:text-green-400">Yes</div>
-                                <div className="text-sm font-black text-green-600 dark:text-green-400">{yesPrice}¢</div>
+                                <div className="text-sm font-black text-green-600 dark:text-green-400">{(yesPrice * 100).toFixed(0)}%</div>
                               </div>
                             </motion.button>
                             
@@ -510,7 +516,7 @@ function CompactMarketCard({
                             >
                               <div className="flex items-center justify-center gap-1.5">
                                 <div className="text-[9px] font-semibold text-red-700 dark:text-red-400">No</div>
-                                <div className="text-sm font-black text-red-600 dark:text-red-400">{noPrice}¢</div>
+                                <div className="text-sm font-black text-red-600 dark:text-red-400">{(noPrice * 100).toFixed(0)}%</div>
                               </div>
                             </motion.button>
                           </>
@@ -528,7 +534,7 @@ function CompactMarketCard({
                                   ? 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400 border border-green-200 dark:border-green-700'
                                   : 'bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400 border border-red-200 dark:border-red-700'
                               }`}>
-                                {isYesExpanded ? 'Yes' : 'No'} {currentPrice}¢
+                                {isYesExpanded ? 'Yes' : 'No'} {currentPrice}%
                               </div>
                               
                               {/* Amount Slider */}
@@ -545,7 +551,7 @@ function CompactMarketCard({
                                   }}
                                 />
                                 <div className="text-[8px] text-gray-500 dark:text-gray-400 text-center mt-0.5">
-                                  {quickBuyAmount} USDC
+                                  {quickBuyAmount} TZS
                                 </div>
                               </div>
                               
@@ -613,7 +619,7 @@ function CompactMarketCard({
               >
                 <div className="text-[9px] md:text-[10px] text-gray-600 dark:text-gray-400 font-semibold mb-0.5">Yes</div>
                 <div className="text-base md:text-lg font-black text-green-600 dark:text-green-400 group-hover/yes:scale-110 transition-transform">
-                  {(yesPrice * 100).toFixed(0)}¢
+                  {(yesPrice * 100).toFixed(0)}%
                 </div>
               </motion.button>
               <motion.button
@@ -626,7 +632,7 @@ function CompactMarketCard({
               >
                 <div className="text-[9px] md:text-[10px] text-gray-600 dark:text-gray-400 font-semibold mb-0.5">No</div>
                 <div className="text-base md:text-lg font-black text-red-600 dark:text-red-400 group-hover/no:scale-110 transition-transform">
-                  {(noPrice * 100).toFixed(0)}¢
+                  {(noPrice * 100).toFixed(0)}%
                 </div>
               </motion.button>
             </div>
@@ -639,8 +645,8 @@ function CompactMarketCard({
               <div className="flex items-center gap-1">
                 <span className="font-black text-[10px] md:text-xs text-gray-900 dark:text-white">{volume}</span>
                 <Image 
-                  src="/USDC logo.png" 
-                  alt="USDC"
+                  src="/ntzs.png" 
+                  alt="nTZS"
                   width={12}
                   height={12}
                   className="rounded-full md:w-3 md:h-3"
@@ -742,7 +748,7 @@ function CompactMarketCard({
         marketTitle={question}
         outcomeName={purchasedOutcome}
         amount={quickBuyAmount}
-        tokenSymbol="USDC"
+        tokenSymbol="nTZS"
       />
     </>
   );

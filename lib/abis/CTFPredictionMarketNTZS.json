@@ -1,0 +1,308 @@
+[
+  {
+    "type": "constructor",
+    "inputs": [],
+    "stateMutability": "nonpayable"
+  },
+  {
+    "type": "function",
+    "name": "createMarket",
+    "inputs": [
+      { "name": "_question", "type": "string" },
+      { "name": "_description", "type": "string" },
+      { "name": "_outcomeCount", "type": "uint256" },
+      { "name": "_closingTime", "type": "uint256" }
+    ],
+    "outputs": [
+      { "name": "marketId", "type": "uint256" }
+    ],
+    "stateMutability": "nonpayable"
+  },
+  {
+    "type": "function",
+    "name": "mintPositionTokensFor",
+    "inputs": [
+      { "name": "marketId", "type": "uint256" },
+      { "name": "user", "type": "address" },
+      { "name": "amount", "type": "uint256" }
+    ],
+    "outputs": [],
+    "stateMutability": "nonpayable"
+  },
+  {
+    "type": "function",
+    "name": "redeemPositionTokens",
+    "inputs": [
+      { "name": "marketId", "type": "uint256" },
+      { "name": "amount", "type": "uint256" }
+    ],
+    "outputs": [],
+    "stateMutability": "nonpayable"
+  },
+  {
+    "type": "function",
+    "name": "redeemWinningTokens",
+    "inputs": [
+      { "name": "marketId", "type": "uint256" },
+      { "name": "amount", "type": "uint256" }
+    ],
+    "outputs": [],
+    "stateMutability": "nonpayable"
+  },
+  {
+    "type": "function",
+    "name": "resolveMarket",
+    "inputs": [
+      { "name": "marketId", "type": "uint256" },
+      { "name": "winningOutcome", "type": "uint256" }
+    ],
+    "outputs": [],
+    "stateMutability": "nonpayable"
+  },
+  {
+    "type": "function",
+    "name": "cancelMarket",
+    "inputs": [
+      { "name": "marketId", "type": "uint256" }
+    ],
+    "outputs": [],
+    "stateMutability": "nonpayable"
+  },
+  {
+    "type": "function",
+    "name": "claimRefund",
+    "inputs": [
+      { "name": "marketId", "type": "uint256" }
+    ],
+    "outputs": [],
+    "stateMutability": "nonpayable"
+  },
+  {
+    "type": "function",
+    "name": "setAuthorizedOperator",
+    "inputs": [
+      { "name": "operator", "type": "address" },
+      { "name": "authorized", "type": "bool" }
+    ],
+    "outputs": [],
+    "stateMutability": "nonpayable"
+  },
+  {
+    "type": "function",
+    "name": "getMarket",
+    "inputs": [
+      { "name": "marketId", "type": "uint256" }
+    ],
+    "outputs": [
+      {
+        "name": "",
+        "type": "tuple",
+        "components": [
+          { "name": "question", "type": "string" },
+          { "name": "description", "type": "string" },
+          { "name": "outcomeCount", "type": "uint256" },
+          { "name": "closingTime", "type": "uint256" },
+          { "name": "creator", "type": "address" },
+          { "name": "resolved", "type": "bool" },
+          { "name": "winningOutcome", "type": "uint256" },
+          { "name": "cancelled", "type": "bool" }
+        ]
+      }
+    ],
+    "stateMutability": "view"
+  },
+  {
+    "type": "function",
+    "name": "getUserPosition",
+    "inputs": [
+      { "name": "user", "type": "address" },
+      { "name": "marketId", "type": "uint256" },
+      { "name": "outcomeIndex", "type": "uint256" }
+    ],
+    "outputs": [
+      { "name": "", "type": "uint256" }
+    ],
+    "stateMutability": "view"
+  },
+  {
+    "type": "function",
+    "name": "getOutcomeToken",
+    "inputs": [
+      { "name": "marketId", "type": "uint256" },
+      { "name": "outcomeIndex", "type": "uint256" }
+    ],
+    "outputs": [
+      { "name": "", "type": "uint256" }
+    ],
+    "stateMutability": "view"
+  },
+  {
+    "type": "function",
+    "name": "marketCount",
+    "inputs": [],
+    "outputs": [
+      { "name": "", "type": "uint256" }
+    ],
+    "stateMutability": "view"
+  },
+  {
+    "type": "function",
+    "name": "markets",
+    "inputs": [
+      { "name": "", "type": "uint256" }
+    ],
+    "outputs": [
+      { "name": "question", "type": "string" },
+      { "name": "description", "type": "string" },
+      { "name": "outcomeCount", "type": "uint256" },
+      { "name": "closingTime", "type": "uint256" },
+      { "name": "creator", "type": "address" },
+      { "name": "resolved", "type": "bool" },
+      { "name": "winningOutcome", "type": "uint256" },
+      { "name": "cancelled", "type": "bool" }
+    ],
+    "stateMutability": "view"
+  },
+  {
+    "type": "function",
+    "name": "outcomeTokens",
+    "inputs": [
+      { "name": "", "type": "uint256" },
+      { "name": "", "type": "uint256" }
+    ],
+    "outputs": [
+      { "name": "", "type": "uint256" }
+    ],
+    "stateMutability": "view"
+  },
+  {
+    "type": "function",
+    "name": "userPositions",
+    "inputs": [
+      { "name": "", "type": "address" },
+      { "name": "", "type": "uint256" },
+      { "name": "", "type": "uint256" }
+    ],
+    "outputs": [
+      { "name": "", "type": "uint256" }
+    ],
+    "stateMutability": "view"
+  },
+  {
+    "type": "function",
+    "name": "authorizedOperators",
+    "inputs": [
+      { "name": "", "type": "address" }
+    ],
+    "outputs": [
+      { "name": "", "type": "bool" }
+    ],
+    "stateMutability": "view"
+  },
+  {
+    "type": "function",
+    "name": "owner",
+    "inputs": [],
+    "outputs": [
+      { "name": "", "type": "address" }
+    ],
+    "stateMutability": "view"
+  },
+  {
+    "type": "function",
+    "name": "balanceOf",
+    "inputs": [
+      { "name": "account", "type": "address" },
+      { "name": "id", "type": "uint256" }
+    ],
+    "outputs": [
+      { "name": "", "type": "uint256" }
+    ],
+    "stateMutability": "view"
+  },
+  {
+    "type": "function",
+    "name": "isApprovedForAll",
+    "inputs": [
+      { "name": "account", "type": "address" },
+      { "name": "operator", "type": "address" }
+    ],
+    "outputs": [
+      { "name": "", "type": "bool" }
+    ],
+    "stateMutability": "view"
+  },
+  {
+    "type": "function",
+    "name": "setApprovalForAll",
+    "inputs": [
+      { "name": "operator", "type": "address" },
+      { "name": "approved", "type": "bool" }
+    ],
+    "outputs": [],
+    "stateMutability": "nonpayable"
+  },
+  {
+    "type": "function",
+    "name": "transferOwnership",
+    "inputs": [
+      { "name": "newOwner", "type": "address" }
+    ],
+    "outputs": [],
+    "stateMutability": "nonpayable"
+  },
+  {
+    "type": "event",
+    "name": "MarketCreated",
+    "inputs": [
+      { "name": "marketId", "type": "uint256", "indexed": true },
+      { "name": "question", "type": "string", "indexed": false },
+      { "name": "outcomeCount", "type": "uint256", "indexed": false },
+      { "name": "closingTime", "type": "uint256", "indexed": false },
+      { "name": "creator", "type": "address", "indexed": true }
+    ]
+  },
+  {
+    "type": "event",
+    "name": "TokensMinted",
+    "inputs": [
+      { "name": "marketId", "type": "uint256", "indexed": true },
+      { "name": "user", "type": "address", "indexed": true },
+      { "name": "amount", "type": "uint256", "indexed": false }
+    ]
+  },
+  {
+    "type": "event",
+    "name": "TokensRedeemed",
+    "inputs": [
+      { "name": "marketId", "type": "uint256", "indexed": true },
+      { "name": "user", "type": "address", "indexed": true },
+      { "name": "amount", "type": "uint256", "indexed": false }
+    ]
+  },
+  {
+    "type": "event",
+    "name": "MarketResolved",
+    "inputs": [
+      { "name": "marketId", "type": "uint256", "indexed": true },
+      { "name": "winningOutcome", "type": "uint256", "indexed": false }
+    ]
+  },
+  {
+    "type": "event",
+    "name": "MarketCancelled",
+    "inputs": [
+      { "name": "marketId", "type": "uint256", "indexed": true }
+    ]
+  },
+  {
+    "type": "event",
+    "name": "WinningsRedeemed",
+    "inputs": [
+      { "name": "marketId", "type": "uint256", "indexed": true },
+      { "name": "user", "type": "address", "indexed": true },
+      { "name": "outcome", "type": "uint256", "indexed": true },
+      { "name": "amount", "type": "uint256", "indexed": false }
+    ]
+  }
+]
